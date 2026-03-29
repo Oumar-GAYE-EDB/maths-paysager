@@ -73,9 +73,14 @@
         <!-- Les champs sont générés par JavaScript -->
       </div>
 
-      <button class="btn btn--primary" id="btn-calculer-forme" type="button">
-        Calculer
-      </button>
+      <div class="actions">
+        <button class="btn btn--primary" id="btn-calculer-forme" type="button">
+          Calculer
+        </button>
+        <button class="btn btn--secondary" id="btn-reset-forme" type="button">
+          Réinitialiser
+        </button>
+      </div>
 
       <!-- Zone de résultat -->
       <div id="resultat-forme" class="resultat" aria-live="polite"></div>
@@ -110,9 +115,14 @@
         <!-- Les champs sont générés par JavaScript -->
       </div>
 
-      <button class="btn btn--primary" id="btn-calculer-pourcent" type="button">
-        Calculer
-      </button>
+      <div class="actions">
+        <button class="btn btn--primary" id="btn-calculer-pourcent" type="button">
+          Calculer
+        </button>
+        <button class="btn btn--secondary" id="btn-reset-pourcent" type="button">
+          Réinitialiser
+        </button>
+      </div>
 
       <!-- Zone de résultat -->
       <div id="resultat-pourcent" class="resultat" aria-live="polite"></div>
@@ -167,11 +177,69 @@
       </div>
     </section>
 
+    <!-- ===================================== -->
+    <!-- SECTION 4 : CALCULS MÉTIER PAYSAGER   -->
+    <!-- ===================================== -->
+    <section class="card" id="section-metier">
+      <h2 class="card__title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/><path d="M9 21v-6h6v6"/></svg>
+        Calculs métier (chantier)
+      </h2>
+      <p class="card__desc">Estimez rapidement des volumes, quantités et coûts pour des situations d’aménagement paysager.</p>
+
+      <div class="form-group">
+        <label for="type-metier">Type de calcul :</label>
+        <select id="type-metier">
+          <option value="volume-paillage">Volume de paillage / terre (m³)</option>
+          <option value="nombre-dalles">Nombre de dalles nécessaires</option>
+          <option value="cout-total">Coût total estimatif</option>
+        </select>
+      </div>
+
+      <div id="champs-metier" class="form-fields"></div>
+
+      <div class="actions">
+        <button class="btn btn--primary" id="btn-calculer-metier" type="button">
+          Calculer
+        </button>
+        <button class="btn btn--secondary" id="btn-reset-metier" type="button">
+          Réinitialiser
+        </button>
+      </div>
+
+      <div id="resultat-metier" class="resultat" aria-live="polite"></div>
+    </section>
+
+    <!-- ===================================== -->
+    <!-- SECTION 5 : EXERCICES GUIDÉS          -->
+    <!-- ===================================== -->
+    <section class="card card--memo" id="section-exercices">
+      <h2 class="card__title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M2 12h20"/></svg>
+        Exercices guidés
+      </h2>
+      <div class="memo-grid">
+        <div class="memo-item">
+          <h3>Exercice 1 — Terrasse</h3>
+          <p>Rectangle de 6 m × 4 m : calcule l’aire, puis le périmètre.</p>
+        </div>
+        <div class="memo-item">
+          <h3>Exercice 2 — Réduction</h3>
+          <p>Un lot coûte 250 €. Réduction de 12% : quel prix final ?</p>
+        </div>
+        <div class="memo-item">
+          <h3>Exercice 3 — Paillage</h3>
+          <p>Surface 30 m², épaisseur 8 cm : quel volume en m³ faut-il ?</p>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <!-- Pied de page -->
   <footer class="footer">
     <p>Application pédagogique — CAPa Aménagement Paysager</p>
+    <button class="btn btn--secondary" id="btn-imprimer" type="button">Imprimer le résumé</button>
   </footer>
 
   <!-- ============================== -->

@@ -272,6 +272,26 @@ body {
   box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
+.form-group select:focus-visible,
+.form-group input:focus-visible,
+.btn:focus-visible,
+.theme-toggle:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 55%, #ffffff);
+  outline-offset: 2px;
+}
+
+.form-group input[aria-invalid="true"] {
+  border-color: var(--color-error);
+}
+
+.field-error {
+  min-height: 1.1em;
+  margin-top: var(--space-1);
+  color: var(--color-error);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+}
+
 /* Grille des champs de saisie */
 .form-fields {
   display: grid;
@@ -315,6 +335,22 @@ body {
 .btn--primary:active {
   background: var(--color-primary-active);
   transform: scale(0.97);
+}
+
+.btn--secondary {
+  background: var(--color-surface-offset);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.btn--secondary:hover {
+  background: var(--color-divider);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
 }
 
 /* ---------- ZONE DE RÉSULTAT ---------- */
@@ -366,6 +402,37 @@ body {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
   font-style: italic;
+}
+
+.resultat__etapes {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--color-divider);
+}
+
+.resultat__etapes-titre {
+  font-weight: 700;
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-2);
+  color: var(--color-text);
+}
+
+.resultat__etapes-liste {
+  margin-left: 1.2rem;
+  display: grid;
+  gap: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.resultat__astuce {
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
 }
 
 /* ---------- SCHÉMA SVG ---------- */
@@ -420,6 +487,9 @@ body {
   padding: var(--space-4) var(--space-4) var(--space-6);
   font-size: var(--text-xs);
   color: var(--color-text-faint);
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
 }
 
 /* ---------- FOCUS VISIBLE ---------- */
@@ -435,6 +505,23 @@ body {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  .theme-toggle,
+  .actions,
+  #btn-imprimer {
+    display: none !important;
+  }
+
+  .card {
+    box-shadow: none;
+    break-inside: avoid;
+  }
+
+  body {
+    background: #fff;
   }
 }
 
