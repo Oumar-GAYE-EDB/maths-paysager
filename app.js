@@ -68,10 +68,16 @@ function initialiserTheme() {
   const boutonTheme = document.querySelector("[data-theme-toggle]");
   const racine = document.documentElement;
 
-  // On détecte la préférence du système (sombre ou clair)
-  let theme = window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
+  // Clé utilisée pour mémoriser le thème choisi par l'utilisateur
+  const CLE_THEME = "maths-paysager-theme";
+
+  // 1) On essaie de relire le thème enregistré (priorité à l'utilisateur)
+  const themeEnregistre = localStorage.getItem(CLE_THEME);
+
+  // 2) Sinon, on détecte la préférence du système (sombre ou clair)
+  let theme = themeEnregistre
+    ? themeEnregistre
+    : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 
   // On applique le thème détecté
   racine.setAttribute("data-theme", theme);
@@ -83,6 +89,9 @@ function initialiserTheme() {
       theme = theme === "dark" ? "light" : "dark";
       racine.setAttribute("data-theme", theme);
       mettreAJourIconeTheme(boutonTheme, theme);
+
+      // On mémorise le choix pour les prochaines visites
+      localStorage.setItem(CLE_THEME, theme);
     });
   }
 }
