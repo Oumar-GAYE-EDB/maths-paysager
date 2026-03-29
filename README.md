@@ -1,2 +1,115 @@
-# maths-paysager
-Calculateur pour CAPa aménagement paysager 
+# Maths Paysager
+
+Calculateur pédagogique pour les élèves de **CAPa Aménagement Paysager**.
+
+L'application aide à pratiquer :
+- les **aires**,
+- les **périmètres**,
+- les **pourcentages**,
+avec un affichage des formules et des étapes de calcul.
+
+---
+
+## Objectifs pédagogiques
+
+- Rendre les calculs concrets avec des exemples métiers (terrasse, bassin, massif, parcelle, etc.).
+- Expliquer les résultats (pas seulement donner une valeur finale).
+- Proposer une interface simple, lisible et adaptée au mobile.
+
+---
+
+## Fonctionnalités
+
+### 1) Aire & périmètre
+Formes disponibles :
+- Rectangle
+- Carré
+- Cercle
+- Triangle
+- Trapèze
+
+Pour chaque forme :
+- saisie guidée des dimensions,
+- validation des champs,
+- résultat arrondi,
+- détail des étapes,
+- schéma SVG explicatif.
+
+### 2) Pourcentages
+Types de calcul :
+- Trouver `X%` d'un nombre
+- Trouver le pourcentage de `A` par rapport à `B`
+- Augmentation en pourcentage
+- Réduction en pourcentage
+
+### 3) Accessibilité et confort
+- Messages d'erreur par champ
+- Zones de résultat avec `aria-live`
+- Thème clair/sombre mémorisé dans le navigateur
+- Interface responsive
+
+---
+
+## Stack technique
+
+Projet web statique (sans build) :
+- `index.html`
+- `style.css`
+- `app.js`
+
+Aucune dépendance JavaScript externe.
+
+---
+
+## Lancer le projet en local
+
+### Option simple
+Ouvrir `index.html` dans un navigateur.
+
+### Option recommandée (serveur local)
+Depuis la racine du projet :
+
+```bash
+python3 -m http.server 8000
+```
+
+Puis ouvrir :
+`http://localhost:8000`
+
+---
+
+## Structure du projet
+
+```text
+maths-paysager/
+├── index.html   # structure de l'application
+├── style.css    # styles + thèmes clair/sombre
+├── app.js       # logique de calcul + rendu + validations
+└── README.md
+```
+
+---
+
+## Feuille de route (propositions)
+
+- [ ] Ajouter des tests unitaires pour les formules de calcul
+- [ ] Vérifier des contraintes géométriques avancées (ex. triangle impossible)
+- [ ] Ajouter un historique des calculs (localStorage)
+- [ ] Ajouter un export PDF des résultats
+- [ ] Créer un mode “exercices” pour l'entraînement
+
+---
+
+## Contribution
+
+Les contributions sont bienvenues :
+1. Fork du projet
+2. Création d'une branche (`feature/ma-modif`)
+3. Commit de vos changements
+4. Pull Request
+
+---
+
+## Licence
+
+À préciser (ex. MIT).
