@@ -37,7 +37,9 @@ document.addEventListener("DOMContentLoaded", function () {
   // --- Afficher les champs dès le chargement ---
   afficherChampsFormes(selectForme.value, champsForme);
   afficherChampsPourcent(selectPourcent.value, champsPourcent);
-  afficherChampsMetier(selectMetier.value, champsMetier);
+  if (selectMetier && champsMetier) {
+    afficherChampsMetier(selectMetier.value, champsMetier);
+  }
 
   // --- Quand l'utilisateur change de forme ---
   selectForme.addEventListener("change", function () {
@@ -55,11 +57,13 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // --- Quand l'utilisateur change de type de calcul métier ---
-  selectMetier.addEventListener("change", function () {
-    afficherChampsMetier(this.value, champsMetier);
-    resultatMetier.innerHTML = "";
-    resultatMetier.className = "resultat";
-  });
+  if (selectMetier) {
+    selectMetier.addEventListener("change", function () {
+      afficherChampsMetier(this.value, champsMetier);
+      resultatMetier.innerHTML = "";
+      resultatMetier.className = "resultat";
+    });
+  }
 
   // --- Clic sur "Calculer" pour les formes ---
   btnCalculerForme.addEventListener("click", function () {
@@ -71,9 +75,11 @@ document.addEventListener("DOMContentLoaded", function () {
     calculerPourcentage(selectPourcent.value, champsPourcent, resultatPourcent);
   });
 
-  btnCalculerMetier.addEventListener("click", function () {
-    calculerMetier(selectMetier.value, champsMetier, resultatMetier);
-  });
+  if (btnCalculerMetier && selectMetier) {
+    btnCalculerMetier.addEventListener("click", function () {
+      calculerMetier(selectMetier.value, champsMetier, resultatMetier);
+    });
+  }
 
   // --- Clic sur "Réinitialiser" pour les formes ---
   if (btnResetForme) {
@@ -119,7 +125,7 @@ function initialiserTheme() {
   const CLE_THEME = "maths-paysager-theme";
 
   // 1) On essaie de relire le thème enregistré (priorité à l'utilisateur)
-  const themeEnregistre = localStorage.getItem(CLE_THEME);
+  const themeEnregistre = lireStockage(CLE_THEME);
 
   // 2) Sinon, on détecte la préférence du système (sombre ou clair)
   let theme = themeEnregistre
@@ -138,8 +144,24 @@ function initialiserTheme() {
       mettreAJourIconeTheme(boutonTheme, theme);
 
       // On mémorise le choix pour les prochaines visites
-      localStorage.setItem(CLE_THEME, theme);
+      ecrireStockage(CLE_THEME, theme);
     });
+  }
+}
+
+function lireStockage(cle) {
+  try {
+    return localStorage.getItem(cle);
+  } catch (_e) {
+    return null;
+  }
+}
+
+function ecrireStockage(cle, valeur) {
+  try {
+    localStorage.setItem(cle, valeur);
+  } catch (_e) {
+    // Rien : on garde un fonctionnement normal même sans stockage disponible.
   }
 }
 
@@ -268,7 +290,7 @@ function afficherChampsFormes(forme, conteneur) {
 function afficherChampsPourcent(type, conteneur) {
   const champsParType = {
     "trouver-pourcentage": [
-      { id: "pourcent-val", label: "Pourcentage (%)", placeholder: "Ex : 15" },
+      { id: "pourcent-val", label: "Pourcentage (%)", placeholder: "Ex : 15", max: 100 },
       { id: "nombre-val", label: "Nombre", placeholder: "Ex : 200" },
     ],
     "quel-pourcentage": [
@@ -277,11 +299,11 @@ function afficherChampsPourcent(type, conteneur) {
     ],
     augmentation: [
       { id: "valeur-depart", label: "Valeur de départ", placeholder: "Ex : 150" },
-      { id: "pourcent-aug", label: "Augmentation (%)", placeholder: "Ex : 20" },
+      { id: "pourcent-aug", label: "Augmentation (%)", placeholder: "Ex : 20", max: 100 },
     ],
     reduction: [
       { id: "valeur-depart", label: "Valeur de départ", placeholder: "Ex : 150" },
-      { id: "pourcent-red", label: "Réduction (%)", placeholder: "Ex : 10" },
+      { id: "pourcent-red", label: "Réduction (%)", placeholder: "Ex : 10", max: 100 },
     ],
   };
 
@@ -295,7 +317,7 @@ function afficherChampsPourcent(type, conteneur) {
         '  <input type="number" id="' + champ.id + '" ' +
         '    aria-describedby="' + champ.id + '-erreur" ' +
         '    placeholder="' + champ.placeholder + '" ' +
-        '    step="0.01" min="0">' +
+        '    step="0.01" min="0" ' + (champ.max ? 'max="' + champ.max + '"' : "") + '>' +
         '  <p class="field-error" id="' + champ.id + '-erreur" aria-live="polite"></p>' +
         "</div>"
       );
@@ -572,6 +594,11 @@ function calculerPourcentage(type, conteneur, resultat) {
         afficherErreur(resultat, "Veuillez remplir les deux champs.");
         return;
       }
+      if (pourcent < 0 || pourcent > 100) {
+        afficherErreurChamp("pourcent-val", "Le pourcentage doit être entre 0 et 100.");
+        afficherErreur(resultat, "Le pourcentage doit être entre 0 et 100.");
+        return;
+      }
 
       // Formule : Résultat = (Pourcentage × Nombre) ÷ 100
       valeurResultat = (pourcent * nombre) / 100;
@@ -625,6 +652,11 @@ function calculerPourcentage(type, conteneur, resultat) {
         afficherErreur(resultat, "Veuillez remplir les deux champs.");
         return;
       }
+      if (aug < 0 || aug > 100) {
+        afficherErreurChamp("pourcent-aug", "L'augmentation doit être entre 0 et 100.");
+        afficherErreur(resultat, "L'augmentation doit être entre 0 et 100.");
+        return;
+      }
 
       // Formule : Nouveau = Départ + (Départ × Pourcentage ÷ 100)
       //         = Départ × (1 + Pourcentage ÷ 100)
@@ -649,6 +681,11 @@ function calculerPourcentage(type, conteneur, resultat) {
         if (depart === null) afficherErreurChamp("valeur-depart", "Renseigne la valeur de départ.");
         if (red === null) afficherErreurChamp("pourcent-red", "Renseigne le pourcentage de réduction.");
         afficherErreur(resultat, "Veuillez remplir les deux champs.");
+        return;
+      }
+      if (red < 0 || red > 100) {
+        afficherErreurChamp("pourcent-red", "La réduction doit être entre 0 et 100.");
+        afficherErreur(resultat, "La réduction doit être entre 0 et 100.");
         return;
       }
 
@@ -682,12 +719,12 @@ function afficherChampsMetier(type, conteneur) {
       { id: "surface-zone", label: "Surface de la zone (m²)", placeholder: "Ex : 24" },
       { id: "longueur-dalle", label: "Longueur d'une dalle (cm)", placeholder: "Ex : 50" },
       { id: "largeur-dalle", label: "Largeur d'une dalle (cm)", placeholder: "Ex : 50" },
-      { id: "marge-casse", label: "Marge casse (%)", placeholder: "Ex : 10" },
+      { id: "marge-casse", label: "Marge casse (%)", placeholder: "Ex : 10", max: 100 },
     ],
     "cout-total": [
       { id: "quantite", label: "Quantité", placeholder: "Ex : 35" },
       { id: "prix-unitaire", label: "Prix unitaire (€)", placeholder: "Ex : 12" },
-      { id: "remise", label: "Remise (%)", placeholder: "Ex : 5" },
+      { id: "remise", label: "Remise (%)", placeholder: "Ex : 5", max: 100 },
     ],
   };
 
@@ -699,7 +736,7 @@ function afficherChampsMetier(type, conteneur) {
         '  <label for="' + champ.id + '">' + champ.label + "</label>" +
         '  <input type="number" id="' + champ.id + '" ' +
         '    aria-describedby="' + champ.id + '-erreur" ' +
-        '    placeholder="' + champ.placeholder + '" step="0.01" min="0">' +
+        '    placeholder="' + champ.placeholder + '" step="0.01" min="0" ' + (champ.max ? 'max="' + champ.max + '"' : "") + '>' +
         '  <p class="field-error" id="' + champ.id + '-erreur" aria-live="polite"></p>' +
         "</div>"
       );
@@ -749,6 +786,11 @@ function calculerMetier(type, conteneur, resultat) {
         afficherErreur(resultat, "Renseigne surface et dimensions de dalle.");
         return;
       }
+      if (marge < 0 || marge > 100) {
+        afficherErreurChamp("marge-casse", "La marge doit être entre 0 et 100.");
+        afficherErreur(resultat, "La marge doit être entre 0 et 100.");
+        return;
+      }
 
       const surfaceDalle = (longueurDalleCm / 100) * (largeurDalleCm / 100);
       const nbBrut = surfaceZone / surfaceDalle;
@@ -772,6 +814,11 @@ function calculerMetier(type, conteneur, resultat) {
       if (!valide(prixUnitaire)) afficherErreurChamp("prix-unitaire", "Entre un prix unitaire positif.");
       if (!valide(quantite, prixUnitaire)) {
         afficherErreur(resultat, "Renseigne quantité et prix unitaire.");
+        return;
+      }
+      if (remise < 0 || remise > 100) {
+        afficherErreurChamp("remise", "La remise doit être entre 0 et 100.");
+        afficherErreur(resultat, "La remise doit être entre 0 et 100.");
         return;
       }
 
@@ -858,7 +905,8 @@ function afficherErreurChamp(idChamp, message) {
   const zoneErreur = document.getElementById(idChamp + "-erreur");
   if (!champ || !zoneErreur) return;
 
-  const unChampDejaInvalide = document.querySelector('input[aria-invalid="true"]');
+  const conteneurChamps = champ.closest(".form-fields") || document;
+  const unChampDejaInvalide = conteneurChamps.querySelector('input[aria-invalid="true"]');
   champ.setAttribute("aria-invalid", "true");
   zoneErreur.textContent = message;
   if (!unChampDejaInvalide) champ.focus();
@@ -962,7 +1010,7 @@ function genererAstucePourcentage(type) {
  */
 function afficherErreur(zone, message) {
   zone.className = "resultat resultat--visible resultat--erreur";
-  zone.innerHTML = "<strong>Erreur :</strong> " + message;
+  zone.innerHTML = '<p role="alert"><strong>Erreur :</strong> ' + message + "</p>";
 }
 
 
