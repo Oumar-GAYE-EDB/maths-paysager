@@ -416,6 +416,19 @@ function calculerForme(forme, conteneur, resultat, schema) {
 
       // Périmètre = somme des 3 côtés (si fournis)
       if (valide(c1, c2, c3)) {
+        if (!triangleValide(c1, c2, c3)) {
+          afficherErreurChamp("cote1", "Triangle impossible avec ces longueurs.");
+          afficherErreurChamp("cote2", "Vérifiez l'inégalité triangulaire.");
+          if (c3Input && c3Input.value !== "") {
+            afficherErreurChamp("cote3", "Le 3e côté est incohérent.");
+          }
+          afficherErreur(
+            resultat,
+            "Triangle impossible : la somme de deux côtés doit être supérieure au troisième."
+          );
+          schema.innerHTML = "";
+          return;
+        }
         perimetre = c1 + c2 + c3;
         formulePerimetre = "Périmètre = " + c1 + " + " + c2 + " + " + c3 + " = " + arrondir(perimetre) + " m";
       } else {
@@ -458,6 +471,13 @@ function calculerForme(forme, conteneur, resultat, schema) {
         if (!valide(B2)) afficherErreurChamp("base2", "La petite base doit être positive.");
         if (!valide(h)) afficherErreurChamp("hauteur", "La hauteur doit être positive.");
         afficherErreur(resultat, "Les deux bases et la hauteur sont obligatoires.");
+        schema.innerHTML = "";
+        return;
+      }
+      if (B1 < B2) {
+        afficherErreurChamp("base1", "La grande base doit être supérieure ou égale à la petite base.");
+        afficherErreurChamp("base2", "La petite base doit être inférieure ou égale à la grande base.");
+        afficherErreur(resultat, "Vérifiez les bases : grande base ≥ petite base.");
         schema.innerHTML = "";
         return;
       }
@@ -652,6 +672,18 @@ function valide(...valeurs) {
   return valeurs.every(function (v) {
     return v !== null && !isNaN(v) && v > 0;
   });
+}
+
+/**
+ * Vérifie si trois longueurs peuvent former un triangle
+ * (inégalité triangulaire).
+ * @param {number} a
+ * @param {number} b
+ * @param {number} c
+ * @returns {boolean}
+ */
+function triangleValide(a, b, c) {
+  return a + b > c && a + c > b && b + c > a;
 }
 
 /**
