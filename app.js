@@ -17,12 +17,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const selectForme = document.getElementById("forme");
   const champsForme = document.getElementById("champs-forme");
   const btnCalculerForme = document.getElementById("btn-calculer-forme");
+  const btnResetForme = document.getElementById("btn-reset-forme");
   const resultatForme = document.getElementById("resultat-forme");
   const schemaForme = document.getElementById("schema-forme");
 
   const selectPourcent = document.getElementById("type-pourcent");
   const champsPourcent = document.getElementById("champs-pourcent");
   const btnCalculerPourcent = document.getElementById("btn-calculer-pourcent");
+  const btnResetPourcent = document.getElementById("btn-reset-pourcent");
   const resultatPourcent = document.getElementById("resultat-pourcent");
 
   // --- Afficher les champs dès le chargement ---
@@ -54,6 +56,20 @@ document.addEventListener("DOMContentLoaded", function () {
     calculerPourcentage(selectPourcent.value, champsPourcent, resultatPourcent);
   });
 
+  // --- Clic sur "Réinitialiser" pour les formes ---
+  if (btnResetForme) {
+    btnResetForme.addEventListener("click", function () {
+      reinitialiserSectionFormes(selectForme, champsForme, resultatForme, schemaForme);
+    });
+  }
+
+  // --- Clic sur "Réinitialiser" pour les pourcentages ---
+  if (btnResetPourcent) {
+    btnResetPourcent.addEventListener("click", function () {
+      reinitialiserSectionPourcentages(selectPourcent, champsPourcent, resultatPourcent);
+    });
+  }
+
   // --- Mode sombre / clair ---
   initialiserTheme();
 });
@@ -68,10 +84,16 @@ function initialiserTheme() {
   const boutonTheme = document.querySelector("[data-theme-toggle]");
   const racine = document.documentElement;
 
-  // On détecte la préférence du système (sombre ou clair)
-  let theme = window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
+  // Clé utilisée pour mémoriser le thème choisi par l'utilisateur
+  const CLE_THEME = "maths-paysager-theme";
+
+  // 1) On essaie de relire le thème enregistré (priorité à l'utilisateur)
+  const themeEnregistre = localStorage.getItem(CLE_THEME);
+
+  // 2) Sinon, on détecte la préférence du système (sombre ou clair)
+  let theme = themeEnregistre
+    ? themeEnregistre
+    : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 
   // On applique le thème détecté
   racine.setAttribute("data-theme", theme);
@@ -83,8 +105,32 @@ function initialiserTheme() {
       theme = theme === "dark" ? "light" : "dark";
       racine.setAttribute("data-theme", theme);
       mettreAJourIconeTheme(boutonTheme, theme);
+
+      // On mémorise le choix pour les prochaines visites
+      localStorage.setItem(CLE_THEME, theme);
     });
   }
+}
+
+/**
+ * Remet la section formes dans son état initial
+ */
+function reinitialiserSectionFormes(selectForme, champsForme, resultatForme, schemaForme) {
+  selectForme.selectedIndex = 0;
+  afficherChampsFormes(selectForme.value, champsForme);
+  resultatForme.innerHTML = "";
+  resultatForme.className = "resultat";
+  schemaForme.innerHTML = "";
+}
+
+/**
+ * Remet la section pourcentages dans son état initial
+ */
+function reinitialiserSectionPourcentages(selectPourcent, champsPourcent, resultatPourcent) {
+  selectPourcent.selectedIndex = 0;
+  afficherChampsPourcent(selectPourcent.value, champsPourcent);
+  resultatPourcent.innerHTML = "";
+  resultatPourcent.className = "resultat";
 }
 
 /**
