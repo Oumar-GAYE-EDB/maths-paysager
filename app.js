@@ -17,12 +17,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const selectForme = document.getElementById("forme");
   const champsForme = document.getElementById("champs-forme");
   const btnCalculerForme = document.getElementById("btn-calculer-forme");
+  const btnResetForme = document.getElementById("btn-reset-forme");
   const resultatForme = document.getElementById("resultat-forme");
   const schemaForme = document.getElementById("schema-forme");
 
   const selectPourcent = document.getElementById("type-pourcent");
   const champsPourcent = document.getElementById("champs-pourcent");
   const btnCalculerPourcent = document.getElementById("btn-calculer-pourcent");
+  const btnResetPourcent = document.getElementById("btn-reset-pourcent");
   const resultatPourcent = document.getElementById("resultat-pourcent");
 
   // --- Afficher les champs dès le chargement ---
@@ -54,6 +56,20 @@ document.addEventListener("DOMContentLoaded", function () {
     calculerPourcentage(selectPourcent.value, champsPourcent, resultatPourcent);
   });
 
+  // --- Clic sur "Réinitialiser" pour les formes ---
+  if (btnResetForme) {
+    btnResetForme.addEventListener("click", function () {
+      reinitialiserSectionFormes(selectForme, champsForme, resultatForme, schemaForme);
+    });
+  }
+
+  // --- Clic sur "Réinitialiser" pour les pourcentages ---
+  if (btnResetPourcent) {
+    btnResetPourcent.addEventListener("click", function () {
+      reinitialiserSectionPourcentages(selectPourcent, champsPourcent, resultatPourcent);
+    });
+  }
+
   // --- Mode sombre / clair ---
   initialiserTheme();
 });
@@ -68,10 +84,16 @@ function initialiserTheme() {
   const boutonTheme = document.querySelector("[data-theme-toggle]");
   const racine = document.documentElement;
 
-  // On détecte la préférence du système (sombre ou clair)
-  let theme = window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
+  // Clé utilisée pour mémoriser le thème choisi par l'utilisateur
+  const CLE_THEME = "maths-paysager-theme";
+
+  // 1) On essaie de relire le thème enregistré (priorité à l'utilisateur)
+  const themeEnregistre = localStorage.getItem(CLE_THEME);
+
+  // 2) Sinon, on détecte la préférence du système (sombre ou clair)
+  let theme = themeEnregistre
+    ? themeEnregistre
+    : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 
   // On applique le thème détecté
   racine.setAttribute("data-theme", theme);
@@ -83,8 +105,32 @@ function initialiserTheme() {
       theme = theme === "dark" ? "light" : "dark";
       racine.setAttribute("data-theme", theme);
       mettreAJourIconeTheme(boutonTheme, theme);
+
+      // On mémorise le choix pour les prochaines visites
+      localStorage.setItem(CLE_THEME, theme);
     });
   }
+}
+
+/**
+ * Remet la section formes dans son état initial
+ */
+function reinitialiserSectionFormes(selectForme, champsForme, resultatForme, schemaForme) {
+  selectForme.selectedIndex = 0;
+  afficherChampsFormes(selectForme.value, champsForme);
+  resultatForme.innerHTML = "";
+  resultatForme.className = "resultat";
+  schemaForme.innerHTML = "";
+}
+
+/**
+ * Remet la section pourcentages dans son état initial
+ */
+function reinitialiserSectionPourcentages(selectPourcent, champsPourcent, resultatPourcent) {
+  selectPourcent.selectedIndex = 0;
+  afficherChampsPourcent(selectPourcent.value, champsPourcent);
+  resultatPourcent.innerHTML = "";
+  resultatPourcent.className = "resultat";
 }
 
 /**
@@ -158,8 +204,10 @@ function afficherChampsFormes(forme, conteneur) {
         '<div class="form-group">' +
         '  <label for="' + champ.id + '">' + champ.label + "</label>" +
         '  <input type="number" id="' + champ.id + '" ' +
+        '    aria-describedby="' + champ.id + '-erreur" ' +
         '    placeholder="' + champ.placeholder + '" ' +
         '    step="0.01" min="0">' +
+        '  <p class="field-error" id="' + champ.id + '-erreur" aria-live="polite"></p>' +
         "</div>"
       );
     })
@@ -204,8 +252,10 @@ function afficherChampsPourcent(type, conteneur) {
         '<div class="form-group">' +
         '  <label for="' + champ.id + '">' + champ.label + "</label>" +
         '  <input type="number" id="' + champ.id + '" ' +
+        '    aria-describedby="' + champ.id + '-erreur" ' +
         '    placeholder="' + champ.placeholder + '" ' +
-        '    step="0.01">' +
+        '    step="0.01" min="0">' +
+        '  <p class="field-error" id="' + champ.id + '-erreur" aria-live="polite"></p>' +
         "</div>"
       );
     })
@@ -225,8 +275,12 @@ function afficherChampsPourcent(type, conteneur) {
  * @param {HTMLElement} schema - La zone d'affichage du schéma
  */
 function calculerForme(forme, conteneur, resultat, schema) {
+  effacerErreursChamps(conteneur);
+
   // Variable pour stocker l'aire, le périmètre et la formule
   let aire, perimetre, formuleAire, formulePerimetre;
+  let etapesAire = [];
+  let etapesPerimetre = [];
 
   // On utilise un "switch" pour choisir la bonne formule
   switch (forme) {
@@ -238,6 +292,8 @@ function calculerForme(forme, conteneur, resultat, schema) {
 
       // Vérification : les valeurs doivent être positives
       if (!valide(L, l)) {
+        if (!valide(L)) afficherErreurChamp("longueur", "Entrez une longueur positive.");
+        if (!valide(l)) afficherErreurChamp("largeur", "Entrez une largeur positive.");
         afficherErreur(resultat, "Veuillez entrer des valeurs positives.");
         schema.innerHTML = "";
         return;
@@ -252,6 +308,16 @@ function calculerForme(forme, conteneur, resultat, schema) {
       // On prépare le détail de la formule
       formuleAire = "Aire = " + L + " × " + l + " = " + arrondir(aire) + " m²";
       formulePerimetre = "Périmètre = 2 × (" + L + " + " + l + ") = " + arrondir(perimetre) + " m";
+      etapesAire = [
+        "Je repère les dimensions : longueur = " + L + " m et largeur = " + l + " m.",
+        "J'applique la formule de l'aire du rectangle : L × l.",
+        "Je calcule : " + L + " × " + l + " = " + arrondir(aire) + " m².",
+      ];
+      etapesPerimetre = [
+        "Je calcule d'abord la somme longueur + largeur : " + L + " + " + l + ".",
+        "Je multiplie par 2 pour avoir les 4 côtés.",
+        "Résultat : périmètre = " + arrondir(perimetre) + " m.",
+      ];
 
       // On dessine le schéma du rectangle
       dessinerSchema(schema, forme, { L: L, l: l });
@@ -263,6 +329,7 @@ function calculerForme(forme, conteneur, resultat, schema) {
       const c = lireValeur("cote");
 
       if (!valide(c)) {
+        afficherErreurChamp("cote", "Entrez un côté positif.");
         afficherErreur(resultat, "Veuillez entrer une valeur positive.");
         schema.innerHTML = "";
         return;
@@ -276,6 +343,16 @@ function calculerForme(forme, conteneur, resultat, schema) {
 
       formuleAire = "Aire = " + c + " × " + c + " = " + arrondir(aire) + " m²";
       formulePerimetre = "Périmètre = 4 × " + c + " = " + arrondir(perimetre) + " m";
+      etapesAire = [
+        "Je repère le côté du carré : " + c + " m.",
+        "J'applique la formule : côté × côté.",
+        "Je calcule : " + c + " × " + c + " = " + arrondir(aire) + " m².",
+      ];
+      etapesPerimetre = [
+        "Un carré a 4 côtés égaux.",
+        "Je fais 4 × " + c + ".",
+        "Résultat : périmètre = " + arrondir(perimetre) + " m.",
+      ];
 
       dessinerSchema(schema, forme, { c: c });
       break;
@@ -286,6 +363,7 @@ function calculerForme(forme, conteneur, resultat, schema) {
       const r = lireValeur("rayon");
 
       if (!valide(r)) {
+        afficherErreurChamp("rayon", "Entrez un rayon positif.");
         afficherErreur(resultat, "Veuillez entrer une valeur positive.");
         schema.innerHTML = "";
         return;
@@ -299,6 +377,16 @@ function calculerForme(forme, conteneur, resultat, schema) {
 
       formuleAire = "Aire = π × " + r + "² = " + arrondir(aire) + " m²";
       formulePerimetre = "Périmètre = 2 × π × " + r + " = " + arrondir(perimetre) + " m";
+      etapesAire = [
+        "Je repère le rayon : " + r + " m.",
+        "J'élève le rayon au carré : " + r + " × " + r + ".",
+        "Je multiplie par π pour obtenir l'aire : " + arrondir(aire) + " m².",
+      ];
+      etapesPerimetre = [
+        "J'applique la formule du périmètre du cercle : 2 × π × rayon.",
+        "Je remplace le rayon par " + r + ".",
+        "Résultat : périmètre = " + arrondir(perimetre) + " m.",
+      ];
 
       dessinerSchema(schema, forme, { r: r });
       break;
@@ -315,6 +403,8 @@ function calculerForme(forme, conteneur, resultat, schema) {
       const c3 = c3Input && c3Input.value !== "" ? lireValeur("cote3") : b;
 
       if (!valide(b, h)) {
+        if (!valide(b)) afficherErreurChamp("base", "La base doit être positive.");
+        if (!valide(h)) afficherErreurChamp("hauteur", "La hauteur doit être positive.");
         afficherErreur(resultat, "La base et la hauteur sont obligatoires.");
         schema.innerHTML = "";
         return;
@@ -334,6 +424,22 @@ function calculerForme(forme, conteneur, resultat, schema) {
       }
 
       formuleAire = "Aire = (" + b + " × " + h + ") ÷ 2 = " + arrondir(aire) + " m²";
+      etapesAire = [
+        "Je prends la base (" + b + " m) et la hauteur (" + h + " m).",
+        "Je calcule base × hauteur : " + b + " × " + h + ".",
+        "Je divise par 2 : aire = " + arrondir(aire) + " m².",
+      ];
+      etapesPerimetre = perimetre !== null
+        ? [
+            "Je repère les 3 côtés : " + c1 + ", " + c2 + " et " + c3 + " m.",
+            "Je fais la somme des côtés.",
+            "Résultat : périmètre = " + arrondir(perimetre) + " m.",
+          ]
+        : [
+            "Le périmètre d'un triangle = côté 1 + côté 2 + côté 3.",
+            "Il manque au moins une mesure de côté.",
+            "Complète les 3 côtés pour terminer le calcul.",
+          ];
 
       dessinerSchema(schema, forme, { b: b, h: h });
       break;
@@ -348,6 +454,9 @@ function calculerForme(forme, conteneur, resultat, schema) {
       const cD = lireValeur("coteD");
 
       if (!valide(B1, B2, h)) {
+        if (!valide(B1)) afficherErreurChamp("base1", "La grande base doit être positive.");
+        if (!valide(B2)) afficherErreurChamp("base2", "La petite base doit être positive.");
+        if (!valide(h)) afficherErreurChamp("hauteur", "La hauteur doit être positive.");
         afficherErreur(resultat, "Les deux bases et la hauteur sont obligatoires.");
         schema.innerHTML = "";
         return;
@@ -367,6 +476,22 @@ function calculerForme(forme, conteneur, resultat, schema) {
       }
 
       formuleAire = "Aire = ((" + B1 + " + " + B2 + ") × " + h + ") ÷ 2 = " + arrondir(aire) + " m²";
+      etapesAire = [
+        "Je repère les deux bases : " + B1 + " m et " + B2 + " m, et la hauteur : " + h + " m.",
+        "Je calcule (base 1 + base 2) × hauteur.",
+        "Je divise par 2 : aire = " + arrondir(aire) + " m².",
+      ];
+      etapesPerimetre = perimetre !== null
+        ? [
+            "Je prends les 4 côtés du trapèze.",
+            "Je fais la somme : " + B1 + " + " + B2 + " + " + cG + " + " + cD + ".",
+            "Résultat : périmètre = " + arrondir(perimetre) + " m.",
+          ]
+        : [
+            "Le périmètre d'un trapèze = somme des 4 côtés.",
+            "Il manque un côté latéral.",
+            "Complète côté gauche et côté droit pour calculer le périmètre.",
+          ];
 
       dessinerSchema(schema, forme, { B1: B1, B2: B2, h: h });
       break;
@@ -374,7 +499,7 @@ function calculerForme(forme, conteneur, resultat, schema) {
   }
 
   // --- Affichage du résultat ---
-  afficherResultat(resultat, aire, perimetre, formuleAire, formulePerimetre);
+  afficherResultat(resultat, aire, perimetre, formuleAire, formulePerimetre, etapesAire, etapesPerimetre, forme);
 }
 
 
@@ -389,7 +514,10 @@ function calculerForme(forme, conteneur, resultat, schema) {
  * @param {HTMLElement} resultat - La zone d'affichage du résultat
  */
 function calculerPourcentage(type, conteneur, resultat) {
+  effacerErreursChamps(conteneur);
+
   let valeurResultat, formule;
+  let etapes = [];
 
   switch (type) {
     // --- Trouver X% d'un nombre ---
@@ -398,6 +526,8 @@ function calculerPourcentage(type, conteneur, resultat) {
       const nombre = lireValeur("nombre-val");
 
       if (pourcent === null || nombre === null) {
+        if (pourcent === null) afficherErreurChamp("pourcent-val", "Renseigne le pourcentage.");
+        if (nombre === null) afficherErreurChamp("nombre-val", "Renseigne le nombre.");
         afficherErreur(resultat, "Veuillez remplir les deux champs.");
         return;
       }
@@ -405,8 +535,12 @@ function calculerPourcentage(type, conteneur, resultat) {
       // Formule : Résultat = (Pourcentage × Nombre) ÷ 100
       valeurResultat = (pourcent * nombre) / 100;
       formule = pourcent + "% de " + nombre + " = (" + pourcent + " × " + nombre + ") ÷ 100 = " + arrondir(valeurResultat);
-
-      afficherResultatPourcent(resultat, arrondir(valeurResultat), formule);
+      etapes = [
+        "Je transforme " + pourcent + "% en opération : (pourcentage × nombre) ÷ 100.",
+        "Je calcule " + pourcent + " × " + nombre + ".",
+        "Je divise par 100 : résultat = " + arrondir(valeurResultat) + ".",
+      ];
+      afficherResultatPourcent(resultat, arrondir(valeurResultat), formule, etapes, type);
       break;
     }
 
@@ -416,10 +550,13 @@ function calculerPourcentage(type, conteneur, resultat) {
       const total = lireValeur("total-val");
 
       if (partie === null || total === null) {
+        if (partie === null) afficherErreurChamp("partie-val", "Renseigne la partie.");
+        if (total === null) afficherErreurChamp("total-val", "Renseigne le total.");
         afficherErreur(resultat, "Veuillez remplir les deux champs.");
         return;
       }
       if (total === 0) {
+        afficherErreurChamp("total-val", "Le total doit être supérieur à 0.");
         afficherErreur(resultat, "Le total ne peut pas être zéro.");
         return;
       }
@@ -427,8 +564,12 @@ function calculerPourcentage(type, conteneur, resultat) {
       // Formule : Pourcentage = (Partie ÷ Total) × 100
       valeurResultat = (partie / total) * 100;
       formule = "(" + partie + " ÷ " + total + ") × 100 = " + arrondir(valeurResultat) + " %";
-
-      afficherResultatPourcent(resultat, arrondir(valeurResultat) + " %", formule);
+      etapes = [
+        "Je fais partie ÷ total : " + partie + " ÷ " + total + ".",
+        "Je multiplie le résultat par 100.",
+        "Je trouve : " + arrondir(valeurResultat) + " %.",
+      ];
+      afficherResultatPourcent(resultat, arrondir(valeurResultat) + " %", formule, etapes, type);
       break;
     }
 
@@ -438,6 +579,8 @@ function calculerPourcentage(type, conteneur, resultat) {
       const aug = lireValeur("pourcent-aug");
 
       if (depart === null || aug === null) {
+        if (depart === null) afficherErreurChamp("valeur-depart", "Renseigne la valeur de départ.");
+        if (aug === null) afficherErreurChamp("pourcent-aug", "Renseigne le pourcentage d'augmentation.");
         afficherErreur(resultat, "Veuillez remplir les deux champs.");
         return;
       }
@@ -447,8 +590,12 @@ function calculerPourcentage(type, conteneur, resultat) {
       const augmentation = (depart * aug) / 100;
       valeurResultat = depart + augmentation;
       formule = depart + " + (" + depart + " × " + aug + "% ) = " + depart + " + " + arrondir(augmentation) + " = " + arrondir(valeurResultat);
-
-      afficherResultatPourcent(resultat, arrondir(valeurResultat), formule);
+      etapes = [
+        "Je calcule le montant de l'augmentation : (" + depart + " × " + aug + ") ÷ 100.",
+        "J'obtiens " + arrondir(augmentation) + ".",
+        "J'ajoute à la valeur de départ : " + depart + " + " + arrondir(augmentation) + ".",
+      ];
+      afficherResultatPourcent(resultat, arrondir(valeurResultat), formule, etapes, type);
       break;
     }
 
@@ -458,6 +605,8 @@ function calculerPourcentage(type, conteneur, resultat) {
       const red = lireValeur("pourcent-red");
 
       if (depart === null || red === null) {
+        if (depart === null) afficherErreurChamp("valeur-depart", "Renseigne la valeur de départ.");
+        if (red === null) afficherErreurChamp("pourcent-red", "Renseigne le pourcentage de réduction.");
         afficherErreur(resultat, "Veuillez remplir les deux champs.");
         return;
       }
@@ -467,8 +616,12 @@ function calculerPourcentage(type, conteneur, resultat) {
       const reduction = (depart * red) / 100;
       valeurResultat = depart - reduction;
       formule = depart + " - (" + depart + " × " + red + "% ) = " + depart + " - " + arrondir(reduction) + " = " + arrondir(valeurResultat);
-
-      afficherResultatPourcent(resultat, arrondir(valeurResultat), formule);
+      etapes = [
+        "Je calcule le montant de la réduction : (" + depart + " × " + red + ") ÷ 100.",
+        "J'obtiens " + arrondir(reduction) + ".",
+        "Je retire ce montant à la valeur de départ.",
+      ];
+      afficherResultatPourcent(resultat, arrondir(valeurResultat), formule, etapes, type);
       break;
     }
   }
@@ -512,6 +665,40 @@ function arrondir(n) {
   return n.toFixed(2).replace(".", ",");
 }
 
+/**
+ * Supprime les erreurs affichées dans un conteneur de champs
+ * @param {HTMLElement} conteneur
+ */
+function effacerErreursChamps(conteneur) {
+  if (!conteneur) return;
+  const erreurs = conteneur.querySelectorAll(".field-error");
+  const champs = conteneur.querySelectorAll("input");
+
+  erreurs.forEach(function (zone) {
+    zone.textContent = "";
+  });
+
+  champs.forEach(function (champ) {
+    champ.removeAttribute("aria-invalid");
+  });
+}
+
+/**
+ * Affiche une erreur liée à un champ donné
+ * @param {string} idChamp
+ * @param {string} message
+ */
+function afficherErreurChamp(idChamp, message) {
+  const champ = document.getElementById(idChamp);
+  const zoneErreur = document.getElementById(idChamp + "-erreur");
+  if (!champ || !zoneErreur) return;
+
+  const unChampDejaInvalide = document.querySelector('input[aria-invalid="true"]');
+  champ.setAttribute("aria-invalid", "true");
+  zoneErreur.textContent = message;
+  if (!unChampDejaInvalide) champ.focus();
+}
+
 
 // ============================================================
 // 8. AFFICHAGE DES RÉSULTATS
@@ -520,7 +707,7 @@ function arrondir(n) {
 /**
  * Affiche le résultat des calculs d'aire et de périmètre
  */
-function afficherResultat(zone, aire, perimetre, formuleAire, formulePerimetre) {
+function afficherResultat(zone, aire, perimetre, formuleAire, formulePerimetre, etapesAire, etapesPerimetre, forme) {
   zone.className = "resultat resultat--visible";
 
   let html = "";
@@ -547,20 +734,62 @@ function afficherResultat(zone, aire, perimetre, formuleAire, formulePerimetre) 
     "  " + formuleAire + "<br>" + formulePerimetre +
     "</div>";
 
+  html += genererBlocEtapes("Étapes pour l'aire", etapesAire);
+  html += genererBlocEtapes("Étapes pour le périmètre", etapesPerimetre);
+  html +=
+    '<p class="resultat__astuce"><strong>Astuce :</strong> ' +
+    genererAstuceForme(forme) +
+    "</p>";
+
   zone.innerHTML = html;
 }
 
 /**
  * Affiche le résultat d'un calcul de pourcentage
  */
-function afficherResultatPourcent(zone, valeur, formule) {
+function afficherResultatPourcent(zone, valeur, formule, etapes, type) {
   zone.className = "resultat resultat--visible";
   zone.innerHTML =
     '<div class="resultat__ligne">' +
     '  <span class="resultat__label">Résultat :</span>' +
     '  <span class="resultat__valeur">' + valeur + "</span>" +
     "</div>" +
-    '<div class="resultat__formule">' + formule + "</div>";
+    '<div class="resultat__formule">' + formule + "</div>" +
+    genererBlocEtapes("Étapes du calcul", etapes) +
+    '<p class="resultat__astuce"><strong>Astuce :</strong> ' + genererAstucePourcentage(type) + "</p>";
+}
+
+function genererBlocEtapes(titre, etapes) {
+  if (!etapes || etapes.length === 0) return "";
+  return (
+    '<div class="resultat__etapes">' +
+    '  <p class="resultat__etapes-titre">' + titre + "</p>" +
+    '  <ol class="resultat__etapes-liste">' +
+    etapes.map(function (etape) { return "<li>" + etape + "</li>"; }).join("") +
+    "  </ol>" +
+    "</div>"
+  );
+}
+
+function genererAstuceForme(forme) {
+  const astuces = {
+    rectangle: "L'aire s'exprime en m², le périmètre en m. Vérifie bien l'unité finale.",
+    carre: "Si tu doubles le côté, l'aire est multipliée par 4.",
+    cercle: "Ne confonds pas rayon et diamètre : diamètre = 2 × rayon.",
+    triangle: "La hauteur doit être perpendiculaire à la base choisie.",
+    trapeze: "Pour l'aire, seuls les deux bases parallèles et la hauteur comptent.",
+  };
+  return astuces[forme] || "Relis la formule avant de remplacer par les valeurs.";
+}
+
+function genererAstucePourcentage(type) {
+  const astuces = {
+    "trouver-pourcentage": "Pour 10%, tu peux diviser par 10 puis ajuster.",
+    "quel-pourcentage": "Le total est toujours la référence (100%).",
+    augmentation: "Augmenter de 20% revient à multiplier par 1,20.",
+    reduction: "Réduire de 20% revient à multiplier par 0,80.",
+  };
+  return astuces[type] || "Pense à vérifier la cohérence du résultat obtenu.";
 }
 
 /**
