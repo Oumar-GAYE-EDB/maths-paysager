@@ -273,6 +273,8 @@ function afficherChampsPourcent(type, conteneur) {
 function calculerForme(forme, conteneur, resultat, schema) {
   // Variable pour stocker l'aire, le périmètre et la formule
   let aire, perimetre, formuleAire, formulePerimetre;
+  let etapesAire = [];
+  let etapesPerimetre = [];
 
   // On utilise un "switch" pour choisir la bonne formule
   switch (forme) {
@@ -298,6 +300,16 @@ function calculerForme(forme, conteneur, resultat, schema) {
       // On prépare le détail de la formule
       formuleAire = "Aire = " + L + " × " + l + " = " + arrondir(aire) + " m²";
       formulePerimetre = "Périmètre = 2 × (" + L + " + " + l + ") = " + arrondir(perimetre) + " m";
+      etapesAire = [
+        "Je repère les dimensions : longueur = " + L + " m et largeur = " + l + " m.",
+        "J'applique la formule de l'aire du rectangle : L × l.",
+        "Je calcule : " + L + " × " + l + " = " + arrondir(aire) + " m².",
+      ];
+      etapesPerimetre = [
+        "Je calcule d'abord la somme longueur + largeur : " + L + " + " + l + ".",
+        "Je multiplie par 2 pour avoir les 4 côtés.",
+        "Résultat : périmètre = " + arrondir(perimetre) + " m.",
+      ];
 
       // On dessine le schéma du rectangle
       dessinerSchema(schema, forme, { L: L, l: l });
@@ -322,6 +334,16 @@ function calculerForme(forme, conteneur, resultat, schema) {
 
       formuleAire = "Aire = " + c + " × " + c + " = " + arrondir(aire) + " m²";
       formulePerimetre = "Périmètre = 4 × " + c + " = " + arrondir(perimetre) + " m";
+      etapesAire = [
+        "Je repère le côté du carré : " + c + " m.",
+        "J'applique la formule : côté × côté.",
+        "Je calcule : " + c + " × " + c + " = " + arrondir(aire) + " m².",
+      ];
+      etapesPerimetre = [
+        "Un carré a 4 côtés égaux.",
+        "Je fais 4 × " + c + ".",
+        "Résultat : périmètre = " + arrondir(perimetre) + " m.",
+      ];
 
       dessinerSchema(schema, forme, { c: c });
       break;
@@ -345,6 +367,16 @@ function calculerForme(forme, conteneur, resultat, schema) {
 
       formuleAire = "Aire = π × " + r + "² = " + arrondir(aire) + " m²";
       formulePerimetre = "Périmètre = 2 × π × " + r + " = " + arrondir(perimetre) + " m";
+      etapesAire = [
+        "Je repère le rayon : " + r + " m.",
+        "J'élève le rayon au carré : " + r + " × " + r + ".",
+        "Je multiplie par π pour obtenir l'aire : " + arrondir(aire) + " m².",
+      ];
+      etapesPerimetre = [
+        "J'applique la formule du périmètre du cercle : 2 × π × rayon.",
+        "Je remplace le rayon par " + r + ".",
+        "Résultat : périmètre = " + arrondir(perimetre) + " m.",
+      ];
 
       dessinerSchema(schema, forme, { r: r });
       break;
@@ -380,6 +412,22 @@ function calculerForme(forme, conteneur, resultat, schema) {
       }
 
       formuleAire = "Aire = (" + b + " × " + h + ") ÷ 2 = " + arrondir(aire) + " m²";
+      etapesAire = [
+        "Je prends la base (" + b + " m) et la hauteur (" + h + " m).",
+        "Je calcule base × hauteur : " + b + " × " + h + ".",
+        "Je divise par 2 : aire = " + arrondir(aire) + " m².",
+      ];
+      etapesPerimetre = perimetre !== null
+        ? [
+            "Je repère les 3 côtés : " + c1 + ", " + c2 + " et " + c3 + " m.",
+            "Je fais la somme des côtés.",
+            "Résultat : périmètre = " + arrondir(perimetre) + " m.",
+          ]
+        : [
+            "Le périmètre d'un triangle = côté 1 + côté 2 + côté 3.",
+            "Il manque au moins une mesure de côté.",
+            "Complète les 3 côtés pour terminer le calcul.",
+          ];
 
       dessinerSchema(schema, forme, { b: b, h: h });
       break;
@@ -413,6 +461,22 @@ function calculerForme(forme, conteneur, resultat, schema) {
       }
 
       formuleAire = "Aire = ((" + B1 + " + " + B2 + ") × " + h + ") ÷ 2 = " + arrondir(aire) + " m²";
+      etapesAire = [
+        "Je repère les deux bases : " + B1 + " m et " + B2 + " m, et la hauteur : " + h + " m.",
+        "Je calcule (base 1 + base 2) × hauteur.",
+        "Je divise par 2 : aire = " + arrondir(aire) + " m².",
+      ];
+      etapesPerimetre = perimetre !== null
+        ? [
+            "Je prends les 4 côtés du trapèze.",
+            "Je fais la somme : " + B1 + " + " + B2 + " + " + cG + " + " + cD + ".",
+            "Résultat : périmètre = " + arrondir(perimetre) + " m.",
+          ]
+        : [
+            "Le périmètre d'un trapèze = somme des 4 côtés.",
+            "Il manque un côté latéral.",
+            "Complète côté gauche et côté droit pour calculer le périmètre.",
+          ];
 
       dessinerSchema(schema, forme, { B1: B1, B2: B2, h: h });
       break;
@@ -420,7 +484,7 @@ function calculerForme(forme, conteneur, resultat, schema) {
   }
 
   // --- Affichage du résultat ---
-  afficherResultat(resultat, aire, perimetre, formuleAire, formulePerimetre);
+  afficherResultat(resultat, aire, perimetre, formuleAire, formulePerimetre, etapesAire, etapesPerimetre, forme);
 }
 
 
@@ -436,6 +500,7 @@ function calculerForme(forme, conteneur, resultat, schema) {
  */
 function calculerPourcentage(type, conteneur, resultat) {
   let valeurResultat, formule;
+  let etapes = [];
 
   switch (type) {
     // --- Trouver X% d'un nombre ---
@@ -451,8 +516,12 @@ function calculerPourcentage(type, conteneur, resultat) {
       // Formule : Résultat = (Pourcentage × Nombre) ÷ 100
       valeurResultat = (pourcent * nombre) / 100;
       formule = pourcent + "% de " + nombre + " = (" + pourcent + " × " + nombre + ") ÷ 100 = " + arrondir(valeurResultat);
-
-      afficherResultatPourcent(resultat, arrondir(valeurResultat), formule);
+      etapes = [
+        "Je transforme " + pourcent + "% en opération : (pourcentage × nombre) ÷ 100.",
+        "Je calcule " + pourcent + " × " + nombre + ".",
+        "Je divise par 100 : résultat = " + arrondir(valeurResultat) + ".",
+      ];
+      afficherResultatPourcent(resultat, arrondir(valeurResultat), formule, etapes, type);
       break;
     }
 
@@ -473,8 +542,12 @@ function calculerPourcentage(type, conteneur, resultat) {
       // Formule : Pourcentage = (Partie ÷ Total) × 100
       valeurResultat = (partie / total) * 100;
       formule = "(" + partie + " ÷ " + total + ") × 100 = " + arrondir(valeurResultat) + " %";
-
-      afficherResultatPourcent(resultat, arrondir(valeurResultat) + " %", formule);
+      etapes = [
+        "Je fais partie ÷ total : " + partie + " ÷ " + total + ".",
+        "Je multiplie le résultat par 100.",
+        "Je trouve : " + arrondir(valeurResultat) + " %.",
+      ];
+      afficherResultatPourcent(resultat, arrondir(valeurResultat) + " %", formule, etapes, type);
       break;
     }
 
@@ -493,8 +566,12 @@ function calculerPourcentage(type, conteneur, resultat) {
       const augmentation = (depart * aug) / 100;
       valeurResultat = depart + augmentation;
       formule = depart + " + (" + depart + " × " + aug + "% ) = " + depart + " + " + arrondir(augmentation) + " = " + arrondir(valeurResultat);
-
-      afficherResultatPourcent(resultat, arrondir(valeurResultat), formule);
+      etapes = [
+        "Je calcule le montant de l'augmentation : (" + depart + " × " + aug + ") ÷ 100.",
+        "J'obtiens " + arrondir(augmentation) + ".",
+        "J'ajoute à la valeur de départ : " + depart + " + " + arrondir(augmentation) + ".",
+      ];
+      afficherResultatPourcent(resultat, arrondir(valeurResultat), formule, etapes, type);
       break;
     }
 
@@ -513,8 +590,12 @@ function calculerPourcentage(type, conteneur, resultat) {
       const reduction = (depart * red) / 100;
       valeurResultat = depart - reduction;
       formule = depart + " - (" + depart + " × " + red + "% ) = " + depart + " - " + arrondir(reduction) + " = " + arrondir(valeurResultat);
-
-      afficherResultatPourcent(resultat, arrondir(valeurResultat), formule);
+      etapes = [
+        "Je calcule le montant de la réduction : (" + depart + " × " + red + ") ÷ 100.",
+        "J'obtiens " + arrondir(reduction) + ".",
+        "Je retire ce montant à la valeur de départ.",
+      ];
+      afficherResultatPourcent(resultat, arrondir(valeurResultat), formule, etapes, type);
       break;
     }
   }
@@ -566,7 +647,7 @@ function arrondir(n) {
 /**
  * Affiche le résultat des calculs d'aire et de périmètre
  */
-function afficherResultat(zone, aire, perimetre, formuleAire, formulePerimetre) {
+function afficherResultat(zone, aire, perimetre, formuleAire, formulePerimetre, etapesAire, etapesPerimetre, forme) {
   zone.className = "resultat resultat--visible";
 
   let html = "";
@@ -593,20 +674,62 @@ function afficherResultat(zone, aire, perimetre, formuleAire, formulePerimetre) 
     "  " + formuleAire + "<br>" + formulePerimetre +
     "</div>";
 
+  html += genererBlocEtapes("Étapes pour l'aire", etapesAire);
+  html += genererBlocEtapes("Étapes pour le périmètre", etapesPerimetre);
+  html +=
+    '<p class="resultat__astuce"><strong>Astuce :</strong> ' +
+    genererAstuceForme(forme) +
+    "</p>";
+
   zone.innerHTML = html;
 }
 
 /**
  * Affiche le résultat d'un calcul de pourcentage
  */
-function afficherResultatPourcent(zone, valeur, formule) {
+function afficherResultatPourcent(zone, valeur, formule, etapes, type) {
   zone.className = "resultat resultat--visible";
   zone.innerHTML =
     '<div class="resultat__ligne">' +
     '  <span class="resultat__label">Résultat :</span>' +
     '  <span class="resultat__valeur">' + valeur + "</span>" +
     "</div>" +
-    '<div class="resultat__formule">' + formule + "</div>";
+    '<div class="resultat__formule">' + formule + "</div>" +
+    genererBlocEtapes("Étapes du calcul", etapes) +
+    '<p class="resultat__astuce"><strong>Astuce :</strong> ' + genererAstucePourcentage(type) + "</p>";
+}
+
+function genererBlocEtapes(titre, etapes) {
+  if (!etapes || etapes.length === 0) return "";
+  return (
+    '<div class="resultat__etapes">' +
+    '  <p class="resultat__etapes-titre">' + titre + "</p>" +
+    '  <ol class="resultat__etapes-liste">' +
+    etapes.map(function (etape) { return "<li>" + etape + "</li>"; }).join("") +
+    "  </ol>" +
+    "</div>"
+  );
+}
+
+function genererAstuceForme(forme) {
+  const astuces = {
+    rectangle: "L'aire s'exprime en m², le périmètre en m. Vérifie bien l'unité finale.",
+    carre: "Si tu doubles le côté, l'aire est multipliée par 4.",
+    cercle: "Ne confonds pas rayon et diamètre : diamètre = 2 × rayon.",
+    triangle: "La hauteur doit être perpendiculaire à la base choisie.",
+    trapeze: "Pour l'aire, seuls les deux bases parallèles et la hauteur comptent.",
+  };
+  return astuces[forme] || "Relis la formule avant de remplacer par les valeurs.";
+}
+
+function genererAstucePourcentage(type) {
+  const astuces = {
+    "trouver-pourcentage": "Pour 10%, tu peux diviser par 10 puis ajuster.",
+    "quel-pourcentage": "Le total est toujours la référence (100%).",
+    augmentation: "Augmenter de 20% revient à multiplier par 1,20.",
+    reduction: "Réduire de 20% revient à multiplier par 0,80.",
+  };
+  return astuces[type] || "Pense à vérifier la cohérence du résultat obtenu.";
 }
 
 /**
