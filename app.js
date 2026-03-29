@@ -204,8 +204,10 @@ function afficherChampsFormes(forme, conteneur) {
         '<div class="form-group">' +
         '  <label for="' + champ.id + '">' + champ.label + "</label>" +
         '  <input type="number" id="' + champ.id + '" ' +
+        '    aria-describedby="' + champ.id + '-erreur" ' +
         '    placeholder="' + champ.placeholder + '" ' +
         '    step="0.01" min="0">' +
+        '  <p class="field-error" id="' + champ.id + '-erreur" aria-live="polite"></p>' +
         "</div>"
       );
     })
@@ -250,8 +252,10 @@ function afficherChampsPourcent(type, conteneur) {
         '<div class="form-group">' +
         '  <label for="' + champ.id + '">' + champ.label + "</label>" +
         '  <input type="number" id="' + champ.id + '" ' +
+        '    aria-describedby="' + champ.id + '-erreur" ' +
         '    placeholder="' + champ.placeholder + '" ' +
-        '    step="0.01">' +
+        '    step="0.01" min="0">' +
+        '  <p class="field-error" id="' + champ.id + '-erreur" aria-live="polite"></p>' +
         "</div>"
       );
     })
@@ -271,6 +275,8 @@ function afficherChampsPourcent(type, conteneur) {
  * @param {HTMLElement} schema - La zone d'affichage du schéma
  */
 function calculerForme(forme, conteneur, resultat, schema) {
+  effacerErreursChamps(conteneur);
+
   // Variable pour stocker l'aire, le périmètre et la formule
   let aire, perimetre, formuleAire, formulePerimetre;
   let etapesAire = [];
@@ -286,6 +292,8 @@ function calculerForme(forme, conteneur, resultat, schema) {
 
       // Vérification : les valeurs doivent être positives
       if (!valide(L, l)) {
+        if (!valide(L)) afficherErreurChamp("longueur", "Entrez une longueur positive.");
+        if (!valide(l)) afficherErreurChamp("largeur", "Entrez une largeur positive.");
         afficherErreur(resultat, "Veuillez entrer des valeurs positives.");
         schema.innerHTML = "";
         return;
@@ -321,6 +329,7 @@ function calculerForme(forme, conteneur, resultat, schema) {
       const c = lireValeur("cote");
 
       if (!valide(c)) {
+        afficherErreurChamp("cote", "Entrez un côté positif.");
         afficherErreur(resultat, "Veuillez entrer une valeur positive.");
         schema.innerHTML = "";
         return;
@@ -354,6 +363,7 @@ function calculerForme(forme, conteneur, resultat, schema) {
       const r = lireValeur("rayon");
 
       if (!valide(r)) {
+        afficherErreurChamp("rayon", "Entrez un rayon positif.");
         afficherErreur(resultat, "Veuillez entrer une valeur positive.");
         schema.innerHTML = "";
         return;
@@ -393,6 +403,8 @@ function calculerForme(forme, conteneur, resultat, schema) {
       const c3 = c3Input && c3Input.value !== "" ? lireValeur("cote3") : b;
 
       if (!valide(b, h)) {
+        if (!valide(b)) afficherErreurChamp("base", "La base doit être positive.");
+        if (!valide(h)) afficherErreurChamp("hauteur", "La hauteur doit être positive.");
         afficherErreur(resultat, "La base et la hauteur sont obligatoires.");
         schema.innerHTML = "";
         return;
@@ -442,6 +454,9 @@ function calculerForme(forme, conteneur, resultat, schema) {
       const cD = lireValeur("coteD");
 
       if (!valide(B1, B2, h)) {
+        if (!valide(B1)) afficherErreurChamp("base1", "La grande base doit être positive.");
+        if (!valide(B2)) afficherErreurChamp("base2", "La petite base doit être positive.");
+        if (!valide(h)) afficherErreurChamp("hauteur", "La hauteur doit être positive.");
         afficherErreur(resultat, "Les deux bases et la hauteur sont obligatoires.");
         schema.innerHTML = "";
         return;
@@ -499,6 +514,8 @@ function calculerForme(forme, conteneur, resultat, schema) {
  * @param {HTMLElement} resultat - La zone d'affichage du résultat
  */
 function calculerPourcentage(type, conteneur, resultat) {
+  effacerErreursChamps(conteneur);
+
   let valeurResultat, formule;
   let etapes = [];
 
@@ -509,6 +526,8 @@ function calculerPourcentage(type, conteneur, resultat) {
       const nombre = lireValeur("nombre-val");
 
       if (pourcent === null || nombre === null) {
+        if (pourcent === null) afficherErreurChamp("pourcent-val", "Renseigne le pourcentage.");
+        if (nombre === null) afficherErreurChamp("nombre-val", "Renseigne le nombre.");
         afficherErreur(resultat, "Veuillez remplir les deux champs.");
         return;
       }
@@ -531,10 +550,13 @@ function calculerPourcentage(type, conteneur, resultat) {
       const total = lireValeur("total-val");
 
       if (partie === null || total === null) {
+        if (partie === null) afficherErreurChamp("partie-val", "Renseigne la partie.");
+        if (total === null) afficherErreurChamp("total-val", "Renseigne le total.");
         afficherErreur(resultat, "Veuillez remplir les deux champs.");
         return;
       }
       if (total === 0) {
+        afficherErreurChamp("total-val", "Le total doit être supérieur à 0.");
         afficherErreur(resultat, "Le total ne peut pas être zéro.");
         return;
       }
@@ -557,6 +579,8 @@ function calculerPourcentage(type, conteneur, resultat) {
       const aug = lireValeur("pourcent-aug");
 
       if (depart === null || aug === null) {
+        if (depart === null) afficherErreurChamp("valeur-depart", "Renseigne la valeur de départ.");
+        if (aug === null) afficherErreurChamp("pourcent-aug", "Renseigne le pourcentage d'augmentation.");
         afficherErreur(resultat, "Veuillez remplir les deux champs.");
         return;
       }
@@ -581,6 +605,8 @@ function calculerPourcentage(type, conteneur, resultat) {
       const red = lireValeur("pourcent-red");
 
       if (depart === null || red === null) {
+        if (depart === null) afficherErreurChamp("valeur-depart", "Renseigne la valeur de départ.");
+        if (red === null) afficherErreurChamp("pourcent-red", "Renseigne le pourcentage de réduction.");
         afficherErreur(resultat, "Veuillez remplir les deux champs.");
         return;
       }
@@ -637,6 +663,40 @@ function arrondir(n) {
   // On utilise toFixed(2) pour afficher 2 chiffres après la virgule
   // Puis on remplace le point par une virgule (convention française)
   return n.toFixed(2).replace(".", ",");
+}
+
+/**
+ * Supprime les erreurs affichées dans un conteneur de champs
+ * @param {HTMLElement} conteneur
+ */
+function effacerErreursChamps(conteneur) {
+  if (!conteneur) return;
+  const erreurs = conteneur.querySelectorAll(".field-error");
+  const champs = conteneur.querySelectorAll("input");
+
+  erreurs.forEach(function (zone) {
+    zone.textContent = "";
+  });
+
+  champs.forEach(function (champ) {
+    champ.removeAttribute("aria-invalid");
+  });
+}
+
+/**
+ * Affiche une erreur liée à un champ donné
+ * @param {string} idChamp
+ * @param {string} message
+ */
+function afficherErreurChamp(idChamp, message) {
+  const champ = document.getElementById(idChamp);
+  const zoneErreur = document.getElementById(idChamp + "-erreur");
+  if (!champ || !zoneErreur) return;
+
+  const unChampDejaInvalide = document.querySelector('input[aria-invalid="true"]');
+  champ.setAttribute("aria-invalid", "true");
+  zoneErreur.textContent = message;
+  if (!unChampDejaInvalide) champ.focus();
 }
 
 

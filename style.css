@@ -272,6 +272,26 @@ body {
   box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
+.form-group select:focus-visible,
+.form-group input:focus-visible,
+.btn:focus-visible,
+.theme-toggle:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 55%, #ffffff);
+  outline-offset: 2px;
+}
+
+.form-group input[aria-invalid="true"] {
+  border-color: var(--color-error);
+}
+
+.field-error {
+  min-height: 1.1em;
+  margin-top: var(--space-1);
+  color: var(--color-error);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+}
+
 /* Grille des champs de saisie */
 .form-fields {
   display: grid;
