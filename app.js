@@ -7,6 +7,11 @@
 // --- CONSTANTES ---
 // La valeur de Pi, utilisée pour les calculs du cercle
 const PI = Math.PI; // ≈ 3.14159265...
+const CLE_HISTORIQUE = "maths-paysager-historique";
+const CLE_PROGRESS = "maths-paysager-progression";
+const MAX_HISTORIQUE = 20;
+
+let exerciceActuel = null;
 
 // ============================================================
 // 1. INITIALISATION AU CHARGEMENT DE LA PAGE
@@ -26,6 +31,17 @@ document.addEventListener("DOMContentLoaded", function () {
   const btnCalculerPourcent = document.getElementById("btn-calculer-pourcent");
   const btnResetPourcent = document.getElementById("btn-reset-pourcent");
   const resultatPourcent = document.getElementById("resultat-pourcent");
+  const selectThemeExercice = document.getElementById("theme-exercice");
+  const selectNiveauExercice = document.getElementById("niveau-exercice");
+  const btnGenererExercice = document.getElementById("btn-generer-exercice");
+  const btnValiderExercice = document.getElementById("btn-valider-exercice");
+  const btnSuivantExercice = document.getElementById("btn-suivant-exercice");
+  const enonceExercice = document.getElementById("exercice-enonce");
+  const reponseExercice = document.getElementById("reponse-exercice");
+  const feedbackExercice = document.getElementById("feedback-exercice");
+  const progressionExercice = document.getElementById("progression-exercice");
+  const badgesExercice = document.getElementById("badges-exercice");
+  const historiqueExercice = document.getElementById("historique-exercice");
 
   // --- Afficher les champs dès le chargement ---
   afficherChampsFormes(selectForme.value, champsForme);
@@ -72,6 +88,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // --- Mode sombre / clair ---
   initialiserTheme();
+
+  // --- Mode exercices / progression ---
+  initialiserModeExercices({
+    selectThemeExercice: selectThemeExercice,
+    selectNiveauExercice: selectNiveauExercice,
+    btnGenererExercice: btnGenererExercice,
+    btnValiderExercice: btnValiderExercice,
+    btnSuivantExercice: btnSuivantExercice,
+    enonceExercice: enonceExercice,
+    reponseExercice: reponseExercice,
+    feedbackExercice: feedbackExercice,
+    progressionExercice: progressionExercice,
+    badgesExercice: badgesExercice,
+    historiqueExercice: historiqueExercice,
+  });
 });
 
 
@@ -151,6 +182,323 @@ function mettreAJourIconeTheme(bouton, theme) {
       '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
     bouton.setAttribute("aria-label", "Basculer en mode sombre");
   }
+}
+
+// ============================================================
+// 2B. MODE EXERCICES, PROGRESSION, BADGES, HISTORIQUE
+// ============================================================
+
+function initialiserModeExercices(ui) {
+  if (!ui || !ui.btnGenererExercice) return;
+
+  ui.btnGenererExercice.addEventListener("click", function () {
+    exerciceActuel = creerExercice(ui.selectThemeExercice.value, ui.selectNiveauExercice.value);
+    afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
+  });
+
+  ui.btnValiderExercice.addEventListener("click", function () {
+    corrigerExercice(ui, false);
+  });
+
+  ui.btnSuivantExercice.addEventListener("click", function () {
+    corrigerExercice(ui, true);
+  });
+
+  ui.reponseExercice.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      corrigerExercice(ui, false);
+    }
+  });
+
+  mettreAJourProgressionEtBadges(ui.progressionExercice, ui.badgesExercice);
+  afficherHistorique(ui.historiqueExercice);
+}
+
+function corrigerExercice(ui, passerAuSuivant) {
+  if (!exerciceActuel) {
+    ui.feedbackExercice.className = "resultat resultat--visible resultat--erreur";
+    ui.feedbackExercice.innerHTML = "Commence par générer un exercice.";
+    return;
+  }
+
+  const reponse = lireValeur("reponse-exercice");
+  if (!passerAuSuivant && reponse === null) {
+    ui.feedbackExercice.className = "resultat resultat--visible resultat--erreur";
+    ui.feedbackExercice.innerHTML = "Entre une réponse avant de valider.";
+    ui.reponseExercice.focus();
+    return;
+  }
+
+  if (!passerAuSuivant) {
+    const estCorrect = Math.abs(reponse - exerciceActuel.reponse) <= exerciceActuel.tolerance;
+    enregistrerTentativeExercice(exerciceActuel, reponse, estCorrect);
+    afficherFeedbackExercice(ui.feedbackExercice, exerciceActuel, reponse, estCorrect);
+    mettreAJourProgressionEtBadges(ui.progressionExercice, ui.badgesExercice);
+    afficherHistorique(ui.historiqueExercice);
+    return;
+  }
+
+  exerciceActuel = creerExercice(ui.selectThemeExercice.value, ui.selectNiveauExercice.value);
+  afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
+}
+
+function creerExercice(theme, niveau) {
+  if (theme === "pourcentages") return creerExercicePourcentage(niveau);
+  if (theme === "metier") return creerExerciceMetier(niveau);
+  return creerExerciceForme(niveau);
+}
+
+function creerExerciceForme(niveau) {
+  const difficultes = {
+    facile: { min: 2, max: 10 },
+    moyen: { min: 5, max: 20 },
+    difficile: { min: 10, max: 40 },
+  };
+  const plage = difficultes[niveau] || difficultes.facile;
+  const type = nombreAleatoire(0, 1) === 0 ? "rectangle" : "cercle";
+
+  if (type === "rectangle") {
+    const L = nombreAleatoire(plage.min, plage.max);
+    const l = nombreAleatoire(plage.min, plage.max);
+    const aire = L * l;
+    return {
+      theme: "aires",
+      competence: "aires-perimetres",
+      titre: "Aire de rectangle",
+      enonce: "Un rectangle mesure " + L + " m par " + l + " m. Quelle est son aire ?",
+      reponse: aire,
+      tolerance: 0.05,
+      unite: "m²",
+      explication: "Formule : aire = longueur × largeur = " + L + " × " + l + " = " + arrondir(aire) + " m².",
+      erreurProbable: "Ne confonds pas aire (m²) et périmètre (m).",
+    };
+  }
+
+  const rayon = nombreAleatoire(plage.min, plage.max);
+  const perimetre = 2 * PI * rayon;
+  return {
+    theme: "aires",
+    competence: "aires-perimetres",
+    titre: "Périmètre de cercle",
+    enonce: "Un bassin circulaire a un rayon de " + rayon + " m. Quel est son périmètre ?",
+    reponse: perimetre,
+    tolerance: 0.1,
+    unite: "m",
+    explication: "Formule : périmètre = 2 × π × r = 2 × π × " + rayon + " = " + arrondir(perimetre) + " m.",
+    erreurProbable: "Attention : le rayon n'est pas le diamètre.",
+  };
+}
+
+function creerExercicePourcentage(niveau) {
+  const nombre = niveau === "difficile" ? nombreAleatoire(120, 800) : nombreAleatoire(50, 400);
+  const pourcent = niveau === "facile" ? nombreAleatoire(5, 30) : nombreAleatoire(10, 75);
+  const resultat = (pourcent * nombre) / 100;
+  return {
+    theme: "pourcentages",
+    competence: "pourcentages",
+    titre: "Calcul de pourcentage",
+    enonce: "Calcule " + pourcent + "% de " + nombre + ".",
+    reponse: resultat,
+    tolerance: 0.05,
+    unite: "",
+    explication: "Formule : (" + pourcent + " × " + nombre + ") ÷ 100 = " + arrondir(resultat) + ".",
+    erreurProbable: "Pense à diviser par 100 à la fin.",
+  };
+}
+
+function creerExerciceMetier(niveau) {
+  const longueur = niveau === "facile" ? nombreAleatoire(4, 12) : nombreAleatoire(8, 25);
+  const largeur = niveau === "difficile" ? nombreAleatoire(5, 16) : nombreAleatoire(3, 10);
+  const surface = longueur * largeur;
+  const sacsParM2 = niveau === "difficile" ? 1.3 : 1.1;
+  const sacs = surface * sacsParM2;
+
+  return {
+    theme: "metier",
+    competence: "situations-metier",
+    titre: "Situation métier CAPa",
+    enonce:
+      "Tu prépares un semis sur une parcelle de " +
+      longueur +
+      " m × " +
+      largeur +
+      " m. " +
+      "Il faut " +
+      sacsParM2 +
+      " sac/m². Combien de sacs faut-il prévoir ?",
+    reponse: sacs,
+    tolerance: 0.15,
+    unite: "sacs",
+    explication:
+      "1) Surface = " +
+      longueur +
+      " × " +
+      largeur +
+      " = " +
+      arrondir(surface) +
+      " m². 2) Sacs = surface × " +
+      sacsParM2 +
+      " = " +
+      arrondir(sacs) +
+      ".",
+    erreurProbable: "Fais bien le calcul de surface avant la conversion en sacs.",
+  };
+}
+
+function afficherExercice(zoneEnonce, zoneFeedback, champReponse, exercice) {
+  if (!zoneEnonce || !exercice) return;
+  zoneEnonce.innerHTML =
+    '<p><strong>' + exercice.titre + "</strong></p>" +
+    "<p>" + exercice.enonce + "</p>";
+  zoneFeedback.className = "resultat";
+  zoneFeedback.innerHTML = "";
+  champReponse.value = "";
+  champReponse.focus();
+}
+
+function afficherFeedbackExercice(zone, exercice, reponseEleve, estCorrect) {
+  if (!zone) return;
+  zone.className = "resultat resultat--visible" + (estCorrect ? "" : " resultat--erreur");
+  const message = estCorrect
+    ? "<strong>Bravo ✅</strong> Ta réponse est correcte."
+    : "<strong>Presque ❌</strong> Ce n'est pas la bonne réponse.";
+  zone.innerHTML =
+    message +
+    "<br>Ta réponse : " +
+    arrondir(reponseEleve) +
+    (exercice.unite ? " " + exercice.unite : "") +
+    "<br>Réponse attendue : " +
+    arrondir(exercice.reponse) +
+    (exercice.unite ? " " + exercice.unite : "") +
+    '<div class="resultat__formule">' +
+    exercice.explication +
+    "</div>" +
+    '<p class="resultat__astuce"><strong>Erreur fréquente :</strong> ' +
+    exercice.erreurProbable +
+    "</p>";
+}
+
+function chargerProgression() {
+  try {
+    const brute = localStorage.getItem(CLE_PROGRESS);
+    if (!brute) {
+      return {
+        essais: 0,
+        reussites: 0,
+        serie: 0,
+        meilleureserie: 0,
+        competences: {},
+      };
+    }
+    return JSON.parse(brute);
+  } catch (e) {
+    return { essais: 0, reussites: 0, serie: 0, meilleureserie: 0, competences: {} };
+  }
+}
+
+function sauvegarderProgression(data) {
+  localStorage.setItem(CLE_PROGRESS, JSON.stringify(data));
+}
+
+function enregistrerTentativeExercice(exercice, reponse, estCorrect) {
+  const progression = chargerProgression();
+  progression.essais += 1;
+  progression.reussites += estCorrect ? 1 : 0;
+  progression.serie = estCorrect ? progression.serie + 1 : 0;
+  progression.meilleureserie = Math.max(progression.meilleureserie || 0, progression.serie || 0);
+
+  if (!progression.competences[exercice.competence]) {
+    progression.competences[exercice.competence] = { essais: 0, reussites: 0 };
+  }
+  progression.competences[exercice.competence].essais += 1;
+  progression.competences[exercice.competence].reussites += estCorrect ? 1 : 0;
+  sauvegarderProgression(progression);
+
+  enregistrerHistorique({
+    type: "exercice",
+    label: exercice.titre,
+    details: exercice.enonce,
+    resultat: (estCorrect ? "✅ " : "❌ ") + arrondir(reponse) + (exercice.unite ? " " + exercice.unite : ""),
+  });
+}
+
+function badgesObtenus(progression) {
+  const badges = [];
+  if (progression.reussites >= 1) badges.push("🌱 Premier succès");
+  if (progression.reussites >= 5) badges.push("🍀 5 réponses justes");
+  if (progression.reussites >= 20) badges.push("🌿 20 réussites");
+  if ((progression.meilleureserie || 0) >= 3) badges.push("🔥 Série de 3");
+  if ((progression.competences["situations-metier"] || {}).reussites >= 3) badges.push("🧰 Pro terrain");
+  return badges;
+}
+
+function mettreAJourProgressionEtBadges(zoneProgression, zoneBadges) {
+  const progression = chargerProgression();
+  const taux = progression.essais > 0 ? (progression.reussites / progression.essais) * 100 : 0;
+  if (zoneProgression) {
+    zoneProgression.innerHTML =
+      "<p>Exercices tentés : <strong>" + progression.essais + "</strong></p>" +
+      "<p>Réussites : <strong>" + progression.reussites + "</strong></p>" +
+      "<p>Taux de réussite : <strong>" + arrondir(taux) + "%</strong></p>" +
+      "<p>Série actuelle : <strong>" + (progression.serie || 0) + "</strong></p>";
+  }
+
+  if (zoneBadges) {
+    const badges = badgesObtenus(progression);
+    zoneBadges.innerHTML = badges.length
+      ? badges.map(function (b) { return '<span class="badge">' + b + "</span>"; }).join("")
+      : '<span class="badge">Aucun badge pour le moment</span>';
+  }
+}
+
+function lireHistorique() {
+  try {
+    const brut = localStorage.getItem(CLE_HISTORIQUE);
+    return brut ? JSON.parse(brut) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function enregistrerHistorique(entree) {
+  const historique = lireHistorique();
+  historique.unshift({
+    date: new Date().toLocaleString("fr-FR"),
+    type: entree.type,
+    label: entree.label,
+    details: entree.details,
+    resultat: entree.resultat,
+  });
+  localStorage.setItem(CLE_HISTORIQUE, JSON.stringify(historique.slice(0, MAX_HISTORIQUE)));
+}
+
+function afficherHistorique(zone) {
+  if (!zone) return;
+  const historique = lireHistorique();
+  if (historique.length === 0) {
+    zone.innerHTML = '<li class="history-item">Aucune tentative enregistrée pour le moment.</li>';
+    return;
+  }
+  zone.innerHTML = historique
+    .slice(0, 8)
+    .map(function (item) {
+      return (
+        '<li class="history-item">' +
+        "<strong>" +
+        item.label +
+        "</strong><br>" +
+        item.resultat +
+        "<br><small>" +
+        item.date +
+        "</small>" +
+        "</li>"
+      );
+    })
+    .join("");
+}
+
+function nombreAleatoire(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 
@@ -774,6 +1122,18 @@ function afficherResultat(zone, aire, perimetre, formuleAire, formulePerimetre, 
     "</p>";
 
   zone.innerHTML = html;
+
+  enregistrerHistorique({
+    type: "calcul",
+    label: "Calcul " + forme,
+    details: formuleAire,
+    resultat:
+      "Aire " +
+      arrondir(aire) +
+      " m²" +
+      (perimetre !== null ? " | Périmètre " + arrondir(perimetre) + " m" : ""),
+  });
+  afficherHistorique(document.getElementById("historique-exercice"));
 }
 
 /**
@@ -789,6 +1149,14 @@ function afficherResultatPourcent(zone, valeur, formule, etapes, type) {
     '<div class="resultat__formule">' + formule + "</div>" +
     genererBlocEtapes("Étapes du calcul", etapes) +
     '<p class="resultat__astuce"><strong>Astuce :</strong> ' + genererAstucePourcentage(type) + "</p>";
+
+  enregistrerHistorique({
+    type: "calcul",
+    label: "Pourcentage",
+    details: type,
+    resultat: "Résultat : " + valeur,
+  });
+  afficherHistorique(document.getElementById("historique-exercice"));
 }
 
 function genererBlocEtapes(titre, etapes) {

@@ -129,7 +129,73 @@
     </section>
 
     <!-- ================================ -->
-    <!-- SECTION 3 : AIDE-MÉMOIRE          -->
+    <!-- SECTION 3 : MODE EXERCICES       -->
+    <!-- ================================ -->
+    <section class="card" id="section-exercices">
+      <h2 class="card__title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Mode Exercices (CAPa)
+      </h2>
+      <p class="card__desc">Entraînez-vous avec des exercices progressifs et des situations métier, puis consultez vos progrès.</p>
+
+      <div class="form-fields">
+        <div class="form-group">
+          <label for="theme-exercice">Thème :</label>
+          <select id="theme-exercice">
+            <option value="aires">Aires et périmètres</option>
+            <option value="pourcentages">Pourcentages</option>
+            <option value="metier">Situations métier CAPa</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="niveau-exercice">Niveau :</label>
+          <select id="niveau-exercice">
+            <option value="facile">Facile</option>
+            <option value="moyen">Moyen</option>
+            <option value="difficile">Difficile</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn--primary" id="btn-generer-exercice" type="button">Nouvel exercice</button>
+      </div>
+
+      <div id="exercice-enonce" class="exercise-panel" aria-live="polite">
+        Clique sur <strong>Nouvel exercice</strong> pour commencer.
+      </div>
+
+      <div class="form-group">
+        <label for="reponse-exercice">Ta réponse :</label>
+        <input type="number" id="reponse-exercice" placeholder="Ex : 24,50" step="0.01" inputmode="decimal">
+      </div>
+
+      <div class="actions">
+        <button class="btn btn--primary" id="btn-valider-exercice" type="button">Valider</button>
+        <button class="btn btn--secondary" id="btn-suivant-exercice" type="button">Exercice suivant</button>
+      </div>
+
+      <div id="feedback-exercice" class="resultat" aria-live="polite"></div>
+
+      <div class="progress-grid">
+        <div class="exercise-panel">
+          <h3 class="panel-title">Progression</h3>
+          <div id="progression-exercice" class="progression-resume"></div>
+        </div>
+        <div class="exercise-panel">
+          <h3 class="panel-title">Badges</h3>
+          <div id="badges-exercice" class="badges-list"></div>
+        </div>
+      </div>
+
+      <div class="exercise-panel">
+        <h3 class="panel-title">Historique récent</h3>
+        <ul id="historique-exercice" class="history-list"></ul>
+      </div>
+    </section>
+
+    <!-- ================================ -->
+    <!-- SECTION 4 : AIDE-MÉMOIRE          -->
     <!-- ================================ -->
     <section class="card card--memo" id="section-memo">
       <h2 class="card__title">
