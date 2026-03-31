@@ -124,6 +124,55 @@ maths-paysager/
 - [ ] Ajouter un export PDF des résultats
 - [ ] Créer un mode “exercices” pour l'entraînement
 
+## 3 améliorations prioritaires pour aider les élèves
+
+### 1) Parcours guidé “pas à pas” avec diagnostic immédiat
+- Afficher un assistant en 3 étapes (Comprendre l’énoncé → Choisir la formule → Calculer).
+- Détecter les erreurs fréquentes et proposer une correction ciblée (ex : confusion rayon/diamètre, oubli d’unité, division par 100).
+- Donner un feedback court et actionnable après chaque tentative.
+
+**Impact élève :** réduit le blocage, améliore l’autonomie et la compréhension des méthodes.
+
+### 2) Tableau de progression lisible pour l’élève et l’enseignant
+- Ajouter un tableau de bord avec :
+  - taux de réussite par compétence (aires, périmètres, pourcentages),
+  - temps moyen par exercice,
+  - erreurs récurrentes.
+- Mettre en avant des objectifs simples (“Aujourd’hui : réussir 4 exercices sur les pourcentages”).
+- Conserver l’historique des sessions pour visualiser les progrès dans le temps.
+
+**Impact élève :** motivation renforcée grâce à des objectifs clairs et des progrès visibles.
+
+### 3) Interface encore plus agréable et inclusive
+- Proposer un mode “focus” qui n’affiche que l’exercice en cours (moins de distraction).
+- Améliorer la lisibilité : taille de police réglable, contraste renforcé, boutons plus grands sur mobile.
+- Ajouter des micro-interactions douces (confirmation visuelle après validation, transitions discrètes).
+
+**Impact élève :** expérience plus confortable, meilleure concentration et meilleure accessibilité.
+
+## 3 autres améliorations à forte valeur pédagogique
+
+### 4) Simulateur concret “chantier CAPa”
+- Ajouter des mini-cas réels (préparer une zone de paillage, estimer un arrosage, calculer un coût total).
+- Faire varier automatiquement les contraintes (surface irrégulière, budget limité, perte matière).
+- Afficher un bilan final “décision métier” pour relier le calcul à une action terrain.
+
+**Impact élève :** meilleure projection dans le métier et transfert plus rapide des compétences.
+
+### 5) Révisions personnalisées par “cartes d’erreurs”
+- Générer des fiches de révision automatiques à partir des erreurs fréquentes de chaque élève.
+- Proposer un plan court de révision (5 à 10 minutes) avant une nouvelle série d’exercices.
+- Réactiver les notions oubliées avec répétition espacée (J+1, J+3, J+7).
+
+**Impact élève :** mémorisation renforcée et baisse des erreurs répétitives.
+
+### 6) Coopération classe + défis motivants
+- Mettre en place des défis individuels et collectifs (ex : “classe à 80% de réussite sur les pourcentages”).
+- Ajouter un mode binôme (un élève explique la méthode, l’autre vérifie unités et résultat).
+- Valoriser les progrès par badges de compétence utiles en contexte CAPa.
+
+**Impact élève :** engagement plus fort, entraide entre pairs et confiance en soi.
+
 ---
 
 ## Contribution
