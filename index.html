@@ -157,8 +157,19 @@
         </div>
       </div>
 
+      <div class="coach-row">
+        <label class="coach-toggle" for="mode-adaptatif">
+          <input type="checkbox" id="mode-adaptatif">
+          <span>Mode adaptatif (coach automatique)</span>
+        </label>
+      </div>
+
       <div class="actions">
         <button class="btn btn--primary" id="btn-generer-exercice" type="button">Nouvel exercice</button>
+      </div>
+
+      <div id="recommandation-exercice" class="exercise-panel exercise-panel--hint">
+        Active le mode adaptatif pour recevoir un exercice ciblé selon tes besoins.
       </div>
 
       <div id="exercice-enonce" class="exercise-panel" aria-live="polite">
@@ -173,6 +184,9 @@
       <div class="actions">
         <button class="btn btn--primary" id="btn-valider-exercice" type="button">Valider</button>
         <button class="btn btn--secondary" id="btn-suivant-exercice" type="button">Exercice suivant</button>
+        <button class="btn btn--secondary" id="btn-indice-1" type="button">Indice 1</button>
+        <button class="btn btn--secondary" id="btn-indice-2" type="button">Indice 2</button>
+        <button class="btn btn--secondary" id="btn-methode" type="button">Voir méthode</button>
       </div>
 
       <div id="feedback-exercice" class="resultat" aria-live="polite"></div>

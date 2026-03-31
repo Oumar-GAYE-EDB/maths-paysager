@@ -48,6 +48,11 @@ Types de calcul :
 - Thème clair/sombre mémorisé dans le navigateur
 - Interface responsive
 
+### 4) Coach adaptatif et remédiation
+- Mode adaptatif : proposition automatique du thème et du niveau selon les performances
+- File de remédiation : exercices ciblés après une erreur fréquente
+- Aide graduée : **Indice 1**, **Indice 2**, puis **méthode guidée**
+
 ---
 
 ## Stack technique
