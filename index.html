@@ -174,6 +174,14 @@
           <input type="checkbox" id="mode-evaluation">
           <span>Mode évaluation (sans indices)</span>
         </label>
+        <label class="coach-toggle" for="mode-chrono">
+          <input type="checkbox" id="mode-chrono">
+          <span>Mode chrono (temps conseillé)</span>
+        </label>
+        <label class="coach-toggle" for="mode-focus">
+          <input type="checkbox" id="mode-focus" checked>
+          <span>Mode focus (interface simplifiée)</span>
+        </label>
       </div>
 
       <div class="actions">
@@ -182,12 +190,15 @@
         <button class="btn btn--secondary" id="btn-tests-formules" type="button">Vérifier les formules</button>
       </div>
 
-      <div id="recommandation-exercice" class="exercise-panel exercise-panel--hint">
+      <div id="recommandation-exercice" class="exercise-panel exercise-panel--hint" data-focus-advanced>
         Active le mode adaptatif pour recevoir un exercice ciblé selon tes besoins.
       </div>
-      <div id="objectif-session" class="exercise-panel"></div>
-      <div id="competences-exercice" class="exercise-panel"></div>
-      <div id="plan-remediation" class="exercise-panel"></div>
+      <div id="objectif-session" class="exercise-panel" data-focus-advanced></div>
+      <div id="competences-exercice" class="exercise-panel" data-focus-advanced></div>
+      <div id="plan-remediation" class="exercise-panel" data-focus-advanced></div>
+      <div id="chronometre-exercice" class="exercise-panel exercise-panel--hint" data-focus-advanced></div>
+      <div id="diagnostic-exercice" class="exercise-panel" data-focus-advanced></div>
+      <div id="plan-revision" class="exercise-panel" data-focus-advanced></div>
       <div id="tests-formules-resultat" class="exercise-panel"></div>
       <div id="session-progression" class="exercise-panel"></div>
 
@@ -210,7 +221,7 @@
 
       <div id="feedback-exercice" class="resultat" aria-live="polite"></div>
 
-      <div class="progress-grid">
+      <div class="progress-grid" data-focus-advanced>
         <div class="exercise-panel">
           <h3 class="panel-title">Progression</h3>
           <div id="progression-exercice" class="progression-resume"></div>
@@ -221,7 +232,7 @@
         </div>
       </div>
 
-      <div class="exercise-panel">
+      <div class="exercise-panel" data-focus-advanced>
         <h3 class="panel-title">Historique récent</h3>
         <ul id="historique-exercice" class="history-list"></ul>
       </div>
