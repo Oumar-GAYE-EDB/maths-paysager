@@ -375,7 +375,7 @@ body.mode-focus #section-exercices {
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background var(--transition), transform var(--transition);
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
 }
 
 .btn--primary {
@@ -401,12 +401,15 @@ body.mode-focus #section-exercices {
 
 .btn--secondary:hover {
   background: var(--color-divider);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
+  align-items: center;
 }
 
 .actions .btn--primary {
@@ -416,6 +419,20 @@ body.mode-focus #section-exercices {
 
 .actions .btn--secondary {
   opacity: 0.88;
+}
+
+.btn:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 55%, white);
+  outline-offset: 2px;
+}
+
+.btn--assist {
+  border-color: color-mix(in srgb, var(--color-error) 30%, var(--color-border));
+  background: color-mix(in srgb, var(--color-error-light) 55%, var(--color-surface) 45%);
+}
+
+.btn--assist:hover {
+  background: color-mix(in srgb, var(--color-error-light) 75%, var(--color-surface) 25%);
 }
 
 /* ---------- ZONE DE RÉSULTAT ---------- */
@@ -520,6 +537,7 @@ body.mode-focus #section-exercices {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface-offset);
+  box-shadow: var(--shadow-sm);
 }
 
 .exercise-panel--priority {
@@ -548,6 +566,26 @@ body.mode-focus #section-exercices {
 
 .exercise-more[open] > summary {
   margin-bottom: var(--space-2);
+}
+
+.card--exercise {
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary-light) 55%, transparent), transparent 40%),
+    var(--color-surface);
+}
+
+.exercise-dashboard {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+
+#coach-etapes li {
+  background: color-mix(in srgb, var(--color-surface) 85%, transparent);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.55rem;
+  list-style-position: inside;
 }
 
 .coach-row {
@@ -615,6 +653,12 @@ button[aria-disabled="true"] {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-3);
+}
+
+@media (min-width: 760px) {
+  .exercise-dashboard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .progression-resume {

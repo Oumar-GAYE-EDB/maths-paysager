@@ -53,6 +53,7 @@ Types de calcul :
 - Mode adaptatif : proposition automatique du thème et du niveau selon les performances
 - File de remédiation : exercices ciblés après une erreur fréquente
 - Aide graduée : **Indice 1**, **Indice 2**, puis **méthode guidée**
+- Bouton **Je bloque** : relance un accompagnement immédiat sans quitter l'exercice
 - Diagnostic d'erreur probable (unité, division par 100, confusion rayon/diamètre)
 - Mode évaluation (indices désactivés) et rejouage d'erreurs récentes
 
@@ -63,6 +64,7 @@ Types de calcul :
 
 ### 6) Situations métier enrichies
 - Scénarios CAPa variés : semis, paillage (coût €/m²), arrosage (L/m)
+- Mise en contexte « utile sur chantier » + auto-contrôle rapide sur chaque exercice
 
 ### 7) Fiabilité des calculs
 - Vérifications supplémentaires sur les contraintes géométriques

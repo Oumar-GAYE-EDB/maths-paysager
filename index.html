@@ -137,7 +137,7 @@
     <!-- ================================ -->
     <!-- SECTION 3 : MODE EXERCICES       -->
     <!-- ================================ -->
-    <section class="card" id="section-exercices">
+    <section class="card card--exercise" id="section-exercices">
       <h2 class="card__title">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         Mode Exercices (CAPa)
@@ -191,17 +191,22 @@
       </div>
 
       <div class="actions">
-        <button class="btn btn--primary" id="btn-generer-exercice" type="button">Nouvel exercice</button>
-        <button class="btn btn--secondary" id="btn-rejouer-erreur" type="button">Rejouer une erreur</button>
-        <button class="btn btn--secondary" id="btn-tests-formules" type="button">Vérifier les formules</button>
+        <button class="btn btn--primary" id="btn-generer-exercice" type="button">✨ Nouvel exercice</button>
+        <button class="btn btn--secondary" id="btn-rejouer-erreur" type="button">↺ Rejouer une erreur</button>
+        <button class="btn btn--secondary" id="btn-tests-formules" type="button">🧪 Vérifier les formules</button>
       </div>
 
+      <div class="exercise-dashboard">
       <div id="recommandation-exercice" class="exercise-panel exercise-panel--hint exercise-panel--priority">
         Active le mode adaptatif pour recevoir un exercice ciblé selon tes besoins.
+      </div>
+      <div id="coach-etapes" class="exercise-panel exercise-panel--priority">
+        Le coach affichera ici tes étapes pour réussir.
       </div>
       <div id="objectif-session" class="exercise-panel exercise-panel--priority"></div>
       <div id="competences-exercice" class="exercise-panel exercise-panel--priority"></div>
       <div id="session-progression" class="exercise-panel exercise-panel--priority"></div>
+      </div>
 
       <div id="exercice-enonce" class="exercise-panel exercise-panel--priority" aria-live="polite">
         Clique sur <strong>Nouvel exercice</strong> pour commencer.
@@ -213,11 +218,12 @@
       </div>
 
       <div class="actions">
-        <button class="btn btn--primary" id="btn-valider-exercice" type="button">Valider</button>
-        <button class="btn btn--secondary" id="btn-suivant-exercice" type="button">Exercice suivant</button>
-        <button class="btn btn--secondary" id="btn-indice-1" type="button">Indice 1</button>
-        <button class="btn btn--secondary" id="btn-indice-2" type="button">Indice 2</button>
-        <button class="btn btn--secondary" id="btn-methode" type="button">Voir méthode</button>
+        <button class="btn btn--primary" id="btn-valider-exercice" type="button">✅ Valider</button>
+        <button class="btn btn--secondary" id="btn-suivant-exercice" type="button">➡️ Exercice suivant</button>
+        <button class="btn btn--secondary btn--assist" id="btn-joker-exercice" type="button">🆘 Je bloque</button>
+        <button class="btn btn--secondary" id="btn-indice-1" type="button">💡 Indice 1</button>
+        <button class="btn btn--secondary" id="btn-indice-2" type="button">💡 Indice 2</button>
+        <button class="btn btn--secondary" id="btn-methode" type="button">📘 Voir méthode</button>
       </div>
 
       <div id="feedback-exercice" class="resultat" aria-live="polite"></div>
