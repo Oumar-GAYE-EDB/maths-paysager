@@ -199,6 +199,27 @@ body {
   gap: var(--space-6);
 }
 
+/* ---------- MODE FOCUS (réduit les distractions) ---------- */
+body.mode-focus .quick-nav,
+body.mode-focus #section-formes,
+body.mode-focus #section-pourcent,
+body.mode-focus #section-memo {
+  display: none;
+}
+
+body.mode-focus #section-exercices details.exercise-more {
+  display: none;
+}
+
+body.mode-focus .main {
+  max-width: 860px;
+}
+
+body.mode-focus #section-exercices {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+
 /* ---------- NAVIGATION RAPIDE ---------- */
 .quick-nav {
   position: sticky;

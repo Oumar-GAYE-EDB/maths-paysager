@@ -45,6 +45,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const btnIndice2 = document.getElementById("btn-indice-2");
   const btnMethode = document.getElementById("btn-methode");
   const modeAdaptatif = document.getElementById("mode-adaptatif");
+  const modeFocus = document.getElementById("mode-focus");
   const modeEvaluation = document.getElementById("mode-evaluation");
   const modeChrono = document.getElementById("mode-chrono");
   const enonceExercice = document.getElementById("exercice-enonce");
@@ -112,6 +113,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // --- Mode sombre / clair ---
   initialiserTheme();
   initialiserSaisieDecimale();
+  initialiserModeFocus(modeFocus);
 
   // --- Mode exercices / progression ---
   initialiserModeExercices({
@@ -184,6 +186,22 @@ function initialiserTheme() {
       localStorage.setItem(CLE_THEME, theme);
     });
   }
+}
+
+function initialiserModeFocus(caseFocus) {
+  const CLE_MODE_FOCUS = "maths-paysager-mode-focus";
+  const body = document.body;
+  if (!caseFocus || !body) return;
+
+  const modeMemoire = localStorage.getItem(CLE_MODE_FOCUS) === "1";
+  caseFocus.checked = modeMemoire;
+  body.classList.toggle("mode-focus", modeMemoire);
+
+  caseFocus.addEventListener("change", function () {
+    const actif = !!caseFocus.checked;
+    body.classList.toggle("mode-focus", actif);
+    localStorage.setItem(CLE_MODE_FOCUS, actif ? "1" : "0");
+  });
 }
 
 /**
