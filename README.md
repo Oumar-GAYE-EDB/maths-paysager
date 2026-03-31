@@ -61,7 +61,8 @@ Types de calcul :
 - Objectif de séance affiché avant chaque exercice
 - Micro-compétence ciblée + palier de maîtrise (Bronze / Argent / Or)
 - Barre de progression de session (réussites en cours)
-- Raccourcis clavier pour valider plus vite (`Ctrl+Entrée`, `Alt+N`, `Alt+I`)
+- Raccourcis clavier pour valider plus vite (`Ctrl+Entrée`, `Alt+N`, `Alt+I`, `Alt+L`)
+- Lecture audio de l'énoncé (synthèse vocale navigateur)
 
 ### 6) Situations métier enrichies
 - Scénarios CAPa variés : semis, paillage (coût €/m²), arrosage (L/m)

@@ -39,6 +39,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const selectNiveauExercice = document.getElementById("niveau-exercice");
   const selectObjectifSeance = document.getElementById("objectif-seance");
   const btnGenererExercice = document.getElementById("btn-generer-exercice");
+  const btnLireEnonce = document.getElementById("btn-lire-enonce");
   const btnValiderExercice = document.getElementById("btn-valider-exercice");
   const btnSuivantExercice = document.getElementById("btn-suivant-exercice");
   const btnIndice1 = document.getElementById("btn-indice-1");
@@ -123,6 +124,7 @@ document.addEventListener("DOMContentLoaded", function () {
     selectNiveauExercice: selectNiveauExercice,
     selectObjectifSeance: selectObjectifSeance,
     btnGenererExercice: btnGenererExercice,
+    btnLireEnonce: btnLireEnonce,
     btnValiderExercice: btnValiderExercice,
     btnSuivantExercice: btnSuivantExercice,
     btnIndice1: btnIndice1,
@@ -303,6 +305,12 @@ function initialiserModeExercices(ui) {
     demarrerChronoSiActif(ui, exerciceActuel);
   });
 
+  if (ui.btnLireEnonce) {
+    ui.btnLireEnonce.addEventListener("click", function () {
+      lireEnonceExercice(ui.feedbackExercice, exerciceActuel);
+    });
+  }
+
   ui.btnValiderExercice.addEventListener("click", function () {
     corrigerExercice(ui, false);
   });
@@ -392,8 +400,38 @@ function initialiserRaccourcisExercices(ui) {
       if (estZoneSaisie) return;
       event.preventDefault();
       if (ui.btnIndice1) ui.btnIndice1.click();
+      return;
+    }
+    if (event.altKey && (event.key === "l" || event.key === "L")) {
+      event.preventDefault();
+      if (ui.btnLireEnonce) ui.btnLireEnonce.click();
     }
   });
+}
+
+function lireEnonceExercice(zoneFeedback, exercice) {
+  if (!zoneFeedback) return;
+  if (!exercice || !exercice.enonce) {
+    zoneFeedback.className = "resultat resultat--visible resultat--erreur";
+    zoneFeedback.innerHTML = "Génère un exercice avant d'utiliser la lecture audio.";
+    return;
+  }
+  if (typeof window === "undefined" || !window.speechSynthesis) {
+    zoneFeedback.className = "resultat resultat--visible resultat--erreur";
+    zoneFeedback.innerHTML = "La synthèse vocale n'est pas disponible sur ce navigateur.";
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+  const texte = exercice.enonce.replace(/\n/g, ". ");
+  const utterance = new SpeechSynthesisUtterance(texte);
+  utterance.lang = "fr-FR";
+  utterance.rate = 0.95;
+  utterance.pitch = 1;
+  window.speechSynthesis.speak(utterance);
+
+  zoneFeedback.className = "resultat resultat--visible";
+  zoneFeedback.innerHTML = "🔊 Lecture de l'énoncé en cours...";
 }
 
 function corrigerExercice(ui, passerAuSuivant) {
