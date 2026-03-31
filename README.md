@@ -52,6 +52,27 @@ Types de calcul :
 - Mode adaptatif : proposition automatique du thème et du niveau selon les performances
 - File de remédiation : exercices ciblés après une erreur fréquente
 - Aide graduée : **Indice 1**, **Indice 2**, puis **méthode guidée**
+- Diagnostic d'erreur probable (unité, division par 100, confusion rayon/diamètre)
+- Mode évaluation (indices désactivés) et rejouage d'erreurs récentes
+
+### 5) Parcours d'apprentissage
+- Objectif de séance affiché avant chaque exercice
+- Micro-compétence ciblée + palier de maîtrise (Bronze / Argent / Or)
+- Barre de progression de session (réussites en cours)
+- Préférences d'entraînement mémorisées (thème, niveau, objectif, mode, filtre historique)
+
+### 6) Situations métier enrichies
+- Scénarios CAPa variés : semis, paillage (coût €/m²), arrosage (L/m)
+
+### 7) Fiabilité des calculs
+- Vérifications supplémentaires sur les contraintes géométriques
+- Bouton de vérification interne des formules (auto-tests rapides)
+- Script de tests Node.js pour valider les formules principales (`tests/formules.test.js`)
+
+### 8) Suivi des données élèves
+- Filtre de l'historique (tout / exercices / calculs)
+- Export et import de la progression au format JSON
+- Réinitialisation rapide de l'historique
 
 ---
 
@@ -80,6 +101,12 @@ python3 -m http.server 8000
 
 Puis ouvrir :
 `http://localhost:8000`
+
+### Vérifier les formules (tests rapides)
+
+```bash
+node tests/formules.test.js
+```
 
 ---
 

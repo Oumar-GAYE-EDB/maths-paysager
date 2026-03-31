@@ -155,6 +155,14 @@
             <option value="difficile">Difficile</option>
           </select>
         </div>
+        <div class="form-group">
+          <label for="objectif-seance">Objectif de séance :</label>
+          <select id="objectif-seance">
+            <option value="precision">Précision des formules</option>
+            <option value="unites">Maîtrise des unités</option>
+            <option value="metier">Transfert en situation métier</option>
+          </select>
+        </div>
       </div>
 
       <div class="coach-row">
@@ -162,22 +170,44 @@
           <input type="checkbox" id="mode-adaptatif">
           <span>Mode adaptatif (coach automatique)</span>
         </label>
+        <label class="coach-toggle" for="mode-evaluation">
+          <input type="checkbox" id="mode-evaluation">
+          <span>Mode évaluation (sans indices)</span>
+        </label>
+      </div>
+
+      <div class="form-fields">
+        <div class="form-group">
+          <label for="filtre-historique">Filtrer l'historique :</label>
+          <select id="filtre-historique">
+            <option value="tous">Tout afficher</option>
+            <option value="exercice">Exercices</option>
+            <option value="calcul">Calculs</option>
+          </select>
+        </div>
       </div>
 
       <div class="actions">
         <button class="btn btn--primary" id="btn-generer-exercice" type="button">Nouvel exercice</button>
+        <button class="btn btn--secondary" id="btn-rejouer-erreur" type="button">Rejouer une erreur</button>
+        <button class="btn btn--secondary" id="btn-tests-formules" type="button">Vérifier les formules</button>
       </div>
 
       <div id="recommandation-exercice" class="exercise-panel exercise-panel--hint">
         Active le mode adaptatif pour recevoir un exercice ciblé selon tes besoins.
       </div>
+      <div id="objectif-session" class="exercise-panel"></div>
+      <div id="competences-exercice" class="exercise-panel"></div>
+      <div id="plan-remediation" class="exercise-panel"></div>
+      <div id="tests-formules-resultat" class="exercise-panel"></div>
+      <div id="session-progression" class="exercise-panel"></div>
 
       <div id="exercice-enonce" class="exercise-panel" aria-live="polite">
         Clique sur <strong>Nouvel exercice</strong> pour commencer.
       </div>
 
       <div class="form-group">
-        <label for="reponse-exercice">Ta réponse :</label>
+        <label for="reponse-exercice">Ta réponse <span id="unite-attendue" class="unit-hint"></span> :</label>
         <input type="number" id="reponse-exercice" placeholder="Ex : 24,50" step="0.01" inputmode="decimal">
       </div>
 
@@ -204,6 +234,12 @@
 
       <div class="exercise-panel">
         <h3 class="panel-title">Historique récent</h3>
+        <div class="actions">
+          <button class="btn btn--secondary" id="btn-vider-historique" type="button">Vider l'historique</button>
+          <button class="btn btn--secondary" id="btn-export-progression" type="button">Exporter progression</button>
+          <button class="btn btn--secondary" id="btn-import-progression" type="button">Importer progression</button>
+        </div>
+        <input type="file" id="import-progression-file" accept="application/json" hidden>
         <ul id="historique-exercice" class="history-list"></ul>
       </div>
     </section>
