@@ -472,17 +472,17 @@ function creerExerciceForme(niveau) {
       competenceLabel: "Aires et périmètres",
       objectif: "Choisir la bonne formule d'aire/périmètre puis appliquer l'unité correcte.",
       titre: "Aire de rectangle",
-      enonce: "Un rectangle mesure " + L + " m par " + l + " m. Quelle est son aire ?",
+      enonce: "Contexte : tu prépares une zone de gazon rectangulaire.\nDonnées : longueur = " + L + " m, largeur = " + l + " m.\nQuestion : quelle surface (en m²) faut-il préparer ?",
       reponse: aire,
       tolerance: 0.05,
       unite: "m²",
-      explication: "Formule : aire = longueur × largeur = " + L + " × " + l + " = " + arrondir(aire) + " m².",
+      explication: "Étape 1 : aire = longueur × largeur. Étape 2 : " + L + " × " + l + " = " + arrondir(aire) + " m².",
       erreurProbable: "Ne confonds pas aire (m²) et périmètre (m).",
       erreurCode: "aire_unite",
       palier: "Bronze",
       indices: [
-        "Indice 1 : l'aire d'un rectangle se calcule avec une multiplication.",
-        "Indice 2 : prends longueur × largeur, sans multiplier par 2.",
+        "Indice 1 : cherche une surface, donc une formule d'aire.",
+        "Indice 2 : pour un rectangle, aire = longueur × largeur (pas ×2).",
       ],
     };
   }
@@ -495,17 +495,17 @@ function creerExerciceForme(niveau) {
     competenceLabel: "Aires et périmètres",
     objectif: "Distinguer rayon et diamètre dans les formules du cercle.",
     titre: "Périmètre de cercle",
-    enonce: "Un bassin circulaire a un rayon de " + rayon + " m. Quel est son périmètre ?",
+    enonce: "Contexte : tu poses une bordure autour d'un bassin circulaire.\nDonnée : rayon = " + rayon + " m.\nQuestion : quelle longueur de bordure (en m) faut-il prévoir ?",
     reponse: perimetre,
     tolerance: 0.1,
     unite: "m",
-    explication: "Formule : périmètre = 2 × π × r = 2 × π × " + rayon + " = " + arrondir(perimetre) + " m.",
+    explication: "Étape 1 : périmètre = 2 × π × r. Étape 2 : 2 × π × " + rayon + " = " + arrondir(perimetre) + " m.",
     erreurProbable: "Attention : le rayon n'est pas le diamètre.",
     erreurCode: "rayon_diametre",
     palier: "Argent",
     indices: [
-      "Indice 1 : la formule du périmètre d'un cercle commence par 2 × π.",
-      "Indice 2 : la mesure donnée est le rayon r, pas le diamètre.",
+      "Indice 1 : on cherche une longueur autour du cercle : c'est un périmètre.",
+      "Indice 2 : applique 2 × π × rayon, sans transformer le rayon en diamètre.",
     ],
   };
 }
@@ -520,17 +520,17 @@ function creerExercicePourcentage(niveau) {
     competenceLabel: "Pourcentages",
     objectif: "Maîtriser le passage « pourcentage » vers « division par 100 ».",
     titre: "Calcul de pourcentage",
-    enonce: "Calcule " + pourcent + "% de " + nombre + ".",
+    enonce: "Contexte : une remise de " + pourcent + "% est appliquée sur un montant de " + nombre + " €.\nQuestion : quel est le montant de la remise ?",
     reponse: resultat,
     tolerance: 0.05,
     unite: "",
-    explication: "Formule : (" + pourcent + " × " + nombre + ") ÷ 100 = " + arrondir(resultat) + ".",
+    explication: "Étape 1 : calculer " + pourcent + " × " + nombre + ". Étape 2 : diviser par 100. Résultat = " + arrondir(resultat) + ".",
     erreurProbable: "Pense à diviser par 100 à la fin.",
     erreurCode: "pourcent_div100",
     palier: niveau === "difficile" ? "Or" : "Argent",
     indices: [
-      "Indice 1 : un pourcentage signifie « sur 100 ».",
-      "Indice 2 : après la multiplication, il faut diviser par 100.",
+      "Indice 1 : " + pourcent + "% signifie " + pourcent + "/100.",
+      "Indice 2 : fais la multiplication puis divise le résultat par 100.",
     ],
   };
 }
@@ -549,15 +549,15 @@ function creerExerciceMetier(niveau) {
       competenceLabel: "Situations métier CAPa",
       objectif: "Calculer une surface puis convertir en quantité de matériau.",
       titre: "Situation métier CAPa — semis",
-      enonce: "Parcelle de " + longueur + " m × " + largeur + " m. Il faut " + sacsParM2 + " sac/m². Combien de sacs prévoir ?",
+      enonce: "Contexte : tu dois semer une parcelle.\nDonnées : " + longueur + " m × " + largeur + " m, avec " + sacsParM2 + " sac/m².\nQuestion : combien de sacs faut-il prévoir au total ?",
       reponse: sacs,
       tolerance: 0.15,
       unite: "sacs",
-      explication: "Surface = " + longueur + " × " + largeur + " = " + arrondir(surface) + " m², puis sacs = surface × " + sacsParM2 + " = " + arrondir(sacs) + ".",
+      explication: "Étape 1 : surface = " + longueur + " × " + largeur + " = " + arrondir(surface) + " m². Étape 2 : sacs = surface × " + sacsParM2 + " = " + arrondir(sacs) + ".",
       erreurProbable: "Fais bien le calcul de surface avant la conversion en sacs.",
       erreurCode: "metier_surface_avant_conversion",
       palier: "Argent",
-      indices: ["Indice 1 : calcule d'abord la surface.", "Indice 2 : multiplie ensuite par sacs/m²."],
+      indices: ["Indice 1 : commence par calculer la surface en m².", "Indice 2 : convertis ensuite avec le coefficient en sac/m²."],
     };
   }
   if (scenario === 2) {
@@ -570,15 +570,15 @@ function creerExerciceMetier(niveau) {
       competenceLabel: "Situations métier CAPa",
       objectif: "Estimer un coût total à partir d'un prix unitaire.",
       titre: "Situation métier CAPa — paillage",
-      enonce: "Un chantier de paillage couvre " + surface + " m² à " + prixM2 + " €/m². Quel est le coût total ?",
+      enonce: "Contexte : devis de paillage.\nDonnées : surface = " + surface + " m², prix = " + prixM2 + " €/m².\nQuestion : quel est le coût total du chantier ?",
       reponse: cout,
       tolerance: 0.05,
       unite: "€",
-      explication: "Coût total = surface × prix au m² = " + surface + " × " + prixM2 + " = " + arrondir(cout) + " €.",
+      explication: "Étape 1 : identifier le prix unitaire (€/m²). Étape 2 : coût total = " + surface + " × " + prixM2 + " = " + arrondir(cout) + " €.",
       erreurProbable: "Tu as peut-être additionné au lieu de multiplier surface et prix unitaire.",
       erreurCode: "metier_cout_unitaire",
       palier: "Bronze",
-      indices: ["Indice 1 : repère bien l'unité €/m².", "Indice 2 : coût total = surface × prix unitaire."],
+      indices: ["Indice 1 : €/m² = prix pour 1 m².", "Indice 2 : multiplie la surface totale par ce prix unitaire."],
     };
   }
   const longueurTuyau = niveau === "facile" ? nombreAleatoire(25, 60) : nombreAleatoire(50, 180);
@@ -590,15 +590,15 @@ function creerExerciceMetier(niveau) {
     competenceLabel: "Situations métier CAPa",
     objectif: "Relier une mesure terrain à une estimation de ressources.",
     titre: "Situation métier CAPa — arrosage",
-    enonce: "Une ligne d'arrosage de " + longueurTuyau + " m consomme " + debit + " L/m. Quel volume total d'eau prévoir ?",
+    enonce: "Contexte : préparation d'un cycle d'arrosage.\nDonnées : longueur de ligne = " + longueurTuyau + " m, consommation = " + debit + " L/m.\nQuestion : quel volume total d'eau faut-il prévoir ?",
     reponse: volume,
     tolerance: 0.05,
     unite: "L",
-    explication: "Volume total = longueur × consommation au mètre = " + longueurTuyau + " × " + debit + " = " + arrondir(volume) + " L.",
+    explication: "Étape 1 : repérer l'unité L/m. Étape 2 : volume = " + longueurTuyau + " × " + debit + " = " + arrondir(volume) + " L.",
     erreurProbable: "Attention à l'unité L/m : on doit multiplier par la longueur.",
     erreurCode: "metier_volume_unitaire",
     palier: niveau === "difficile" ? "Or" : "Argent",
-    indices: ["Indice 1 : l'unité est en L/m.", "Indice 2 : fais longueur × L/m pour obtenir des litres."],
+    indices: ["Indice 1 : L/m signifie « litres par mètre ».", "Indice 2 : multiplie la longueur totale par la valeur en L/m."],
   };
 }
 
@@ -609,7 +609,7 @@ function creerExerciceRemediation(remediation) {
         theme: "aires",
         competence: "aires-perimetres",
         titre: "Remédiation : aire vs périmètre",
-        enonce: "Une terrasse mesure 8 m sur 3 m. Calcule uniquement son aire.",
+        enonce: "Contexte : terrasse rectangulaire de 8 m sur 3 m.\nQuestion : calcule uniquement l'aire en m².",
         reponse: 24,
         tolerance: 0.01,
         unite: "m²",
@@ -627,7 +627,7 @@ function creerExerciceRemediation(remediation) {
         theme: "aires",
         competence: "aires-perimetres",
         titre: "Remédiation : rayon et diamètre",
-        enonce: "Un bassin a un rayon de 5 m. Calcule son périmètre.",
+        enonce: "Contexte : bassin circulaire, rayon 5 m.\nQuestion : calcule le périmètre en mètres.",
         reponse: 2 * PI * 5,
         tolerance: 0.1,
         unite: "m",
@@ -645,7 +645,7 @@ function creerExerciceRemediation(remediation) {
         theme: "pourcentages",
         competence: "pourcentages",
         titre: "Remédiation : pourcentage",
-        enonce: "Calcule 25% de 120.",
+        enonce: "Contexte : remise de 25% sur un montant de 120 €.\nQuestion : quel est le montant de la remise ?",
         reponse: 30,
         tolerance: 0.01,
         unite: "",
@@ -665,7 +665,7 @@ function creerExerciceRemediation(remediation) {
         competenceLabel: "Situations métier CAPa",
         objectif: "Reprendre la méthode en deux étapes (surface puis conversion).",
         titre: "Remédiation : situation métier",
-        enonce: "Parcelle de 6 m × 4 m, avec 1,2 sac/m². Combien de sacs faut-il ?",
+        enonce: "Contexte : semis sur une parcelle de 6 m × 4 m.\nDonnée : 1,2 sac/m².\nQuestion : combien de sacs faut-il au total ?",
         reponse: 28.8,
         tolerance: 0.05,
         unite: "sacs",
@@ -686,7 +686,7 @@ function creerExerciceRemediation(remediation) {
         competenceLabel: "Situations métier CAPa",
         objectif: "Différencier coût unitaire et coût total.",
         titre: "Remédiation : coût unitaire",
-        enonce: "On paillle 40 m² à 7 €/m². Quel est le coût total ?",
+        enonce: "Contexte : paillage de 40 m² à 7 €/m².\nQuestion : quel est le coût total du chantier ?",
         reponse: 280,
         tolerance: 0.01,
         unite: "€",
@@ -704,7 +704,7 @@ function creerExerciceRemediation(remediation) {
         competenceLabel: "Situations métier CAPa",
         objectif: "Calculer un volume à partir d'un débit par mètre.",
         titre: "Remédiation : arrosage",
-        enonce: "Un tuyau de 30 m consomme 4 L/m. Combien de litres faut-il ?",
+        enonce: "Contexte : ligne d'arrosage de 30 m avec 4 L/m.\nQuestion : quel volume total d'eau faut-il prévoir ?",
         reponse: 120,
         tolerance: 0.01,
         unite: "L",
@@ -722,9 +722,10 @@ function creerExerciceRemediation(remediation) {
 
 function afficherExercice(zoneEnonce, zoneFeedback, champReponse, exercice) {
   if (!zoneEnonce || !exercice) return;
+  const enonceFormate = (exercice.enonce || "").replace(/\n/g, "<br>");
   zoneEnonce.innerHTML =
     '<p><strong>' + exercice.titre + "</strong></p>" +
-    "<p>" + exercice.enonce + "</p>";
+    "<p>" + enonceFormate + "</p>";
   zoneFeedback.className = "resultat";
   zoneFeedback.innerHTML = "";
   champReponse.value = "";
