@@ -46,6 +46,8 @@ Types de calcul :
 - Messages d'erreur par champ
 - Zones de résultat avec `aria-live`
 - Thème clair/sombre mémorisé dans le navigateur
+- Mode focus (interface simplifiée orientée exercice)
+- Mode lisibilité renforcée (grande police + contrastes plus marqués)
 - Interface responsive
 
 ### 4) Coach adaptatif et remédiation
@@ -59,6 +61,7 @@ Types de calcul :
 - Objectif de séance affiché avant chaque exercice
 - Micro-compétence ciblée + palier de maîtrise (Bronze / Argent / Or)
 - Barre de progression de session (réussites en cours)
+- Raccourcis clavier pour valider plus vite (`Ctrl+Entrée`, `Alt+N`, `Alt+I`)
 
 ### 6) Situations métier enrichies
 - Scénarios CAPa variés : semis, paillage (coût €/m²), arrosage (L/m)

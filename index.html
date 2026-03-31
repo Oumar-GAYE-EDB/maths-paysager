@@ -172,6 +172,14 @@
       </div>
 
       <div class="coach-row">
+        <label class="coach-toggle" for="mode-focus">
+          <input type="checkbox" id="mode-focus">
+          <span>Mode focus (interface simplifiée)</span>
+        </label>
+        <label class="coach-toggle" for="mode-lisibilite">
+          <input type="checkbox" id="mode-lisibilite">
+          <span>Lisibilité renforcée</span>
+        </label>
         <label class="coach-toggle" for="mode-adaptatif">
           <input type="checkbox" id="mode-adaptatif">
           <span>Mode adaptatif (coach automatique)</span>
@@ -206,6 +214,11 @@
       <div class="form-group">
         <label for="reponse-exercice">Ta réponse <span id="unite-attendue" class="unit-hint"></span> :</label>
         <input type="number" id="reponse-exercice" placeholder="Ex : 24,50" step="0.01" inputmode="decimal">
+      </div>
+      <div class="exercise-panel exercise-panel--hint">
+        <strong>Méthode rapide :</strong> 1) repère l'unité, 2) choisis la formule, 3) vérifie l'ordre de grandeur.
+        <br>
+        <span class="shortcut-hint">Raccourcis : <kbd>Ctrl</kbd> + <kbd>Entrée</kbd> (Valider), <kbd>Alt</kbd> + <kbd>N</kbd> (Nouvel exercice), <kbd>Alt</kbd> + <kbd>I</kbd> (Indice 1)</span>
       </div>
 
       <div class="actions">

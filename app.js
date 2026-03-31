@@ -45,6 +45,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const btnIndice2 = document.getElementById("btn-indice-2");
   const btnMethode = document.getElementById("btn-methode");
   const modeAdaptatif = document.getElementById("mode-adaptatif");
+  const modeFocus = document.getElementById("mode-focus");
+  const modeLisibilite = document.getElementById("mode-lisibilite");
   const modeEvaluation = document.getElementById("mode-evaluation");
   const modeChrono = document.getElementById("mode-chrono");
   const enonceExercice = document.getElementById("exercice-enonce");
@@ -112,6 +114,8 @@ document.addEventListener("DOMContentLoaded", function () {
   // --- Mode sombre / clair ---
   initialiserTheme();
   initialiserSaisieDecimale();
+  initialiserModeFocus(modeFocus);
+  initialiserModeLisibilite(modeLisibilite);
 
   // --- Mode exercices / progression ---
   initialiserModeExercices({
@@ -186,6 +190,38 @@ function initialiserTheme() {
   }
 }
 
+function initialiserModeFocus(caseFocus) {
+  const CLE_MODE_FOCUS = "maths-paysager-mode-focus";
+  const body = document.body;
+  if (!caseFocus || !body) return;
+
+  const modeMemoire = localStorage.getItem(CLE_MODE_FOCUS) === "1";
+  caseFocus.checked = modeMemoire;
+  body.classList.toggle("mode-focus", modeMemoire);
+
+  caseFocus.addEventListener("change", function () {
+    const actif = !!caseFocus.checked;
+    body.classList.toggle("mode-focus", actif);
+    localStorage.setItem(CLE_MODE_FOCUS, actif ? "1" : "0");
+  });
+}
+
+function initialiserModeLisibilite(caseLisibilite) {
+  const CLE_MODE_LISIBILITE = "maths-paysager-mode-lisibilite";
+  const body = document.body;
+  if (!caseLisibilite || !body) return;
+
+  const modeMemoire = localStorage.getItem(CLE_MODE_LISIBILITE) === "1";
+  caseLisibilite.checked = modeMemoire;
+  body.classList.toggle("mode-lisibilite", modeMemoire);
+
+  caseLisibilite.addEventListener("change", function () {
+    const actif = !!caseLisibilite.checked;
+    body.classList.toggle("mode-lisibilite", actif);
+    localStorage.setItem(CLE_MODE_LISIBILITE, actif ? "1" : "0");
+  });
+}
+
 /**
  * Remet la section formes dans son état initial
  */
@@ -242,6 +278,8 @@ function mettreAJourIconeTheme(bouton, theme) {
 
 function initialiserModeExercices(ui) {
   if (!ui || !ui.btnGenererExercice) return;
+
+  initialiserRaccourcisExercices(ui);
 
   mettreAJourProgressionSession(ui.sessionProgression);
   mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
@@ -333,6 +371,29 @@ function initialiserModeExercices(ui) {
   mettreAJourProgressionEtBadges(ui.progressionExercice, ui.badgesExercice);
   afficherHistorique(ui.historiqueExercice);
   mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
+}
+
+function initialiserRaccourcisExercices(ui) {
+  document.addEventListener("keydown", function (event) {
+    const cible = event.target;
+    const estZoneSaisie = cible && (cible.tagName === "INPUT" || cible.tagName === "TEXTAREA" || cible.isContentEditable);
+
+    if (event.ctrlKey && event.key === "Enter") {
+      event.preventDefault();
+      corrigerExercice(ui, false);
+      return;
+    }
+    if (event.altKey && (event.key === "n" || event.key === "N")) {
+      event.preventDefault();
+      if (ui.btnGenererExercice) ui.btnGenererExercice.click();
+      return;
+    }
+    if (event.altKey && (event.key === "i" || event.key === "I")) {
+      if (estZoneSaisie) return;
+      event.preventDefault();
+      if (ui.btnIndice1) ui.btnIndice1.click();
+    }
+  });
 }
 
 function corrigerExercice(ui, passerAuSuivant) {
