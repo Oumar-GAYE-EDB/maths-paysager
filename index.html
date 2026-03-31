@@ -45,6 +45,12 @@
   </header>
 
   <main class="main">
+    <nav class="quick-nav" aria-label="Navigation rapide">
+      <a class="quick-nav__link" href="#section-formes">Calculs surfaces</a>
+      <a class="quick-nav__link" href="#section-pourcent">Calculs pourcentages</a>
+      <a class="quick-nav__link" href="#section-exercices">Mode exercices</a>
+      <a class="quick-nav__link" href="#section-memo">Aide-mémoire</a>
+    </nav>
 
     <!-- ================================== -->
     <!-- SECTION 1 : AIRES ET PÉRIMÈTRES    -->
@@ -186,19 +192,14 @@
         <button class="btn btn--secondary" id="btn-tests-formules" type="button">Vérifier les formules</button>
       </div>
 
-      <div id="recommandation-exercice" class="exercise-panel exercise-panel--hint">
+      <div id="recommandation-exercice" class="exercise-panel exercise-panel--hint exercise-panel--priority">
         Active le mode adaptatif pour recevoir un exercice ciblé selon tes besoins.
       </div>
-      <div id="objectif-session" class="exercise-panel"></div>
-      <div id="competences-exercice" class="exercise-panel"></div>
-      <div id="plan-remediation" class="exercise-panel"></div>
-      <div id="chronometre-exercice" class="exercise-panel exercise-panel--hint"></div>
-      <div id="diagnostic-exercice" class="exercise-panel"></div>
-      <div id="plan-revision" class="exercise-panel"></div>
-      <div id="tests-formules-resultat" class="exercise-panel"></div>
-      <div id="session-progression" class="exercise-panel"></div>
+      <div id="objectif-session" class="exercise-panel exercise-panel--priority"></div>
+      <div id="competences-exercice" class="exercise-panel exercise-panel--priority"></div>
+      <div id="session-progression" class="exercise-panel exercise-panel--priority"></div>
 
-      <div id="exercice-enonce" class="exercise-panel" aria-live="polite">
+      <div id="exercice-enonce" class="exercise-panel exercise-panel--priority" aria-live="polite">
         Clique sur <strong>Nouvel exercice</strong> pour commencer.
       </div>
 
@@ -217,21 +218,30 @@
 
       <div id="feedback-exercice" class="resultat" aria-live="polite"></div>
 
-      <div class="progress-grid">
-        <div class="exercise-panel">
-          <h3 class="panel-title">Progression</h3>
-          <div id="progression-exercice" class="progression-resume"></div>
-        </div>
-        <div class="exercise-panel">
-          <h3 class="panel-title">Badges</h3>
-          <div id="badges-exercice" class="badges-list"></div>
-        </div>
-      </div>
+      <details class="exercise-more">
+        <summary>Afficher les outils avancés (diagnostic, remédiation, historique)</summary>
+        <div id="plan-remediation" class="exercise-panel"></div>
+        <div id="chronometre-exercice" class="exercise-panel exercise-panel--hint"></div>
+        <div id="diagnostic-exercice" class="exercise-panel"></div>
+        <div id="plan-revision" class="exercise-panel"></div>
+        <div id="tests-formules-resultat" class="exercise-panel"></div>
 
-      <div class="exercise-panel">
-        <h3 class="panel-title">Historique récent</h3>
-        <ul id="historique-exercice" class="history-list"></ul>
-      </div>
+        <div class="progress-grid">
+          <div class="exercise-panel">
+            <h3 class="panel-title">Progression</h3>
+            <div id="progression-exercice" class="progression-resume"></div>
+          </div>
+          <div class="exercise-panel">
+            <h3 class="panel-title">Badges</h3>
+            <div id="badges-exercice" class="badges-list"></div>
+          </div>
+        </div>
+
+        <div class="exercise-panel">
+          <h3 class="panel-title">Historique récent</h3>
+          <ul id="historique-exercice" class="history-list"></ul>
+        </div>
+      </details>
     </section>
 
     <!-- ================================ -->

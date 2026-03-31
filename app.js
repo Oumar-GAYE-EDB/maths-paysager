@@ -111,6 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // --- Mode sombre / clair ---
   initialiserTheme();
+  initialiserSaisieDecimale();
 
   // --- Mode exercices / progression ---
   initialiserModeExercices({
@@ -204,6 +205,15 @@ function reinitialiserSectionPourcentages(selectPourcent, champsPourcent, result
   afficherChampsPourcent(selectPourcent.value, champsPourcent);
   resultatPourcent.innerHTML = "";
   resultatPourcent.className = "resultat";
+}
+
+function initialiserSaisieDecimale() {
+  document.addEventListener("input", function (event) {
+    const cible = event.target;
+    if (!cible || cible.tagName !== "INPUT" || cible.type !== "number") return;
+    if (typeof cible.value !== "string" || cible.value.indexOf(",") === -1) return;
+    cible.value = cible.value.replace(",", ".");
+  });
 }
 
 /**
@@ -744,12 +754,23 @@ function creerExerciceRemediation(remediation) {
 
 function afficherExercice(zoneEnonce, zoneFeedback, champReponse, exercice) {
   if (!zoneEnonce || !exercice) return;
-  const enonceFormate = (exercice.enonce || "").replace(/\n/g, "<br>");
-  zoneEnonce.innerHTML =
-    '<p><strong>' + exercice.titre + "</strong></p>" +
-    "<p>" + enonceFormate + "</p>";
+  viderElement(zoneEnonce);
+  const titre = document.createElement("p");
+  const titreFort = document.createElement("strong");
+  titreFort.textContent = exercice.titre;
+  titre.appendChild(titreFort);
+
+  const enonce = document.createElement("p");
+  const lignes = String(exercice.enonce || "").split("\n");
+  lignes.forEach(function (ligne, index) {
+    enonce.appendChild(document.createTextNode(ligne));
+    if (index < lignes.length - 1) enonce.appendChild(document.createElement("br"));
+  });
+
+  zoneEnonce.appendChild(titre);
+  zoneEnonce.appendChild(enonce);
   zoneFeedback.className = "resultat";
-  zoneFeedback.innerHTML = "";
+  zoneFeedback.textContent = "";
   champReponse.value = "";
   champReponse.focus();
 }
@@ -757,24 +778,31 @@ function afficherExercice(zoneEnonce, zoneFeedback, champReponse, exercice) {
 function afficherFeedbackExercice(zone, exercice, reponseEleve, estCorrect, diagnostic) {
   if (!zone) return;
   zone.className = "resultat resultat--visible" + (estCorrect ? "" : " resultat--erreur");
-  const message = estCorrect
-    ? "<strong>Bravo ✅</strong> Ta réponse est correcte."
-    : "<strong>Presque ❌</strong> Ce n'est pas la bonne réponse.";
-  zone.innerHTML =
-    message +
-    "<br>Ta réponse : " +
-    arrondir(reponseEleve) +
-    (exercice.unite ? " " + exercice.unite : "") +
-    "<br>Réponse attendue : " +
-    arrondir(exercice.reponse) +
-    (exercice.unite ? " " + exercice.unite : "") +
-    '<div class="resultat__formule">' +
-    exercice.explication +
-    "</div>" +
-    (diagnostic ? '<p class="resultat__astuce"><strong>Diagnostic probable :</strong> ' + diagnostic + "</p>" : "") +
-    '<p class="resultat__astuce"><strong>Erreur fréquente :</strong> ' +
-    exercice.erreurProbable +
-    "</p>";
+  viderElement(zone);
+
+  const message = document.createElement("p");
+  const messageFort = document.createElement("strong");
+  messageFort.textContent = estCorrect ? "Bravo ✅" : "Presque ❌";
+  message.appendChild(messageFort);
+  message.appendChild(document.createTextNode(estCorrect ? " Ta réponse est correcte." : " Ce n'est pas la bonne réponse."));
+
+  const reponse = document.createElement("p");
+  reponse.textContent = "Ta réponse : " + arrondir(reponseEleve) + (exercice.unite ? " " + exercice.unite : "");
+
+  const attendu = document.createElement("p");
+  attendu.textContent = "Réponse attendue : " + arrondir(exercice.reponse) + (exercice.unite ? " " + exercice.unite : "");
+
+  const explication = document.createElement("div");
+  explication.className = "resultat__formule";
+  explication.textContent = exercice.explication;
+
+  zone.appendChild(message);
+  zone.appendChild(reponse);
+  zone.appendChild(attendu);
+  zone.appendChild(explication);
+
+  if (diagnostic) zone.appendChild(creerAstuce("Diagnostic probable", diagnostic));
+  zone.appendChild(creerAstuce("Erreur fréquente", exercice.erreurProbable));
 }
 
 function analyserErreur(exercice, reponseEleve) {
@@ -795,29 +823,35 @@ function afficherIndiceProgressif(zone, exercice, niveauIndice) {
   const indices = exercice.indices || [];
   if (!indices[niveauIndice]) {
     zone.className = "resultat resultat--visible";
-    zone.innerHTML = "Aucun indice supplémentaire pour cet exercice.";
+    zone.textContent = "Aucun indice supplémentaire pour cet exercice.";
     return;
   }
   zone.className = "resultat resultat--visible";
-  zone.innerHTML =
-    "<strong>Indice " +
-    (niveauIndice + 1) +
-    " :</strong> " +
-    indices[niveauIndice] +
-    '<p class="resultat__astuce">Essaie ensuite de refaire le calcul sans regarder la méthode complète.</p>';
+  viderElement(zone);
+  const ligne = document.createElement("p");
+  const fort = document.createElement("strong");
+  fort.textContent = "Indice " + (niveauIndice + 1) + " :";
+  ligne.appendChild(fort);
+  ligne.appendChild(document.createTextNode(" " + indices[niveauIndice]));
+  zone.appendChild(ligne);
+  zone.appendChild(creerAstuceTexte("Essaie ensuite de refaire le calcul sans regarder la méthode complète."));
 }
 
 function afficherMethode(zone, exercice) {
   if (!zone || !exercice) return;
   zone.className = "resultat resultat--visible";
-  zone.innerHTML =
-    "<strong>Méthode guidée :</strong>" +
-    '<div class="resultat__formule">' +
-    exercice.explication +
-    "</div>" +
-    '<p class="resultat__astuce"><strong>Astuce de remédiation :</strong> ' +
-    exercice.erreurProbable +
-    "</p>";
+  viderElement(zone);
+  const titre = document.createElement("p");
+  const fort = document.createElement("strong");
+  fort.textContent = "Méthode guidée :";
+  titre.appendChild(fort);
+  zone.appendChild(titre);
+
+  const blocMethode = document.createElement("div");
+  blocMethode.className = "resultat__formule";
+  blocMethode.textContent = exercice.explication;
+  zone.appendChild(blocMethode);
+  zone.appendChild(creerAstuce("Astuce de remédiation", exercice.erreurProbable));
 }
 
 function chargerProgression() {
@@ -1693,7 +1727,13 @@ function calculerPourcentage(type, conteneur, resultat) {
 function lireValeur(id) {
   const champ = document.getElementById(id);
   if (!champ || champ.value.trim() === "") return null;
-  return parseFloat(champ.value);
+  return parserNombreLocale(champ.value);
+}
+
+function parserNombreLocale(texte) {
+  if (typeof texte !== "string") return NaN;
+  const normalise = texte.trim().replace(/\s+/g, "").replace(",", ".");
+  return parseFloat(normalise);
 }
 
 /**
@@ -1782,39 +1822,24 @@ function afficherErreurChamp(idChamp, message) {
  */
 function afficherResultat(zone, aire, perimetre, formuleAire, formulePerimetre, etapesAire, etapesPerimetre, forme) {
   zone.className = "resultat resultat--visible";
-
-  let html = "";
-
-  // Ligne de l'aire
-  html +=
-    '<div class="resultat__ligne">' +
-    '  <span class="resultat__label">Aire :</span>' +
-    '  <span class="resultat__valeur">' + arrondir(aire) + " m²</span>" +
-    "</div>";
-
-  // Ligne du périmètre (si calculé)
+  viderElement(zone);
+  zone.appendChild(creerLigneResultat("Aire", arrondir(aire) + " m²"));
   if (perimetre !== null) {
-    html +=
-      '<div class="resultat__ligne">' +
-      '  <span class="resultat__label">Périmètre :</span>' +
-      '  <span class="resultat__valeur">' + arrondir(perimetre) + " m</span>" +
-      "</div>";
+    zone.appendChild(creerLigneResultat("Périmètre", arrondir(perimetre) + " m"));
   }
 
-  // Détail des formules utilisées
-  html +=
-    '<div class="resultat__formule">' +
-    "  " + formuleAire + "<br>" + formulePerimetre +
-    "</div>";
+  const formule = document.createElement("div");
+  formule.className = "resultat__formule";
+  formule.appendChild(document.createTextNode(formuleAire));
+  formule.appendChild(document.createElement("br"));
+  formule.appendChild(document.createTextNode(formulePerimetre));
+  zone.appendChild(formule);
 
-  html += genererBlocEtapes("Étapes pour l'aire", etapesAire);
-  html += genererBlocEtapes("Étapes pour le périmètre", etapesPerimetre);
-  html +=
-    '<p class="resultat__astuce"><strong>Astuce :</strong> ' +
-    genererAstuceForme(forme) +
-    "</p>";
-
-  zone.innerHTML = html;
+  const blocAire = creerBlocEtapesElement("Étapes pour l'aire", etapesAire);
+  if (blocAire) zone.appendChild(blocAire);
+  const blocPerimetre = creerBlocEtapesElement("Étapes pour le périmètre", etapesPerimetre);
+  if (blocPerimetre) zone.appendChild(blocPerimetre);
+  zone.appendChild(creerAstuce("Astuce", genererAstuceForme(forme)));
 
   enregistrerHistorique({
     type: "calcul",
@@ -1834,14 +1859,17 @@ function afficherResultat(zone, aire, perimetre, formuleAire, formulePerimetre, 
  */
 function afficherResultatPourcent(zone, valeur, formule, etapes, type) {
   zone.className = "resultat resultat--visible";
-  zone.innerHTML =
-    '<div class="resultat__ligne">' +
-    '  <span class="resultat__label">Résultat :</span>' +
-    '  <span class="resultat__valeur">' + valeur + "</span>" +
-    "</div>" +
-    '<div class="resultat__formule">' + formule + "</div>" +
-    genererBlocEtapes("Étapes du calcul", etapes) +
-    '<p class="resultat__astuce"><strong>Astuce :</strong> ' + genererAstucePourcentage(type) + "</p>";
+  viderElement(zone);
+  zone.appendChild(creerLigneResultat("Résultat", String(valeur)));
+
+  const blocFormule = document.createElement("div");
+  blocFormule.className = "resultat__formule";
+  blocFormule.textContent = formule;
+  zone.appendChild(blocFormule);
+
+  const blocEtapes = creerBlocEtapesElement("Étapes du calcul", etapes);
+  if (blocEtapes) zone.appendChild(blocEtapes);
+  zone.appendChild(creerAstuce("Astuce", genererAstucePourcentage(type)));
 
   enregistrerHistorique({
     type: "calcul",
@@ -1852,16 +1880,23 @@ function afficherResultatPourcent(zone, valeur, formule, etapes, type) {
   afficherHistorique(document.getElementById("historique-exercice"));
 }
 
-function genererBlocEtapes(titre, etapes) {
-  if (!etapes || etapes.length === 0) return "";
-  return (
-    '<div class="resultat__etapes">' +
-    '  <p class="resultat__etapes-titre">' + titre + "</p>" +
-    '  <ol class="resultat__etapes-liste">' +
-    etapes.map(function (etape) { return "<li>" + etape + "</li>"; }).join("") +
-    "  </ol>" +
-    "</div>"
-  );
+function creerBlocEtapesElement(titre, etapes) {
+  if (!etapes || etapes.length === 0) return null;
+  const bloc = document.createElement("div");
+  bloc.className = "resultat__etapes";
+  const titreEl = document.createElement("p");
+  titreEl.className = "resultat__etapes-titre";
+  titreEl.textContent = titre;
+  bloc.appendChild(titreEl);
+  const liste = document.createElement("ol");
+  liste.className = "resultat__etapes-liste";
+  etapes.forEach(function (etape) {
+    const item = document.createElement("li");
+    item.textContent = etape;
+    liste.appendChild(item);
+  });
+  bloc.appendChild(liste);
+  return bloc;
 }
 
 function genererAstuceForme(forme) {
@@ -1890,7 +1925,52 @@ function genererAstucePourcentage(type) {
  */
 function afficherErreur(zone, message) {
   zone.className = "resultat resultat--visible resultat--erreur";
-  zone.innerHTML = "<strong>Erreur :</strong> " + message;
+  viderElement(zone);
+  const prefixe = document.createElement("strong");
+  prefixe.textContent = "Erreur : ";
+  zone.appendChild(prefixe);
+  zone.appendChild(document.createTextNode(message));
+}
+
+function viderElement(element) {
+  if (!element) return;
+  while (element.firstChild) {
+    element.removeChild(element.firstChild);
+  }
+}
+
+function creerLigneResultat(label, valeur) {
+  const ligne = document.createElement("div");
+  ligne.className = "resultat__ligne";
+
+  const spanLabel = document.createElement("span");
+  spanLabel.className = "resultat__label";
+  spanLabel.textContent = label + " :";
+
+  const spanValeur = document.createElement("span");
+  spanValeur.className = "resultat__valeur";
+  spanValeur.textContent = valeur;
+
+  ligne.appendChild(spanLabel);
+  ligne.appendChild(spanValeur);
+  return ligne;
+}
+
+function creerAstuce(titre, texte) {
+  const astuce = document.createElement("p");
+  astuce.className = "resultat__astuce";
+  const fort = document.createElement("strong");
+  fort.textContent = titre + " :";
+  astuce.appendChild(fort);
+  astuce.appendChild(document.createTextNode(" " + texte));
+  return astuce;
+}
+
+function creerAstuceTexte(texte) {
+  const astuce = document.createElement("p");
+  astuce.className = "resultat__astuce";
+  astuce.textContent = texte;
+  return astuce;
 }
 
 
