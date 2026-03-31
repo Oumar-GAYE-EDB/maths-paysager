@@ -48,6 +48,16 @@ Types de calcul :
 - Thème clair/sombre mémorisé dans le navigateur
 - Interface responsive
 
+### 4) Coach adaptatif et remédiation
+- Mode adaptatif : proposition automatique du thème et du niveau selon les performances
+- File de remédiation : exercices ciblés après une erreur fréquente
+- Aide graduée : **Indice 1**, **Indice 2**, puis **méthode guidée**
+
+### 5) Exercices enrichis
+- Génération aléatoire sur plusieurs familles de formes (rectangle, carré, cercle, triangle, trapèze)
+- Génération aléatoire sur les 4 types de calcul de pourcentage
+- Scénarios de remédiation ciblés par type d'erreur
+
 ---
 
 ## Stack technique
@@ -75,6 +85,12 @@ python3 -m http.server 8000
 
 Puis ouvrir :
 `http://localhost:8000`
+
+### Lancer les tests
+
+```bash
+node --test tests/app.test.js
+```
 
 ---
 

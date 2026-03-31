@@ -457,6 +457,28 @@ body {
   background: var(--color-surface-offset);
 }
 
+.exercise-panel--hint {
+  margin-top: var(--space-3);
+  border-style: dashed;
+}
+
+.coach-row {
+  margin-bottom: var(--space-3);
+}
+
+.coach-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.coach-toggle input[type="checkbox"] {
+  accent-color: var(--color-primary);
+}
+
 .panel-title {
   font-size: var(--text-sm);
   font-family: var(--font-display);

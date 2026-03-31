@@ -9,6 +9,7 @@
 const PI = Math.PI; // ≈ 3.14159265...
 const CLE_HISTORIQUE = "maths-paysager-historique";
 const CLE_PROGRESS = "maths-paysager-progression";
+const CLE_REMEDIATION = "maths-paysager-remediation";
 const MAX_HISTORIQUE = 20;
 
 let exerciceActuel = null;
@@ -17,6 +18,7 @@ let exerciceActuel = null;
 // 1. INITIALISATION AU CHARGEMENT DE LA PAGE
 // ============================================================
 
+if (typeof document !== "undefined") {
 document.addEventListener("DOMContentLoaded", function () {
   // On récupère les éléments HTML importants
   const selectForme = document.getElementById("forme");
@@ -36,7 +38,12 @@ document.addEventListener("DOMContentLoaded", function () {
   const btnGenererExercice = document.getElementById("btn-generer-exercice");
   const btnValiderExercice = document.getElementById("btn-valider-exercice");
   const btnSuivantExercice = document.getElementById("btn-suivant-exercice");
+  const btnIndice1 = document.getElementById("btn-indice-1");
+  const btnIndice2 = document.getElementById("btn-indice-2");
+  const btnMethode = document.getElementById("btn-methode");
+  const modeAdaptatif = document.getElementById("mode-adaptatif");
   const enonceExercice = document.getElementById("exercice-enonce");
+  const recommandationExercice = document.getElementById("recommandation-exercice");
   const reponseExercice = document.getElementById("reponse-exercice");
   const feedbackExercice = document.getElementById("feedback-exercice");
   const progressionExercice = document.getElementById("progression-exercice");
@@ -96,7 +103,12 @@ document.addEventListener("DOMContentLoaded", function () {
     btnGenererExercice: btnGenererExercice,
     btnValiderExercice: btnValiderExercice,
     btnSuivantExercice: btnSuivantExercice,
+    btnIndice1: btnIndice1,
+    btnIndice2: btnIndice2,
+    btnMethode: btnMethode,
+    modeAdaptatif: modeAdaptatif,
     enonceExercice: enonceExercice,
+    recommandationExercice: recommandationExercice,
     reponseExercice: reponseExercice,
     feedbackExercice: feedbackExercice,
     progressionExercice: progressionExercice,
@@ -104,6 +116,7 @@ document.addEventListener("DOMContentLoaded", function () {
     historiqueExercice: historiqueExercice,
   });
 });
+}
 
 
 // ============================================================
@@ -192,8 +205,12 @@ function initialiserModeExercices(ui) {
   if (!ui || !ui.btnGenererExercice) return;
 
   ui.btnGenererExercice.addEventListener("click", function () {
-    exerciceActuel = creerExercice(ui.selectThemeExercice.value, ui.selectNiveauExercice.value);
+    const selection = ui.modeAdaptatif && ui.modeAdaptatif.checked
+      ? choisirParcoursAdaptatif(ui.selectThemeExercice.value, ui.selectNiveauExercice.value)
+      : { theme: ui.selectThemeExercice.value, niveau: ui.selectNiveauExercice.value, source: "manuel" };
+    exerciceActuel = creerExercice(selection.theme, selection.niveau, selection);
     afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
+    afficherRecommandation(ui.recommandationExercice, selection);
   });
 
   ui.btnValiderExercice.addEventListener("click", function () {
@@ -209,6 +226,22 @@ function initialiserModeExercices(ui) {
       corrigerExercice(ui, false);
     }
   });
+
+  if (ui.btnIndice1) {
+    ui.btnIndice1.addEventListener("click", function () {
+      afficherIndiceProgressif(ui.feedbackExercice, exerciceActuel, 0);
+    });
+  }
+  if (ui.btnIndice2) {
+    ui.btnIndice2.addEventListener("click", function () {
+      afficherIndiceProgressif(ui.feedbackExercice, exerciceActuel, 1);
+    });
+  }
+  if (ui.btnMethode) {
+    ui.btnMethode.addEventListener("click", function () {
+      afficherMethode(ui.feedbackExercice, exerciceActuel);
+    });
+  }
 
   mettreAJourProgressionEtBadges(ui.progressionExercice, ui.badgesExercice);
   afficherHistorique(ui.historiqueExercice);
@@ -232,20 +265,124 @@ function corrigerExercice(ui, passerAuSuivant) {
   if (!passerAuSuivant) {
     const estCorrect = Math.abs(reponse - exerciceActuel.reponse) <= exerciceActuel.tolerance;
     enregistrerTentativeExercice(exerciceActuel, reponse, estCorrect);
+    if (!estCorrect) {
+      ajouterRemediation(exerciceActuel);
+    }
     afficherFeedbackExercice(ui.feedbackExercice, exerciceActuel, reponse, estCorrect);
     mettreAJourProgressionEtBadges(ui.progressionExercice, ui.badgesExercice);
     afficherHistorique(ui.historiqueExercice);
     return;
   }
 
-  exerciceActuel = creerExercice(ui.selectThemeExercice.value, ui.selectNiveauExercice.value);
+  const selection = ui.modeAdaptatif && ui.modeAdaptatif.checked
+    ? choisirParcoursAdaptatif(ui.selectThemeExercice.value, ui.selectNiveauExercice.value)
+    : { theme: ui.selectThemeExercice.value, niveau: ui.selectNiveauExercice.value, source: "manuel" };
+  exerciceActuel = creerExercice(selection.theme, selection.niveau, selection);
   afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
+  afficherRecommandation(ui.recommandationExercice, selection);
 }
 
-function creerExercice(theme, niveau) {
+function creerExercice(theme, niveau, meta) {
+  if (meta && meta.remediation) return creerExerciceRemediation(meta.remediation, niveau);
   if (theme === "pourcentages") return creerExercicePourcentage(niveau);
   if (theme === "metier") return creerExerciceMetier(niveau);
   return creerExerciceForme(niveau);
+}
+
+function choisirParcoursAdaptatif(themeDefaut, niveauDefaut) {
+  const remediation = consommerRemediation();
+  if (remediation) {
+    return {
+      theme: remediation.theme,
+      niveau: "facile",
+      source: "remediation",
+      remediation: remediation,
+      message:
+        "Coach : on te propose une remédiation ciblée sur « " +
+        remediation.competenceLibelle +
+        " » après une erreur récente.",
+    };
+  }
+
+  const progression = chargerProgression();
+  const competenceCible = trouverCompetencePrioritaire(progression);
+  const mapping = {
+    "aires-perimetres": { theme: "aires", label: "aires et périmètres" },
+    pourcentages: { theme: "pourcentages", label: "pourcentages" },
+    "situations-metier": { theme: "metier", label: "situations métier" },
+  };
+  const cible = mapping[competenceCible] || { theme: themeDefaut, label: "révisions générales" };
+  const tauxGlobal = progression.essais > 0 ? (progression.reussites / progression.essais) * 100 : 0;
+  const niveau = tauxGlobal < 55 ? "facile" : (tauxGlobal < 80 ? "moyen" : "difficile");
+  return {
+    theme: cible.theme,
+    niveau: niveau || niveauDefaut,
+    source: "adaptatif",
+    message:
+      "Coach : priorité sur « " +
+      cible.label +
+      " » (taux actuel " +
+      arrondir(tauxGlobal) +
+      "%). Niveau conseillé : " +
+      niveau +
+      ".",
+  };
+}
+
+function trouverCompetencePrioritaire(progression) {
+  const cles = ["aires-perimetres", "pourcentages", "situations-metier"];
+  let pire = cles[0];
+  let pireScore = Number.POSITIVE_INFINITY;
+  cles.forEach(function (cle) {
+    const stats = progression.competences[cle] || { essais: 0, reussites: 0 };
+    const taux = stats.essais > 0 ? stats.reussites / stats.essais : 0.45;
+    const score = taux - Math.min(stats.essais, 8) * 0.01;
+    if (score < pireScore) {
+      pireScore = score;
+      pire = cle;
+    }
+  });
+  return pire;
+}
+
+function afficherRecommandation(zone, selection) {
+  if (!zone) return;
+  const messageParDefaut = "Mode manuel : tu choisis toi-même ton thème et ton niveau.";
+  zone.innerHTML = selection && selection.message ? selection.message : messageParDefaut;
+}
+
+function lireRemediation() {
+  try {
+    const brut = localStorage.getItem(CLE_REMEDIATION);
+    return brut ? JSON.parse(brut) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function sauvegarderRemediation(file) {
+  localStorage.setItem(CLE_REMEDIATION, JSON.stringify(file.slice(0, 8)));
+}
+
+function ajouterRemediation(exercice) {
+  if (!exercice || !exercice.erreurCode) return;
+  const file = lireRemediation();
+  file.unshift({
+    erreurCode: exercice.erreurCode,
+    theme: exercice.theme === "aires" ? "aires" : exercice.theme,
+    competence: exercice.competence,
+    competenceLibelle: exercice.titre,
+    date: Date.now(),
+  });
+  sauvegarderRemediation(file);
+}
+
+function consommerRemediation() {
+  const file = lireRemediation();
+  if (file.length === 0) return null;
+  const prochaine = file.shift();
+  sauvegarderRemediation(file);
+  return prochaine;
 }
 
 function creerExerciceForme(niveau) {
@@ -255,54 +392,102 @@ function creerExerciceForme(niveau) {
     difficile: { min: 10, max: 40 },
   };
   const plage = difficultes[niveau] || difficultes.facile;
-  const type = nombreAleatoire(0, 1) === 0 ? "rectangle" : "cercle";
+  const type = choisirAleatoire(["rectangle", "cercle", "carre", "triangle", "trapeze"]);
 
-  if (type === "rectangle") {
-    const L = nombreAleatoire(plage.min, plage.max);
-    const l = nombreAleatoire(plage.min, plage.max);
-    const aire = L * l;
-    return {
-      theme: "aires",
-      competence: "aires-perimetres",
-      titre: "Aire de rectangle",
-      enonce: "Un rectangle mesure " + L + " m par " + l + " m. Quelle est son aire ?",
-      reponse: aire,
-      tolerance: 0.05,
-      unite: "m²",
-      explication: "Formule : aire = longueur × largeur = " + L + " × " + l + " = " + arrondir(aire) + " m².",
-      erreurProbable: "Ne confonds pas aire (m²) et périmètre (m).",
-    };
-  }
-
-  const rayon = nombreAleatoire(plage.min, plage.max);
-  const perimetre = 2 * PI * rayon;
-  return {
-    theme: "aires",
-    competence: "aires-perimetres",
-    titre: "Périmètre de cercle",
-    enonce: "Un bassin circulaire a un rayon de " + rayon + " m. Quel est son périmètre ?",
-    reponse: perimetre,
-    tolerance: 0.1,
-    unite: "m",
-    explication: "Formule : périmètre = 2 × π × r = 2 × π × " + rayon + " = " + arrondir(perimetre) + " m.",
-    erreurProbable: "Attention : le rayon n'est pas le diamètre.",
-  };
+  if (type === "rectangle") return creerExerciceRectangle(plage);
+  if (type === "cercle") return creerExerciceCercle(plage);
+  if (type === "carre") return creerExerciceCarre(plage);
+  if (type === "triangle") return creerExerciceTriangle(plage);
+  return creerExerciceTrapeze(plage);
 }
 
 function creerExercicePourcentage(niveau) {
+  const type = choisirAleatoire(["trouver-pourcentage", "quel-pourcentage", "augmentation", "reduction"]);
   const nombre = niveau === "difficile" ? nombreAleatoire(120, 800) : nombreAleatoire(50, 400);
   const pourcent = niveau === "facile" ? nombreAleatoire(5, 30) : nombreAleatoire(10, 75);
-  const resultat = (pourcent * nombre) / 100;
+
+  if (type === "trouver-pourcentage") {
+    const resultat = (pourcent * nombre) / 100;
+    return {
+      theme: "pourcentages",
+      competence: "pourcentages",
+      titre: "Calcul de pourcentage",
+      enonce: "Calcule " + pourcent + "% de " + nombre + ".",
+      reponse: resultat,
+      tolerance: 0.05,
+      unite: "",
+      explication: "Formule : (" + pourcent + " × " + nombre + ") ÷ 100 = " + arrondir(resultat) + ".",
+      erreurProbable: "Pense à diviser par 100 à la fin.",
+      erreurCode: "pourcent_div100",
+      indices: [
+        "Indice 1 : un pourcentage signifie « sur 100 ».",
+        "Indice 2 : après la multiplication, il faut diviser par 100.",
+      ],
+    };
+  }
+
+  if (type === "quel-pourcentage") {
+    const total = nombreAleatoire(50, 300);
+    const partie = nombreAleatoire(10, total);
+    const resultat = (partie / total) * 100;
+    return {
+      theme: "pourcentages",
+      competence: "pourcentages",
+      titre: "Part d'un total",
+      enonce: "Quel pourcentage représente " + partie + " par rapport à " + total + " ?",
+      reponse: resultat,
+      tolerance: 0.05,
+      unite: "%",
+      explication: "Formule : (" + partie + " ÷ " + total + ") × 100 = " + arrondir(resultat) + " %.",
+      erreurProbable: "Tu as peut-être inversé partie et total.",
+      erreurCode: "pourcent_part_total",
+      indices: [
+        "Indice 1 : le total correspond à 100%.",
+        "Indice 2 : commence par partie ÷ total.",
+      ],
+    };
+  }
+
+  if (type === "augmentation") {
+    const depart = nombreAleatoire(60, 350);
+    const augmentation = nombreAleatoire(5, 45);
+    const resultat = depart * (1 + augmentation / 100);
+    return {
+      theme: "pourcentages",
+      competence: "pourcentages",
+      titre: "Augmentation en pourcentage",
+      enonce: "Après une hausse de " + augmentation + "%, combien vaut " + depart + " ?",
+      reponse: resultat,
+      tolerance: 0.05,
+      unite: "",
+      explication: "Nouveau = " + depart + " × (1 + " + augmentation + "/100) = " + arrondir(resultat) + ".",
+      erreurProbable: "Tu as peut-être oublié d'ajouter la valeur de départ.",
+      erreurCode: "pourcent_augmentation",
+      indices: [
+        "Indice 1 : calcule le montant de l'augmentation.",
+        "Indice 2 : ajoute ensuite ce montant à la valeur de départ.",
+      ],
+    };
+  }
+
+  const depart = nombreAleatoire(60, 350);
+  const reduction = nombreAleatoire(5, 45);
+  const resultat = depart * (1 - reduction / 100);
   return {
     theme: "pourcentages",
     competence: "pourcentages",
-    titre: "Calcul de pourcentage",
-    enonce: "Calcule " + pourcent + "% de " + nombre + ".",
+    titre: "Réduction en pourcentage",
+    enonce: "Après une réduction de " + reduction + "%, combien vaut " + depart + " ?",
     reponse: resultat,
     tolerance: 0.05,
     unite: "",
-    explication: "Formule : (" + pourcent + " × " + nombre + ") ÷ 100 = " + arrondir(resultat) + ".",
-    erreurProbable: "Pense à diviser par 100 à la fin.",
+    explication: "Nouveau = " + depart + " × (1 - " + reduction + "/100) = " + arrondir(resultat) + ".",
+    erreurProbable: "Tu as peut-être soustrait le pourcentage au lieu de la valeur correspondante.",
+    erreurCode: "pourcent_reduction",
+    indices: [
+      "Indice 1 : calcule d'abord le montant retiré.",
+      "Indice 2 : retire ce montant à la valeur de départ.",
+    ],
   };
 }
 
@@ -342,7 +527,306 @@ function creerExerciceMetier(niveau) {
       arrondir(sacs) +
       ".",
     erreurProbable: "Fais bien le calcul de surface avant la conversion en sacs.",
+    erreurCode: "metier_surface_avant_conversion",
+    indices: [
+      "Indice 1 : commence par calculer la surface de la parcelle.",
+      "Indice 2 : ensuite multiplie la surface par le nombre de sacs par m².",
+    ],
   };
+}
+
+function creerExerciceRectangle(plage) {
+  const L = nombreAleatoire(plage.min, plage.max);
+  const l = nombreAleatoire(plage.min, plage.max);
+  const aire = L * l;
+  return {
+    theme: "aires",
+    competence: "aires-perimetres",
+    titre: "Aire de rectangle",
+    enonce: "Un rectangle mesure " + L + " m par " + l + " m. Quelle est son aire ?",
+    reponse: aire,
+    tolerance: 0.05,
+    unite: "m²",
+    explication: "Formule : aire = longueur × largeur = " + L + " × " + l + " = " + arrondir(aire) + " m².",
+    erreurProbable: "Ne confonds pas aire (m²) et périmètre (m).",
+    erreurCode: "aire_unite",
+    indices: [
+      "Indice 1 : l'aire d'un rectangle se calcule avec une multiplication.",
+      "Indice 2 : prends longueur × largeur, sans multiplier par 2.",
+    ],
+  };
+}
+
+function creerExerciceCercle(plage) {
+  const rayon = nombreAleatoire(plage.min, plage.max);
+  const perimetre = 2 * PI * rayon;
+  return {
+    theme: "aires",
+    competence: "aires-perimetres",
+    titre: "Périmètre de cercle",
+    enonce: "Un bassin circulaire a un rayon de " + rayon + " m. Quel est son périmètre ?",
+    reponse: perimetre,
+    tolerance: 0.1,
+    unite: "m",
+    explication: "Formule : périmètre = 2 × π × r = 2 × π × " + rayon + " = " + arrondir(perimetre) + " m.",
+    erreurProbable: "Attention : le rayon n'est pas le diamètre.",
+    erreurCode: "rayon_diametre",
+    indices: [
+      "Indice 1 : la formule du périmètre d'un cercle commence par 2 × π.",
+      "Indice 2 : la mesure donnée est le rayon r, pas le diamètre.",
+    ],
+  };
+}
+
+function creerExerciceCarre(plage) {
+  const cote = nombreAleatoire(plage.min, plage.max);
+  const perimetre = 4 * cote;
+  return {
+    theme: "aires",
+    competence: "aires-perimetres",
+    titre: "Périmètre de carré",
+    enonce: "Une dalle carrée a un côté de " + cote + " m. Quel est son périmètre ?",
+    reponse: perimetre,
+    tolerance: 0.01,
+    unite: "m",
+    explication: "Formule : périmètre = 4 × côté = 4 × " + cote + " = " + arrondir(perimetre) + " m.",
+    erreurProbable: "Tu as peut-être calculé l'aire au lieu du périmètre.",
+    erreurCode: "carre_perimetre",
+    indices: [
+      "Indice 1 : un carré a 4 côtés identiques.",
+      "Indice 2 : additionner 4 fois le côté revient à faire 4 × côté.",
+    ],
+  };
+}
+
+function creerExerciceTriangle(plage) {
+  const base = nombreAleatoire(plage.min, plage.max);
+  const hauteur = nombreAleatoire(plage.min, plage.max);
+  const aire = (base * hauteur) / 2;
+  return {
+    theme: "aires",
+    competence: "aires-perimetres",
+    titre: "Aire de triangle",
+    enonce: "Un triangle a une base de " + base + " m et une hauteur de " + hauteur + " m. Quelle est son aire ?",
+    reponse: aire,
+    tolerance: 0.05,
+    unite: "m²",
+    explication: "Aire = (base × hauteur) ÷ 2 = (" + base + " × " + hauteur + ") ÷ 2 = " + arrondir(aire) + " m².",
+    erreurProbable: "Tu as peut-être oublié de diviser par 2.",
+    erreurCode: "triangle_div2",
+    indices: [
+      "Indice 1 : commence par base × hauteur.",
+      "Indice 2 : n'oublie pas la division par 2 à la fin.",
+    ],
+  };
+}
+
+function creerExerciceTrapeze(plage) {
+  const grandeBase = nombreAleatoire(plage.min + 2, plage.max + 4);
+  const petiteBase = nombreAleatoire(plage.min, Math.max(plage.min, grandeBase - 1));
+  const hauteur = nombreAleatoire(Math.max(2, plage.min - 1), plage.max);
+  const aire = ((grandeBase + petiteBase) * hauteur) / 2;
+  return {
+    theme: "aires",
+    competence: "aires-perimetres",
+    titre: "Aire de trapèze",
+    enonce:
+      "Une plate-bande trapézoïdale a une grande base de " +
+      grandeBase +
+      " m, une petite base de " +
+      petiteBase +
+      " m et une hauteur de " +
+      hauteur +
+      " m. Quelle est son aire ?",
+    reponse: aire,
+    tolerance: 0.05,
+    unite: "m²",
+    explication:
+      "Aire = ((B1 + B2) × h) ÷ 2 = ((" +
+      grandeBase +
+      " + " +
+      petiteBase +
+      ") × " +
+      hauteur +
+      ") ÷ 2 = " +
+      arrondir(aire) +
+      " m².",
+    erreurProbable: "Tu as peut-être oublié de faire la moyenne des bases (÷ 2).",
+    erreurCode: "trapeze_moyenne_bases",
+    indices: [
+      "Indice 1 : additionne d'abord les 2 bases.",
+      "Indice 2 : multiplie par la hauteur, puis divise par 2.",
+    ],
+  };
+}
+
+function creerExerciceRemediation(remediation) {
+  const banque = {
+    aire_unite: function () {
+      return {
+        theme: "aires",
+        competence: "aires-perimetres",
+        titre: "Remédiation : aire vs périmètre",
+        enonce: "Une terrasse mesure 8 m sur 3 m. Calcule uniquement son aire.",
+        reponse: 24,
+        tolerance: 0.01,
+        unite: "m²",
+        explication: "Aire = 8 × 3 = 24 m². Le périmètre serait un autre calcul.",
+        erreurProbable: "Tu as peut-être utilisé la formule du périmètre.",
+        erreurCode: "aire_unite",
+        indices: [
+          "Indice 1 : l'aire est une surface, donc en m².",
+          "Indice 2 : multiplie simplement 8 par 3.",
+        ],
+      };
+    },
+    rayon_diametre: function () {
+      return {
+        theme: "aires",
+        competence: "aires-perimetres",
+        titre: "Remédiation : rayon et diamètre",
+        enonce: "Un bassin a un rayon de 5 m. Calcule son périmètre.",
+        reponse: 2 * PI * 5,
+        tolerance: 0.1,
+        unite: "m",
+        explication: "P = 2 × π × r = 2 × π × 5 ≈ 31,42 m.",
+        erreurProbable: "Tu as peut-être pris 5 m comme diamètre.",
+        erreurCode: "rayon_diametre",
+        indices: [
+          "Indice 1 : formule du périmètre = 2 × π × r.",
+          "Indice 2 : ici r = 5 m, inutile de redoubler la valeur avant la formule.",
+        ],
+      };
+    },
+    pourcent_div100: function () {
+      return {
+        theme: "pourcentages",
+        competence: "pourcentages",
+        titre: "Remédiation : pourcentage",
+        enonce: "Calcule 25% de 120.",
+        reponse: 30,
+        tolerance: 0.01,
+        unite: "",
+        explication: "(25 × 120) ÷ 100 = 30.",
+        erreurProbable: "Tu as peut-être oublié la division par 100.",
+        erreurCode: "pourcent_div100",
+        indices: [
+          "Indice 1 : 25% = 25/100.",
+          "Indice 2 : fais 25 × 120 puis divise par 100.",
+        ],
+      };
+    },
+    metier_surface_avant_conversion: function () {
+      return {
+        theme: "metier",
+        competence: "situations-metier",
+        titre: "Remédiation : situation métier",
+        enonce: "Parcelle de 6 m × 4 m, avec 1,2 sac/m². Combien de sacs faut-il ?",
+        reponse: 28.8,
+        tolerance: 0.05,
+        unite: "sacs",
+        explication: "Surface = 6 × 4 = 24 m² puis sacs = 24 × 1,2 = 28,8.",
+        erreurProbable: "Tu as peut-être converti avant de calculer la surface.",
+        erreurCode: "metier_surface_avant_conversion",
+        indices: [
+          "Indice 1 : étape 1 = surface en m².",
+          "Indice 2 : étape 2 = surface × sacs/m².",
+        ],
+      };
+    },
+    triangle_div2: function () {
+      return {
+        theme: "aires",
+        competence: "aires-perimetres",
+        titre: "Remédiation : aire de triangle",
+        enonce: "Base = 10 m, hauteur = 4 m. Quelle est l'aire du triangle ?",
+        reponse: 20,
+        tolerance: 0.01,
+        unite: "m²",
+        explication: "Aire = (10 × 4) ÷ 2 = 20 m².",
+        erreurProbable: "Tu as peut-être oublié la division par 2.",
+        erreurCode: "triangle_div2",
+        indices: [
+          "Indice 1 : multiplie base et hauteur.",
+          "Indice 2 : puis divise ce résultat par 2.",
+        ],
+      };
+    },
+    trapeze_moyenne_bases: function () {
+      return {
+        theme: "aires",
+        competence: "aires-perimetres",
+        titre: "Remédiation : aire de trapèze",
+        enonce: "B1 = 12 m, B2 = 8 m, h = 5 m. Calcule l'aire.",
+        reponse: 50,
+        tolerance: 0.01,
+        unite: "m²",
+        explication: "Aire = ((12 + 8) × 5) ÷ 2 = 50 m².",
+        erreurProbable: "Tu as peut-être oublié le ÷ 2 final.",
+        erreurCode: "trapeze_moyenne_bases",
+        indices: [
+          "Indice 1 : additionne les deux bases.",
+          "Indice 2 : multiplie par la hauteur puis divise par 2.",
+        ],
+      };
+    },
+    pourcent_part_total: function () {
+      return {
+        theme: "pourcentages",
+        competence: "pourcentages",
+        titre: "Remédiation : part d'un total",
+        enonce: "Quel pourcentage représente 45 sur 180 ?",
+        reponse: 25,
+        tolerance: 0.01,
+        unite: "%",
+        explication: "(45 ÷ 180) × 100 = 25%.",
+        erreurProbable: "Tu as peut-être inversé partie et total.",
+        erreurCode: "pourcent_part_total",
+        indices: [
+          "Indice 1 : calcule d'abord 45 ÷ 180.",
+          "Indice 2 : multiplie ensuite par 100.",
+        ],
+      };
+    },
+    pourcent_augmentation: function () {
+      return {
+        theme: "pourcentages",
+        competence: "pourcentages",
+        titre: "Remédiation : augmentation",
+        enonce: "Une valeur de 200 augmente de 10%. Quelle est la nouvelle valeur ?",
+        reponse: 220,
+        tolerance: 0.01,
+        unite: "",
+        explication: "Montant d'augmentation = 200 × 10% = 20, puis 200 + 20 = 220.",
+        erreurProbable: "Tu as peut-être oublié d'ajouter le montant d'augmentation.",
+        erreurCode: "pourcent_augmentation",
+        indices: [
+          "Indice 1 : calcule 10% de 200.",
+          "Indice 2 : ajoute ce résultat à 200.",
+        ],
+      };
+    },
+    pourcent_reduction: function () {
+      return {
+        theme: "pourcentages",
+        competence: "pourcentages",
+        titre: "Remédiation : réduction",
+        enonce: "Une valeur de 200 baisse de 10%. Quelle est la nouvelle valeur ?",
+        reponse: 180,
+        tolerance: 0.01,
+        unite: "",
+        explication: "Montant retiré = 200 × 10% = 20, puis 200 - 20 = 180.",
+        erreurProbable: "Tu as peut-être retiré 10 au lieu de 10% de la valeur.",
+        erreurCode: "pourcent_reduction",
+        indices: [
+          "Indice 1 : calcule 10% de 200.",
+          "Indice 2 : retire ce montant à 200.",
+        ],
+      };
+    },
+  };
+  const generateur = banque[remediation.erreurCode] || banque.pourcent_div100;
+  return generateur();
 }
 
 function afficherExercice(zoneEnonce, zoneFeedback, champReponse, exercice) {
@@ -374,6 +858,36 @@ function afficherFeedbackExercice(zone, exercice, reponseEleve, estCorrect) {
     exercice.explication +
     "</div>" +
     '<p class="resultat__astuce"><strong>Erreur fréquente :</strong> ' +
+    exercice.erreurProbable +
+    "</p>";
+}
+
+function afficherIndiceProgressif(zone, exercice, niveauIndice) {
+  if (!zone || !exercice) return;
+  const indices = exercice.indices || [];
+  if (!indices[niveauIndice]) {
+    zone.className = "resultat resultat--visible";
+    zone.innerHTML = "Aucun indice supplémentaire pour cet exercice.";
+    return;
+  }
+  zone.className = "resultat resultat--visible";
+  zone.innerHTML =
+    "<strong>Indice " +
+    (niveauIndice + 1) +
+    " :</strong> " +
+    indices[niveauIndice] +
+    '<p class="resultat__astuce">Essaie ensuite de refaire le calcul sans regarder la méthode complète.</p>';
+}
+
+function afficherMethode(zone, exercice) {
+  if (!zone || !exercice) return;
+  zone.className = "resultat resultat--visible";
+  zone.innerHTML =
+    "<strong>Méthode guidée :</strong>" +
+    '<div class="resultat__formule">' +
+    exercice.explication +
+    "</div>" +
+    '<p class="resultat__astuce"><strong>Astuce de remédiation :</strong> ' +
     exercice.erreurProbable +
     "</p>";
 }
@@ -499,6 +1013,11 @@ function afficherHistorique(zone) {
 
 function nombreAleatoire(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function choisirAleatoire(tableau) {
+  if (!tableau || tableau.length === 0) return null;
+  return tableau[nombreAleatoire(0, tableau.length - 1)];
 }
 
 
@@ -1346,4 +1865,17 @@ function dessinerSchema(conteneur, forme, mesures) {
   }
 
   conteneur.innerHTML = svg;
+}
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = {
+    triangleValide,
+    arrondir,
+    creerExerciceForme,
+    creerExercicePourcentage,
+    creerExerciceMetier,
+    creerExerciceRemediation,
+    choisirAleatoire,
+    nombreAleatoire,
+  };
 }
