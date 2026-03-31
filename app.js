@@ -12,6 +12,8 @@ const CLE_PROGRESS = "maths-paysager-progression";
 const CLE_REMEDIATION = "maths-paysager-remediation";
 const MAX_HISTORIQUE = 20;
 const sessionStats = { essais: 0, reussites: 0 };
+let chronoInterval = null;
+let chronoRestant = 0;
 
 let exerciceActuel = null;
 
@@ -44,11 +46,15 @@ document.addEventListener("DOMContentLoaded", function () {
   const btnMethode = document.getElementById("btn-methode");
   const modeAdaptatif = document.getElementById("mode-adaptatif");
   const modeEvaluation = document.getElementById("mode-evaluation");
+  const modeChrono = document.getElementById("mode-chrono");
   const enonceExercice = document.getElementById("exercice-enonce");
   const recommandationExercice = document.getElementById("recommandation-exercice");
   const objectifSession = document.getElementById("objectif-session");
   const competencesExercice = document.getElementById("competences-exercice");
   const planRemediation = document.getElementById("plan-remediation");
+  const chronometreExercice = document.getElementById("chronometre-exercice");
+  const diagnosticExercice = document.getElementById("diagnostic-exercice");
+  const planRevision = document.getElementById("plan-revision");
   const sessionProgression = document.getElementById("session-progression");
   const uniteAttendue = document.getElementById("unite-attendue");
   const testsFormulesResultat = document.getElementById("tests-formules-resultat");
@@ -119,11 +125,15 @@ document.addEventListener("DOMContentLoaded", function () {
     btnMethode: btnMethode,
     modeAdaptatif: modeAdaptatif,
     modeEvaluation: modeEvaluation,
+    modeChrono: modeChrono,
     enonceExercice: enonceExercice,
     recommandationExercice: recommandationExercice,
     objectifSession: objectifSession,
     competencesExercice: competencesExercice,
     planRemediation: planRemediation,
+    chronometreExercice: chronometreExercice,
+    diagnosticExercice: diagnosticExercice,
+    planRevision: planRevision,
     sessionProgression: sessionProgression,
     uniteAttendue: uniteAttendue,
     testsFormulesResultat: testsFormulesResultat,
@@ -224,6 +234,8 @@ function initialiserModeExercices(ui) {
   if (!ui || !ui.btnGenererExercice) return;
 
   mettreAJourProgressionSession(ui.sessionProgression);
+  mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
+  mettreAJourChronometre(ui);
   if (ui.testsFormulesResultat) {
     ui.testsFormulesResultat.innerHTML = "Conseil fiabilité : lance « Vérifier les formules » avant une évaluation.";
   }
@@ -240,6 +252,7 @@ function initialiserModeExercices(ui) {
     afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
     mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
     appliquerModeEvaluation(ui.modeEvaluation, ui.btnIndice1, ui.btnIndice2, ui.btnMethode, ui.feedbackExercice);
+    demarrerChronoSiActif(ui, exerciceActuel);
   });
 
   ui.btnValiderExercice.addEventListener("click", function () {
@@ -276,6 +289,11 @@ function initialiserModeExercices(ui) {
       appliquerModeEvaluation(ui.modeEvaluation, ui.btnIndice1, ui.btnIndice2, ui.btnMethode, ui.feedbackExercice);
     });
   }
+  if (ui.modeChrono) {
+    ui.modeChrono.addEventListener("change", function () {
+      demarrerChronoSiActif(ui, exerciceActuel);
+    });
+  }
   if (ui.btnRejouerErreur) {
     ui.btnRejouerErreur.addEventListener("click", function () {
       const remediation = consommerRemediation();
@@ -293,6 +311,7 @@ function initialiserModeExercices(ui) {
       });
       mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
       afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
+      demarrerChronoSiActif(ui, exerciceActuel);
     });
   }
   if (ui.btnTestsFormules) {
@@ -303,6 +322,7 @@ function initialiserModeExercices(ui) {
 
   mettreAJourProgressionEtBadges(ui.progressionExercice, ui.badgesExercice);
   afficherHistorique(ui.historiqueExercice);
+  mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
 }
 
 function corrigerExercice(ui, passerAuSuivant) {
@@ -334,6 +354,7 @@ function corrigerExercice(ui, passerAuSuivant) {
     mettreAJourProgressionEtBadges(ui.progressionExercice, ui.badgesExercice);
     mettreAJourProgressionSession(ui.sessionProgression);
     afficherHistorique(ui.historiqueExercice);
+    mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
     return;
   }
 
@@ -346,6 +367,7 @@ function corrigerExercice(ui, passerAuSuivant) {
   afficherObjectifEtCompetences(ui.objectifSession, ui.competencesExercice, exerciceActuel, selection);
   mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
   afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
+  demarrerChronoSiActif(ui, exerciceActuel);
 }
 
 function creerExercice(theme, niveau, meta) {
@@ -839,6 +861,9 @@ function enregistrerTentativeExercice(exercice, reponse, estCorrect) {
     label: exercice.titre,
     details: exercice.enonce,
     resultat: (estCorrect ? "✅ " : "❌ ") + arrondir(reponse) + (exercice.unite ? " " + exercice.unite : ""),
+    competence: exercice.competence || "",
+    erreurCode: estCorrect ? "" : (exercice.erreurCode || ""),
+    estCorrect: estCorrect,
   });
 }
 
@@ -951,6 +976,48 @@ function appliquerModeEvaluation(toggle, btn1, btn2, btnMethode, zoneFeedback) {
   }
 }
 
+function demarrerChronoSiActif(ui, exercice) {
+  if (!ui || !ui.chronometreExercice) return;
+  if (chronoInterval) {
+    clearInterval(chronoInterval);
+    chronoInterval = null;
+  }
+  if (!ui.modeChrono || !ui.modeChrono.checked || !exercice) {
+    chronoRestant = 0;
+    mettreAJourChronometre(ui);
+    return;
+  }
+  const duree = exercice.palier === "Or" ? 180 : (exercice.palier === "Argent" ? 150 : 120);
+  chronoRestant = duree;
+  mettreAJourChronometre(ui);
+  chronoInterval = setInterval(function () {
+    chronoRestant -= 1;
+    mettreAJourChronometre(ui);
+    if (chronoRestant <= 0) {
+      clearInterval(chronoInterval);
+      chronoInterval = null;
+      ui.feedbackExercice.className = "resultat resultat--visible";
+      ui.feedbackExercice.innerHTML = "⏱️ Temps écoulé. Lis la méthode puis passe à l'exercice suivant.";
+    }
+  }, 1000);
+}
+
+function mettreAJourChronometre(ui) {
+  if (!ui || !ui.chronometreExercice) return;
+  if (!ui.modeChrono || !ui.modeChrono.checked) {
+    ui.chronometreExercice.innerHTML = "Mode chrono inactif : active-le pour travailler la rapidité en conditions d'évaluation.";
+    return;
+  }
+  const minutes = Math.floor(Math.max(0, chronoRestant) / 60);
+  const secondes = Math.max(0, chronoRestant) % 60;
+  ui.chronometreExercice.innerHTML =
+    "<strong>Chrono exercice :</strong> " +
+    String(minutes).padStart(2, "0") +
+    ":" +
+    String(secondes).padStart(2, "0") +
+    " <small>(objectif : méthode juste + temps maîtrisé)</small>";
+}
+
 function executerTestsFormules() {
   const tests = [
     { nom: "Aire rectangle", ok: proche(6 * 4, 24, 0.0001) },
@@ -996,8 +1063,75 @@ function enregistrerHistorique(entree) {
     label: entree.label,
     details: entree.details,
     resultat: entree.resultat,
+    competence: entree.competence || "",
+    erreurCode: entree.erreurCode || "",
+    estCorrect: typeof entree.estCorrect === "boolean" ? entree.estCorrect : null,
   });
   localStorage.setItem(CLE_HISTORIQUE, JSON.stringify(historique.slice(0, MAX_HISTORIQUE)));
+}
+
+function mettreAJourDiagnosticPedagogique(zoneDiagnostic, zonePlanRevision) {
+  const historique = lireHistorique().filter(function (item) {
+    return item.type === "exercice" && item.estCorrect === false;
+  });
+  const erreursParCode = {};
+  historique.forEach(function (item) {
+    const cle = item.erreurCode || "erreur_generique";
+    erreursParCode[cle] = (erreursParCode[cle] || 0) + 1;
+  });
+  const topErreurs = Object.entries(erreursParCode)
+    .sort(function (a, b) { return b[1] - a[1]; })
+    .slice(0, 3);
+
+  if (zoneDiagnostic) {
+    if (topErreurs.length === 0) {
+      zoneDiagnostic.innerHTML = "<strong>Diagnostic personnalisé :</strong> aucune erreur fréquente détectée pour l'instant. Continue ainsi.";
+    } else {
+      zoneDiagnostic.innerHTML =
+        "<strong>Erreurs fréquentes (récent) :</strong><ul>" +
+        topErreurs.map(function (item) {
+          return "<li>" + libelleErreur(item[0]) + " : <strong>" + item[1] + "</strong> fois</li>";
+        }).join("") +
+        "</ul>";
+    }
+  }
+
+  if (zonePlanRevision) {
+    const plan = genererPlanRevision(topErreurs);
+    zonePlanRevision.innerHTML =
+      "<strong>Plan de révision (10 minutes)</strong>" +
+      "<ol class=\"resultat__etapes-liste\">" +
+      plan.map(function (etape) { return "<li>" + etape + "</li>"; }).join("") +
+      "</ol>";
+  }
+}
+
+function libelleErreur(code) {
+  const libelles = {
+    aire_unite: "Confusion aire (m²) / périmètre (m)",
+    rayon_diametre: "Confusion rayon / diamètre",
+    pourcent_div100: "Division par 100 oubliée",
+    metier_surface_avant_conversion: "Surface non calculée avant conversion",
+    metier_cout_unitaire: "Coût unitaire mal appliqué",
+    metier_volume_unitaire: "Unité L/m mal interprétée",
+    erreur_generique: "Erreur de méthode à préciser",
+  };
+  return libelles[code] || libelles.erreur_generique;
+}
+
+function genererPlanRevision(topErreurs) {
+  if (!topErreurs || topErreurs.length === 0) {
+    return [
+      "2 min : relis une formule de chaque thème (aires, pourcentages, métier).",
+      "4 min : fais 2 exercices faciles sans indice.",
+      "4 min : refais 1 exercice en mode évaluation.",
+    ];
+  }
+  return [
+    "3 min : revois la notion « " + libelleErreur(topErreurs[0][0]) + " ».",
+    "4 min : fais 2 exercices ciblés avec indice 1 puis indice 2.",
+    "3 min : valide 1 exercice similaire sans aide.",
+  ];
 }
 
 function afficherHistorique(zone) {
