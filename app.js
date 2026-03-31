@@ -41,6 +41,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const btnGenererExercice = document.getElementById("btn-generer-exercice");
   const btnValiderExercice = document.getElementById("btn-valider-exercice");
   const btnSuivantExercice = document.getElementById("btn-suivant-exercice");
+  const btnJokerExercice = document.getElementById("btn-joker-exercice");
   const btnIndice1 = document.getElementById("btn-indice-1");
   const btnIndice2 = document.getElementById("btn-indice-2");
   const btnMethode = document.getElementById("btn-methode");
@@ -50,6 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const modeChrono = document.getElementById("mode-chrono");
   const enonceExercice = document.getElementById("exercice-enonce");
   const recommandationExercice = document.getElementById("recommandation-exercice");
+  const coachEtapes = document.getElementById("coach-etapes");
   const objectifSession = document.getElementById("objectif-session");
   const competencesExercice = document.getElementById("competences-exercice");
   const planRemediation = document.getElementById("plan-remediation");
@@ -123,6 +125,7 @@ document.addEventListener("DOMContentLoaded", function () {
     btnGenererExercice: btnGenererExercice,
     btnValiderExercice: btnValiderExercice,
     btnSuivantExercice: btnSuivantExercice,
+    btnJokerExercice: btnJokerExercice,
     btnIndice1: btnIndice1,
     btnIndice2: btnIndice2,
     btnMethode: btnMethode,
@@ -131,6 +134,7 @@ document.addEventListener("DOMContentLoaded", function () {
     modeChrono: modeChrono,
     enonceExercice: enonceExercice,
     recommandationExercice: recommandationExercice,
+    coachEtapes: coachEtapes,
     objectifSession: objectifSession,
     competencesExercice: competencesExercice,
     planRemediation: planRemediation,
@@ -276,6 +280,7 @@ function initialiserModeExercices(ui) {
     exerciceActuel = creerExercice(selection.theme, selection.niveau, selection);
     afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
     afficherRecommandation(ui.recommandationExercice, selection);
+    afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
     afficherObjectifEtCompetences(ui.objectifSession, ui.competencesExercice, exerciceActuel, selection);
     afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
     mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
@@ -290,6 +295,13 @@ function initialiserModeExercices(ui) {
   ui.btnSuivantExercice.addEventListener("click", function () {
     corrigerExercice(ui, true);
   });
+  if (ui.btnJokerExercice) {
+    ui.btnJokerExercice.addEventListener("click", function () {
+      if (!exerciceActuel) return;
+      afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "blocage");
+      afficherIndiceProgressif(ui.feedbackExercice, exerciceActuel, 0);
+    });
+  }
 
   ui.reponseExercice.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
@@ -337,6 +349,7 @@ function initialiserModeExercices(ui) {
         message: "Rejeu ciblé : on reprend une erreur récente.",
         objectifSeance: ui.selectObjectifSeance ? ui.selectObjectifSeance.value : "precision",
       });
+      afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
       mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
       afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
       demarrerChronoSiActif(ui, exerciceActuel);
@@ -378,6 +391,7 @@ function corrigerExercice(ui, passerAuSuivant) {
       ajouterRemediation(exerciceActuel);
     }
     afficherFeedbackExercice(ui.feedbackExercice, exerciceActuel, reponse, estCorrect, diagnostic);
+    afficherCoachEtapes(ui.coachEtapes, exerciceActuel, estCorrect ? "corrige-ok" : "corrige-ko");
     afficherPlanRemediation(ui.planRemediation, exerciceActuel, estCorrect ? "" : diagnostic);
     mettreAJourProgressionEtBadges(ui.progressionExercice, ui.badgesExercice);
     mettreAJourProgressionSession(ui.sessionProgression);
@@ -392,6 +406,7 @@ function corrigerExercice(ui, passerAuSuivant) {
   exerciceActuel = creerExercice(selection.theme, selection.niveau, selection);
   afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
   afficherRecommandation(ui.recommandationExercice, selection);
+  afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
   afficherObjectifEtCompetences(ui.objectifSession, ui.competencesExercice, exerciceActuel, selection);
   mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
   afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
@@ -469,6 +484,30 @@ function afficherRecommandation(zone, selection) {
   zone.innerHTML = selection && selection.message ? selection.message : messageParDefaut;
 }
 
+function afficherCoachEtapes(zone, exercice, etat) {
+  if (!zone || !exercice) return;
+  const etapes = exercice.etapes && exercice.etapes.length
+    ? exercice.etapes
+    : ["Comprendre la question", "Choisir la formule", "Calculer puis vérifier l'unité"];
+  const etapesValidees = etat === "corrige-ok" ? 3 : (etat === "corrige-ko" ? 2 : 1);
+  const blocVerification = exercice.verification
+    ? "<p><strong>Auto-contrôle :</strong> " + exercice.verification + "</p>"
+    : "";
+  const utilite = exercice.utiliteMetier
+    ? "<p><strong>Pourquoi c'est utile sur chantier :</strong> " + exercice.utiliteMetier + "</p>"
+    : "";
+  zone.innerHTML =
+    "<strong>Parcours pas à pas</strong>" +
+    "<ol class=\"resultat__etapes-liste\">" +
+    etapes.map(function (etape, index) {
+      const done = index < etapesValidees;
+      return "<li>" + (done ? "✅ " : "⬜ ") + etape + "</li>";
+    }).join("") +
+    "</ol>" +
+    utilite +
+    blocVerification;
+}
+
 function lireRemediation() {
   try {
     const brut = localStorage.getItem(CLE_REMEDIATION);
@@ -530,6 +569,13 @@ function creerExerciceForme(niveau) {
       erreurProbable: "Ne confonds pas aire (m²) et périmètre (m).",
       erreurCode: "aire_unite",
       palier: "Bronze",
+      etapes: [
+        "Je repère que l'on cherche une surface.",
+        "Je choisis la formule aire = longueur × largeur.",
+        "Je calcule et j'écris le résultat en m².",
+      ],
+      utiliteMetier: "Connaître la surface permet d'estimer les rouleaux de gazon et le temps de préparation du sol.",
+      verification: "Si ton résultat est en m (et non m²), c'est qu'il y a une erreur de formule.",
       indices: [
         "Indice 1 : cherche une surface, donc une formule d'aire.",
         "Indice 2 : pour un rectangle, aire = longueur × largeur (pas ×2).",
@@ -553,6 +599,13 @@ function creerExerciceForme(niveau) {
     erreurProbable: "Attention : le rayon n'est pas le diamètre.",
     erreurCode: "rayon_diametre",
     palier: "Argent",
+    etapes: [
+      "Je repère que l'on cherche la longueur autour du bassin.",
+      "Je choisis la formule périmètre = 2 × π × rayon.",
+      "Je calcule puis j'arrondis au centième en m.",
+    ],
+    utiliteMetier: "Le périmètre aide à commander la bonne longueur de bordure ou de ganivelle.",
+    verification: "Le résultat doit être supérieur au diamètre (2r).",
     indices: [
       "Indice 1 : on cherche une longueur autour du cercle : c'est un périmètre.",
       "Indice 2 : applique 2 × π × rayon, sans transformer le rayon en diamètre.",
@@ -578,6 +631,13 @@ function creerExercicePourcentage(niveau) {
     erreurProbable: "Pense à diviser par 100 à la fin.",
     erreurCode: "pourcent_div100",
     palier: niveau === "difficile" ? "Or" : "Argent",
+    etapes: [
+      "Je transforme le pourcentage en fraction sur 100.",
+      "Je multiplie le montant par ce pourcentage.",
+      "Je vérifie que la remise est plus petite que le montant initial.",
+    ],
+    utiliteMetier: "Calculer une remise est utile pour lire un devis fournisseur ou comparer des promotions.",
+    verification: "Une remise de x% doit rester entre 0 et le montant de départ.",
     indices: [
       "Indice 1 : " + pourcent + "% signifie " + pourcent + "/100.",
       "Indice 2 : fais la multiplication puis divise le résultat par 100.",
@@ -607,6 +667,13 @@ function creerExerciceMetier(niveau) {
       erreurProbable: "Fais bien le calcul de surface avant la conversion en sacs.",
       erreurCode: "metier_surface_avant_conversion",
       palier: "Argent",
+      etapes: [
+        "Je calcule d'abord la surface totale en m².",
+        "Je convertis cette surface en sacs avec le coefficient.",
+        "Je vérifie que le nombre de sacs est cohérent avec la taille de la parcelle.",
+      ],
+      utiliteMetier: "Ce calcul évite de manquer de semences le jour du chantier.",
+      verification: "Si la parcelle est grande, le nombre de sacs doit augmenter proportionnellement.",
       indices: ["Indice 1 : commence par calculer la surface en m².", "Indice 2 : convertis ensuite avec le coefficient en sac/m²."],
     };
   }
@@ -628,6 +695,13 @@ function creerExerciceMetier(niveau) {
       erreurProbable: "Tu as peut-être additionné au lieu de multiplier surface et prix unitaire.",
       erreurCode: "metier_cout_unitaire",
       palier: "Bronze",
+      etapes: [
+        "Je relève la surface totale en m².",
+        "Je repère le prix unitaire €/m².",
+        "Je multiplie pour obtenir le coût total en euros.",
+      ],
+      utiliteMetier: "Savoir estimer le coût total aide à préparer un devis réaliste.",
+      verification: "Le coût total doit être supérieur au prix d'1 m².",
       indices: ["Indice 1 : €/m² = prix pour 1 m².", "Indice 2 : multiplie la surface totale par ce prix unitaire."],
     };
   }
@@ -648,6 +722,13 @@ function creerExerciceMetier(niveau) {
     erreurProbable: "Attention à l'unité L/m : on doit multiplier par la longueur.",
     erreurCode: "metier_volume_unitaire",
     palier: niveau === "difficile" ? "Or" : "Argent",
+    etapes: [
+      "Je repère l'unité L/m (litres par mètre).",
+      "Je multiplie cette consommation par la longueur totale.",
+      "Je contrôle que le volume final est en litres.",
+    ],
+    utiliteMetier: "Permet d'anticiper la réserve d'eau nécessaire avant l'intervention.",
+    verification: "Si la longueur double, le volume doit doubler aussi.",
     indices: ["Indice 1 : L/m signifie « litres par mètre ».", "Indice 2 : multiplie la longueur totale par la valeur en L/m."],
   };
 }
@@ -813,11 +894,17 @@ function afficherFeedbackExercice(zone, exercice, reponseEleve, estCorrect, diag
   const explication = document.createElement("div");
   explication.className = "resultat__formule";
   explication.textContent = exercice.explication;
+  const action = document.createElement("p");
+  action.className = "resultat__formule";
+  action.textContent = estCorrect
+    ? "Action suivante : passe à un exercice similaire sans indice pour consolider."
+    : "Action suivante : utilise « Je bloque » ou Indice 1, puis recommence.";
 
   zone.appendChild(message);
   zone.appendChild(reponse);
   zone.appendChild(attendu);
   zone.appendChild(explication);
+  zone.appendChild(action);
 
   if (diagnostic) zone.appendChild(creerAstuce("Diagnostic probable", diagnostic));
   zone.appendChild(creerAstuce("Erreur fréquente", exercice.erreurProbable));
