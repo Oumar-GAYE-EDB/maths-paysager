@@ -14,6 +14,7 @@ const MAX_HISTORIQUE = 20;
 const sessionStats = { essais: 0, reussites: 0 };
 let chronoInterval = null;
 let chronoRestant = 0;
+let parcoursCibleActif = null;
 
 let exerciceActuel = null;
 
@@ -54,7 +55,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const coachEtapes = document.getElementById("coach-etapes");
   const objectifSession = document.getElementById("objectif-session");
   const competencesExercice = document.getElementById("competences-exercice");
+  const ficheApprentissage = document.getElementById("fiche-apprentissage");
+  const checklistVerification = document.getElementById("checklist-verification");
   const planRemediation = document.getElementById("plan-remediation");
+  const planMaitrise = document.getElementById("plan-maitrise");
   const chronometreExercice = document.getElementById("chronometre-exercice");
   const diagnosticExercice = document.getElementById("diagnostic-exercice");
   const planRevision = document.getElementById("plan-revision");
@@ -152,7 +156,10 @@ document.addEventListener("DOMContentLoaded", function () {
     coachEtapes: coachEtapes,
     objectifSession: objectifSession,
     competencesExercice: competencesExercice,
+    ficheApprentissage: ficheApprentissage,
+    checklistVerification: checklistVerification,
     planRemediation: planRemediation,
+    planMaitrise: planMaitrise,
     chronometreExercice: chronometreExercice,
     diagnosticExercice: diagnosticExercice,
     planRevision: planRevision,
@@ -358,6 +365,8 @@ function initialiserModeExercices(ui) {
     afficherRecommandation(ui.recommandationExercice, selection);
     afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
     afficherObjectifEtCompetences(ui.objectifSession, ui.competencesExercice, exerciceActuel, selection);
+    afficherFicheApprentissage(ui.ficheApprentissage, exerciceActuel);
+    afficherChecklistVerification(ui.checklistVerification, exerciceActuel, false);
     afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
     mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
     appliquerModeEvaluation(ui.modeEvaluation, ui.btnIndice1, ui.btnIndice2, ui.btnMethode, ui.feedbackExercice);
@@ -426,6 +435,8 @@ function initialiserModeExercices(ui) {
         objectifSeance: ui.selectObjectifSeance ? ui.selectObjectifSeance.value : "precision",
       });
       afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
+      afficherFicheApprentissage(ui.ficheApprentissage, exerciceActuel);
+      afficherChecklistVerification(ui.checklistVerification, exerciceActuel, false);
       mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
       afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
       demarrerChronoSiActif(ui, exerciceActuel);
@@ -438,6 +449,7 @@ function initialiserModeExercices(ui) {
   }
 
   mettreAJourProgressionEtBadges(ui.progressionExercice, ui.badgesExercice);
+  afficherPlanMaitrise(ui.planMaitrise);
   afficherHistorique(ui.historiqueExercice);
   mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
 }
@@ -468,9 +480,12 @@ function corrigerExercice(ui, passerAuSuivant) {
     }
     afficherFeedbackExercice(ui.feedbackExercice, exerciceActuel, reponse, estCorrect, diagnostic);
     afficherCoachEtapes(ui.coachEtapes, exerciceActuel, estCorrect ? "corrige-ok" : "corrige-ko");
+    afficherChecklistVerification(ui.checklistVerification, exerciceActuel, estCorrect);
     afficherPlanRemediation(ui.planRemediation, exerciceActuel, estCorrect ? "" : diagnostic);
     mettreAJourProgressionEtBadges(ui.progressionExercice, ui.badgesExercice);
     mettreAJourProgressionSession(ui.sessionProgression);
+    afficherPlanMaitrise(ui.planMaitrise);
+    if (parcoursCibleActif && !passerAuSuivant) parcoursCibleActif.restant = Math.max(0, parcoursCibleActif.restant - 1);
     afficherHistorique(ui.historiqueExercice);
     mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
     return;
@@ -484,6 +499,8 @@ function corrigerExercice(ui, passerAuSuivant) {
   afficherRecommandation(ui.recommandationExercice, selection);
   afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
   afficherObjectifEtCompetences(ui.objectifSession, ui.competencesExercice, exerciceActuel, selection);
+  afficherFicheApprentissage(ui.ficheApprentissage, exerciceActuel);
+  afficherChecklistVerification(ui.checklistVerification, exerciceActuel, false);
   mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
   afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
   demarrerChronoSiActif(ui, exerciceActuel);
@@ -522,11 +539,15 @@ function choisirParcoursAdaptatif(themeDefaut, niveauDefaut, objectifSeance) {
   const cible = mapping[competenceCible] || { theme: themeDefaut, label: "révisions générales" };
   const tauxGlobal = progression.essais > 0 ? (progression.reussites / progression.essais) * 100 : 0;
   const niveau = tauxGlobal < 55 ? "facile" : (tauxGlobal < 80 ? "moyen" : "difficile");
+  if (!parcoursCibleActif || parcoursCibleActif.restant <= 0 || parcoursCibleActif.competence !== competenceCible) {
+    parcoursCibleActif = { competence: competenceCible, restant: 5 };
+  }
   return {
     theme: cible.theme,
     niveau: niveau || niveauDefaut,
     source: "adaptatif",
     objectifSeance: objectifSeance || "precision",
+    parcoursCible: parcoursCibleActif,
     message:
       "Coach : priorité sur « " +
       cible.label +
@@ -534,7 +555,7 @@ function choisirParcoursAdaptatif(themeDefaut, niveauDefaut, objectifSeance) {
       arrondir(tauxGlobal) +
       "%). Niveau conseillé : " +
       niveau +
-      ".",
+      ". Parcours ciblé restant : " + parcoursCibleActif.restant + "/5.",
   };
 }
 
@@ -750,6 +771,8 @@ function creerExerciceMetier(niveau) {
       ],
       utiliteMetier: "Ce calcul évite de manquer de semences le jour du chantier.",
       verification: "Si la parcelle est grande, le nombre de sacs doit augmenter proportionnellement.",
+      visuel: "🌱 Parcelle de semis",
+      decisionChantier: "Décision : prévoir l'achat des sacs avant l'intervention.",
       indices: ["Indice 1 : commence par calculer la surface en m².", "Indice 2 : convertis ensuite avec le coefficient en sac/m²."],
     };
   }
@@ -778,6 +801,8 @@ function creerExerciceMetier(niveau) {
       ],
       utiliteMetier: "Savoir estimer le coût total aide à préparer un devis réaliste.",
       verification: "Le coût total doit être supérieur au prix d'1 m².",
+      visuel: "🧾 Devis paillage",
+      decisionChantier: "Décision : valider le budget total du chantier.",
       indices: ["Indice 1 : €/m² = prix pour 1 m².", "Indice 2 : multiplie la surface totale par ce prix unitaire."],
     };
   }
@@ -805,6 +830,8 @@ function creerExerciceMetier(niveau) {
     ],
     utiliteMetier: "Permet d'anticiper la réserve d'eau nécessaire avant l'intervention.",
     verification: "Si la longueur double, le volume doit doubler aussi.",
+    visuel: "💧 Ligne d'arrosage",
+    decisionChantier: "Décision : confirmer le volume d'eau à préparer.",
     indices: ["Indice 1 : L/m signifie « litres par mètre ».", "Indice 2 : multiplie la longueur totale par la valeur en L/m."],
   };
 }
@@ -944,6 +971,16 @@ function afficherExercice(zoneEnonce, zoneFeedback, champReponse, exercice) {
 
   zoneEnonce.appendChild(titre);
   zoneEnonce.appendChild(enonce);
+  if (exercice.visuel) {
+    const visuel = document.createElement("p");
+    visuel.textContent = exercice.visuel;
+    zoneEnonce.appendChild(visuel);
+  }
+  if (exercice.decisionChantier) {
+    const decision = document.createElement("p");
+    decision.innerHTML = "<strong>" + exercice.decisionChantier + "</strong>";
+    zoneEnonce.appendChild(decision);
+  }
   zoneFeedback.className = "resultat";
   zoneFeedback.textContent = "";
   champReponse.value = "";
@@ -1118,6 +1155,23 @@ function mettreAJourProgressionEtBadges(zoneProgression, zoneBadges) {
   }
 }
 
+function afficherPlanMaitrise(zone) {
+  if (!zone) return;
+  const progression = chargerProgression();
+  const competences = [
+    { cle: "aires-perimetres", label: "Aires / périmètres" },
+    { cle: "pourcentages", label: "Pourcentages" },
+    { cle: "situations-metier", label: "Situations métier" },
+  ];
+  const lignes = competences.map(function (item) {
+    const stats = progression.competences[item.cle] || { essais: 0, reussites: 0 };
+    const taux = stats.essais > 0 ? (stats.reussites / stats.essais) * 100 : 0;
+    const statut = taux >= 75 ? "✅ acquis" : (stats.essais >= 2 ? "⚠️ à renforcer" : "🟡 à travailler");
+    return "<li><strong>" + item.label + "</strong> — " + statut + " (" + arrondir(taux) + "%)</li>";
+  });
+  zone.innerHTML = "<strong>Plan de maîtrise (formatif)</strong><ul>" + lignes.join("") + "</ul>";
+}
+
 function mettreAJourProgressionSession(zone) {
   if (!zone) return;
   const taux = sessionStats.essais > 0 ? (sessionStats.reussites / sessionStats.essais) * 100 : 0;
@@ -1157,6 +1211,27 @@ function afficherObjectifEtCompetences(zoneObjectif, zoneCompetences, exercice, 
       competence +
       '<br><strong>Palier actuel :</strong> ' + palier;
   }
+}
+
+function afficherFicheApprentissage(zone, exercice) {
+  if (!zone || !exercice) return;
+  zone.innerHTML =
+    "<strong>Fiche d'apprentissage</strong>" +
+    "<p><strong>Compétence visée :</strong> " + (exercice.competenceLabel || "Compétence transversale") + "</p>" +
+    "<p><strong>Critère de réussite :</strong> résultat juste avec l'unité correcte.</p>" +
+    "<p><strong>Erreur à éviter :</strong> " + (exercice.erreurProbable || "Relis l'énoncé.") + "</p>";
+}
+
+function afficherChecklistVerification(zone, exercice, estValide) {
+  if (!zone || !exercice) return;
+  zone.innerHTML =
+    "<strong>Check-list avant / après validation</strong>" +
+    "<ul>" +
+    "<li>" + (estValide ? "✅" : "⬜") + " J'ai utilisé la bonne formule.</li>" +
+    "<li>" + (estValide ? "✅" : "⬜") + " Mon unité finale est correcte.</li>" +
+    "<li>" + (estValide ? "✅" : "⬜") + " Mon résultat est cohérent avec la situation.</li>" +
+    "</ul>" +
+    "<small>Auto-contrôle : " + (exercice.verification || "relis ton calcul étape par étape.") + "</small>";
 }
 
 function determinerPalierCompetence(competence) {

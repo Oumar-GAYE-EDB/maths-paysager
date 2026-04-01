@@ -559,6 +559,14 @@ body.mode-focus #section-exercices {
   background: var(--color-surface-offset);
 }
 
+.exercise-panel ul {
+  margin: var(--space-2) 0 0 1.1rem;
+}
+
+.exercise-panel li {
+  margin-top: 0.2rem;
+}
+
 .exercise-panel--priority {
   border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
   background: color-mix(in srgb, var(--color-primary-light) 45%, var(--color-surface) 55%);
