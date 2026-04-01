@@ -45,6 +45,30 @@
   </header>
 
   <main class="main">
+    <section class="card welcome-card" id="section-demarrage">
+      <h2 class="card__title">Démarrage rapide (30 secondes)</h2>
+      <p class="card__desc">Choisis un mode pour commencer sans te perdre dans les options.</p>
+      <div class="actions">
+        <button class="btn btn--primary" id="btn-demarrage-rapide" type="button">S'entraîner vite</button>
+        <button class="btn btn--secondary" id="btn-reviser-notion" type="button">Réviser une notion</button>
+      </div>
+      <p id="message-demarrage" class="welcome-card__message" aria-live="polite">
+        Astuce : active ensuite le mode adaptatif pour des exercices ciblés.
+      </p>
+    </section>
+
+    <section class="comfort-bar" aria-label="Réglages confort">
+      <div class="comfort-bar__group">
+        <strong>Confort lecture :</strong>
+        <button class="btn btn--secondary btn--compact" id="btn-font-minus" type="button" aria-label="Réduire la taille du texte">A-</button>
+        <button class="btn btn--secondary btn--compact" id="btn-font-plus" type="button" aria-label="Augmenter la taille du texte">A+</button>
+      </div>
+      <label class="coach-toggle" for="mode-contraste-fort">
+        <input type="checkbox" id="mode-contraste-fort">
+        <span>Contraste renforcé</span>
+      </label>
+    </section>
+
     <nav class="quick-nav" aria-label="Navigation rapide">
       <a class="quick-nav__link" href="#section-formes">Calculs surfaces</a>
       <a class="quick-nav__link" href="#section-pourcent">Calculs pourcentages</a>
@@ -143,6 +167,12 @@
         Mode Exercices (CAPa)
       </h2>
       <p class="card__desc">Entraînez-vous avec des exercices progressifs et des situations métier, puis consultez vos progrès.</p>
+      <nav class="exercise-nav" aria-label="Navigation exercice">
+        <a href="#exercice-enonce">Exercice</a>
+        <a href="#reponse-exercice">Réponse</a>
+        <a href="#feedback-exercice">Feedback</a>
+        <a href="#progression-exercice">Progression</a>
+      </nav>
 
       <div class="form-fields">
         <div class="form-group">
@@ -188,6 +218,10 @@
           <input type="checkbox" id="mode-chrono">
           <span>Mode chrono (temps conseillé)</span>
         </label>
+        <label class="coach-toggle" for="mode-aide-renforcee">
+          <input type="checkbox" id="mode-aide-renforcee">
+          <span>Aide renforcée (pas à pas)</span>
+        </label>
       </div>
 
       <div class="actions">
@@ -196,15 +230,17 @@
         <button class="btn btn--secondary" id="btn-tests-formules" type="button">Vérifier les formules</button>
       </div>
 
-      <div id="recommandation-exercice" class="exercise-panel exercise-panel--hint exercise-panel--priority">
+      <div id="recommandation-exercice" class="exercise-panel exercise-panel--hint exercise-panel--priority step-panel step-0">
         Active le mode adaptatif pour recevoir un exercice ciblé selon tes besoins.
       </div>
-      <div id="coach-etapes" class="exercise-panel exercise-panel--priority"></div>
-      <div id="objectif-session" class="exercise-panel exercise-panel--priority"></div>
-      <div id="competences-exercice" class="exercise-panel exercise-panel--priority"></div>
-      <div id="session-progression" class="exercise-panel exercise-panel--priority"></div>
+      <div id="coach-etapes" class="exercise-panel exercise-panel--priority step-panel step-0"></div>
+      <div id="objectif-session" class="exercise-panel exercise-panel--priority step-panel step-0"></div>
+      <div id="competences-exercice" class="exercise-panel exercise-panel--priority step-panel step-0"></div>
+      <div id="fiche-apprentissage" class="exercise-panel exercise-panel--priority step-panel step-0"></div>
+      <div id="checklist-verification" class="exercise-panel exercise-panel--hint step-panel step-1"></div>
+      <div id="session-progression" class="exercise-panel exercise-panel--priority step-panel step-2"></div>
 
-      <div id="exercice-enonce" class="exercise-panel exercise-panel--priority" aria-live="polite">
+      <div id="exercice-enonce" class="exercise-panel exercise-panel--priority step-panel step-1" aria-live="polite">
         Clique sur <strong>Nouvel exercice</strong> pour commencer.
       </div>
 
@@ -213,20 +249,26 @@
         <input type="number" id="reponse-exercice" placeholder="Ex : 24,50" step="0.01" inputmode="decimal">
       </div>
 
-      <div class="actions">
+      <div class="actions actions--stack-mobile">
         <button class="btn btn--primary" id="btn-valider-exercice" type="button">Valider</button>
-        <button class="btn btn--secondary" id="btn-suivant-exercice" type="button">Exercice suivant</button>
-        <button class="btn btn--secondary" id="btn-joker-exercice" type="button">Je bloque</button>
-        <button class="btn btn--secondary" id="btn-indice-1" type="button">Indice 1</button>
-        <button class="btn btn--secondary" id="btn-indice-2" type="button">Indice 2</button>
-        <button class="btn btn--secondary" id="btn-methode" type="button">Voir méthode</button>
+        <details class="secondary-actions">
+          <summary>Plus d'options</summary>
+          <div class="actions">
+            <button class="btn btn--secondary" id="btn-suivant-exercice" type="button">Exercice suivant</button>
+            <button class="btn btn--secondary" id="btn-joker-exercice" type="button">Je bloque</button>
+            <button class="btn btn--secondary" id="btn-indice-1" type="button">Indice 1</button>
+            <button class="btn btn--secondary" id="btn-indice-2" type="button">Indice 2</button>
+            <button class="btn btn--secondary" id="btn-methode" type="button">Voir méthode</button>
+          </div>
+        </details>
       </div>
 
-      <div id="feedback-exercice" class="resultat" aria-live="polite"></div>
+      <div id="feedback-exercice" class="resultat step-panel step-2" aria-live="polite"></div>
 
       <details class="exercise-more">
         <summary>Afficher les outils avancés (diagnostic, remédiation, historique)</summary>
         <div id="plan-remediation" class="exercise-panel"></div>
+        <div id="plan-maitrise" class="exercise-panel"></div>
         <div id="chronometre-exercice" class="exercise-panel exercise-panel--hint"></div>
         <div id="diagnostic-exercice" class="exercise-panel"></div>
         <div id="plan-revision" class="exercise-panel"></div>
