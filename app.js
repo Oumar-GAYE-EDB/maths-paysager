@@ -14,6 +14,7 @@ const MAX_HISTORIQUE = 20;
 const sessionStats = { essais: 0, reussites: 0 };
 let chronoInterval = null;
 let chronoRestant = 0;
+let parcoursCibleActif = null;
 
 let exerciceActuel = null;
 
@@ -54,7 +55,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const coachEtapes = document.getElementById("coach-etapes");
   const objectifSession = document.getElementById("objectif-session");
   const competencesExercice = document.getElementById("competences-exercice");
+  const ficheApprentissage = document.getElementById("fiche-apprentissage");
+  const checklistVerification = document.getElementById("checklist-verification");
   const planRemediation = document.getElementById("plan-remediation");
+  const planMaitrise = document.getElementById("plan-maitrise");
   const chronometreExercice = document.getElementById("chronometre-exercice");
   const diagnosticExercice = document.getElementById("diagnostic-exercice");
   const planRevision = document.getElementById("plan-revision");
@@ -68,6 +72,12 @@ document.addEventListener("DOMContentLoaded", function () {
   const historiqueExercice = document.getElementById("historique-exercice");
   const btnRejouerErreur = document.getElementById("btn-rejouer-erreur");
   const btnTestsFormules = document.getElementById("btn-tests-formules");
+  const btnDemarrageRapide = document.getElementById("btn-demarrage-rapide");
+  const btnReviserNotion = document.getElementById("btn-reviser-notion");
+  const messageDemarrage = document.getElementById("message-demarrage");
+  const btnFontMinus = document.getElementById("btn-font-minus");
+  const btnFontPlus = document.getElementById("btn-font-plus");
+  const modeContrasteFort = document.getElementById("mode-contraste-fort");
 
   // --- Afficher les champs dès le chargement ---
   afficherChampsFormes(selectForme.value, champsForme);
@@ -116,6 +126,15 @@ document.addEventListener("DOMContentLoaded", function () {
   initialiserTheme();
   initialiserSaisieDecimale();
   initialiserModeFocus(modeFocus);
+  initialiserConfortAccessibilite(btnFontMinus, btnFontPlus, modeContrasteFort);
+  initialiserDemarrageRapide(btnDemarrageRapide, btnReviserNotion, messageDemarrage, {
+    selectThemeExercice: selectThemeExercice,
+    selectNiveauExercice: selectNiveauExercice,
+    selectObjectifSeance: selectObjectifSeance,
+    modeFocus: modeFocus,
+    modeAdaptatif: modeAdaptatif,
+    btnGenererExercice: btnGenererExercice,
+  });
 
   // --- Mode exercices / progression ---
   initialiserModeExercices({
@@ -137,7 +156,10 @@ document.addEventListener("DOMContentLoaded", function () {
     coachEtapes: coachEtapes,
     objectifSession: objectifSession,
     competencesExercice: competencesExercice,
+    ficheApprentissage: ficheApprentissage,
+    checklistVerification: checklistVerification,
     planRemediation: planRemediation,
+    planMaitrise: planMaitrise,
     chronometreExercice: chronometreExercice,
     diagnosticExercice: diagnosticExercice,
     planRevision: planRevision,
@@ -205,6 +227,67 @@ function initialiserModeFocus(caseFocus) {
     const actif = !!caseFocus.checked;
     body.classList.toggle("mode-focus", actif);
     localStorage.setItem(CLE_MODE_FOCUS, actif ? "1" : "0");
+  });
+}
+
+function initialiserConfortAccessibilite(btnMinus, btnPlus, toggleContraste) {
+  const CLE_FONT = "maths-paysager-font-scale";
+  const CLE_CONTRASTE = "maths-paysager-contrast";
+  const body = document.body;
+  if (!body) return;
+
+  const fontScale = localStorage.getItem(CLE_FONT) || "normal";
+  body.setAttribute("data-font-scale", fontScale);
+
+  const contrasteActif = localStorage.getItem(CLE_CONTRASTE) === "1";
+  body.classList.toggle("contrast-fort", contrasteActif);
+  if (toggleContraste) toggleContraste.checked = contrasteActif;
+
+  if (btnMinus) {
+    btnMinus.addEventListener("click", function () {
+      body.setAttribute("data-font-scale", "small");
+      localStorage.setItem(CLE_FONT, "small");
+    });
+  }
+  if (btnPlus) {
+    btnPlus.addEventListener("click", function () {
+      body.setAttribute("data-font-scale", "large");
+      localStorage.setItem(CLE_FONT, "large");
+    });
+  }
+  if (toggleContraste) {
+    toggleContraste.addEventListener("change", function () {
+      const actif = !!toggleContraste.checked;
+      body.classList.toggle("contrast-fort", actif);
+      localStorage.setItem(CLE_CONTRASTE, actif ? "1" : "0");
+    });
+  }
+}
+
+function initialiserDemarrageRapide(btnRapide, btnRevision, zoneMessage, ui) {
+  if (!btnRapide || !btnRevision || !ui) return;
+  btnRapide.addEventListener("click", function () {
+    ui.selectThemeExercice.value = "metier";
+    ui.selectNiveauExercice.value = "facile";
+    ui.selectObjectifSeance.value = "metier";
+    if (ui.modeFocus) ui.modeFocus.checked = true;
+    if (ui.modeAdaptatif) ui.modeAdaptatif.checked = true;
+    document.body.classList.toggle("mode-focus", true);
+    if (zoneMessage) {
+      zoneMessage.textContent = "Parcours rapide lancé : 3 exercices métiers niveau facile.";
+    }
+    ui.btnGenererExercice.click();
+  });
+
+  btnRevision.addEventListener("click", function () {
+    ui.selectThemeExercice.value = "aires";
+    ui.selectNiveauExercice.value = "facile";
+    ui.selectObjectifSeance.value = "unites";
+    if (ui.modeAdaptatif) ui.modeAdaptatif.checked = false;
+    if (zoneMessage) {
+      zoneMessage.textContent = "Parcours révision activé : notion + unité d'abord, puis validation.";
+    }
+    ui.btnGenererExercice.click();
   });
 }
 
@@ -282,6 +365,8 @@ function initialiserModeExercices(ui) {
     afficherRecommandation(ui.recommandationExercice, selection);
     afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
     afficherObjectifEtCompetences(ui.objectifSession, ui.competencesExercice, exerciceActuel, selection);
+    afficherFicheApprentissage(ui.ficheApprentissage, exerciceActuel);
+    afficherChecklistVerification(ui.checklistVerification, exerciceActuel, false);
     afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
     mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
     appliquerModeEvaluation(ui.modeEvaluation, ui.btnIndice1, ui.btnIndice2, ui.btnMethode, ui.feedbackExercice);
@@ -350,6 +435,8 @@ function initialiserModeExercices(ui) {
         objectifSeance: ui.selectObjectifSeance ? ui.selectObjectifSeance.value : "precision",
       });
       afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
+      afficherFicheApprentissage(ui.ficheApprentissage, exerciceActuel);
+      afficherChecklistVerification(ui.checklistVerification, exerciceActuel, false);
       mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
       afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
       demarrerChronoSiActif(ui, exerciceActuel);
@@ -362,6 +449,7 @@ function initialiserModeExercices(ui) {
   }
 
   mettreAJourProgressionEtBadges(ui.progressionExercice, ui.badgesExercice);
+  afficherPlanMaitrise(ui.planMaitrise);
   afficherHistorique(ui.historiqueExercice);
   mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
 }
@@ -392,9 +480,12 @@ function corrigerExercice(ui, passerAuSuivant) {
     }
     afficherFeedbackExercice(ui.feedbackExercice, exerciceActuel, reponse, estCorrect, diagnostic);
     afficherCoachEtapes(ui.coachEtapes, exerciceActuel, estCorrect ? "corrige-ok" : "corrige-ko");
+    afficherChecklistVerification(ui.checklistVerification, exerciceActuel, estCorrect);
     afficherPlanRemediation(ui.planRemediation, exerciceActuel, estCorrect ? "" : diagnostic);
     mettreAJourProgressionEtBadges(ui.progressionExercice, ui.badgesExercice);
     mettreAJourProgressionSession(ui.sessionProgression);
+    afficherPlanMaitrise(ui.planMaitrise);
+    if (parcoursCibleActif && !passerAuSuivant) parcoursCibleActif.restant = Math.max(0, parcoursCibleActif.restant - 1);
     afficherHistorique(ui.historiqueExercice);
     mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
     return;
@@ -408,6 +499,8 @@ function corrigerExercice(ui, passerAuSuivant) {
   afficherRecommandation(ui.recommandationExercice, selection);
   afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
   afficherObjectifEtCompetences(ui.objectifSession, ui.competencesExercice, exerciceActuel, selection);
+  afficherFicheApprentissage(ui.ficheApprentissage, exerciceActuel);
+  afficherChecklistVerification(ui.checklistVerification, exerciceActuel, false);
   mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
   afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
   demarrerChronoSiActif(ui, exerciceActuel);
@@ -446,11 +539,15 @@ function choisirParcoursAdaptatif(themeDefaut, niveauDefaut, objectifSeance) {
   const cible = mapping[competenceCible] || { theme: themeDefaut, label: "révisions générales" };
   const tauxGlobal = progression.essais > 0 ? (progression.reussites / progression.essais) * 100 : 0;
   const niveau = tauxGlobal < 55 ? "facile" : (tauxGlobal < 80 ? "moyen" : "difficile");
+  if (!parcoursCibleActif || parcoursCibleActif.restant <= 0 || parcoursCibleActif.competence !== competenceCible) {
+    parcoursCibleActif = { competence: competenceCible, restant: 5 };
+  }
   return {
     theme: cible.theme,
     niveau: niveau || niveauDefaut,
     source: "adaptatif",
     objectifSeance: objectifSeance || "precision",
+    parcoursCible: parcoursCibleActif,
     message:
       "Coach : priorité sur « " +
       cible.label +
@@ -458,7 +555,7 @@ function choisirParcoursAdaptatif(themeDefaut, niveauDefaut, objectifSeance) {
       arrondir(tauxGlobal) +
       "%). Niveau conseillé : " +
       niveau +
-      ".",
+      ". Parcours ciblé restant : " + parcoursCibleActif.restant + "/5.",
   };
 }
 
@@ -674,6 +771,8 @@ function creerExerciceMetier(niveau) {
       ],
       utiliteMetier: "Ce calcul évite de manquer de semences le jour du chantier.",
       verification: "Si la parcelle est grande, le nombre de sacs doit augmenter proportionnellement.",
+      visuel: "🌱 Parcelle de semis",
+      decisionChantier: "Décision : prévoir l'achat des sacs avant l'intervention.",
       indices: ["Indice 1 : commence par calculer la surface en m².", "Indice 2 : convertis ensuite avec le coefficient en sac/m²."],
     };
   }
@@ -702,6 +801,8 @@ function creerExerciceMetier(niveau) {
       ],
       utiliteMetier: "Savoir estimer le coût total aide à préparer un devis réaliste.",
       verification: "Le coût total doit être supérieur au prix d'1 m².",
+      visuel: "🧾 Devis paillage",
+      decisionChantier: "Décision : valider le budget total du chantier.",
       indices: ["Indice 1 : €/m² = prix pour 1 m².", "Indice 2 : multiplie la surface totale par ce prix unitaire."],
     };
   }
@@ -729,6 +830,8 @@ function creerExerciceMetier(niveau) {
     ],
     utiliteMetier: "Permet d'anticiper la réserve d'eau nécessaire avant l'intervention.",
     verification: "Si la longueur double, le volume doit doubler aussi.",
+    visuel: "💧 Ligne d'arrosage",
+    decisionChantier: "Décision : confirmer le volume d'eau à préparer.",
     indices: ["Indice 1 : L/m signifie « litres par mètre ».", "Indice 2 : multiplie la longueur totale par la valeur en L/m."],
   };
 }
@@ -868,6 +971,16 @@ function afficherExercice(zoneEnonce, zoneFeedback, champReponse, exercice) {
 
   zoneEnonce.appendChild(titre);
   zoneEnonce.appendChild(enonce);
+  if (exercice.visuel) {
+    const visuel = document.createElement("p");
+    visuel.textContent = exercice.visuel;
+    zoneEnonce.appendChild(visuel);
+  }
+  if (exercice.decisionChantier) {
+    const decision = document.createElement("p");
+    decision.innerHTML = "<strong>" + exercice.decisionChantier + "</strong>";
+    zoneEnonce.appendChild(decision);
+  }
   zoneFeedback.className = "resultat";
   zoneFeedback.textContent = "";
   champReponse.value = "";
@@ -879,32 +992,39 @@ function afficherFeedbackExercice(zone, exercice, reponseEleve, estCorrect, diag
   zone.className = "resultat resultat--visible" + (estCorrect ? "" : " resultat--erreur");
   viderElement(zone);
 
+  const progression = chargerProgression();
   const message = document.createElement("p");
   const messageFort = document.createElement("strong");
   messageFort.textContent = estCorrect ? "Bravo ✅" : "Presque ❌";
   message.appendChild(messageFort);
-  message.appendChild(document.createTextNode(estCorrect ? " Ta réponse est correcte." : " Ce n'est pas la bonne réponse."));
+  message.appendChild(document.createTextNode(estCorrect ? " Tu avances bien." : " On corrige ça ensemble."));
 
-  const reponse = document.createElement("p");
-  reponse.textContent = "Ta réponse : " + arrondir(reponseEleve) + (exercice.unite ? " " + exercice.unite : "");
-
-  const attendu = document.createElement("p");
-  attendu.textContent = "Réponse attendue : " + arrondir(exercice.reponse) + (exercice.unite ? " " + exercice.unite : "");
+  const bilan = document.createElement("p");
+  bilan.textContent = estCorrect
+    ? "✅ Correct : " + arrondir(exercice.reponse) + (exercice.unite ? " " + exercice.unite : "")
+    : "❌ Attendu : " + arrondir(exercice.reponse) + (exercice.unite ? " " + exercice.unite : "") + " (toi : " + arrondir(reponseEleve) + (exercice.unite ? " " + exercice.unite : "") + ")";
 
   const explication = document.createElement("div");
   explication.className = "resultat__formule";
   explication.textContent = exercice.explication;
+
   const action = document.createElement("p");
   action.className = "resultat__formule";
   action.textContent = estCorrect
-    ? "Action suivante : passe à un exercice similaire sans indice pour consolider."
-    : "Action suivante : utilise « Je bloque » ou Indice 1, puis recommence.";
+    ? "Action : continue sans indice pour consolider."
+    : "Action : corrige l'unité puis retente.";
+
+  const motivation = document.createElement("p");
+  motivation.className = "resultat__formule";
+  motivation.textContent = estCorrect && progression.serie >= 2
+    ? "Super : " + progression.serie + " réussites de suite 🔥"
+    : "Objectif : 2 réussites d'affilée pour débloquer une série.";
 
   zone.appendChild(message);
-  zone.appendChild(reponse);
-  zone.appendChild(attendu);
+  zone.appendChild(bilan);
   zone.appendChild(explication);
   zone.appendChild(action);
+  zone.appendChild(motivation);
 
   if (diagnostic) zone.appendChild(creerAstuce("Diagnostic probable", diagnostic));
   zone.appendChild(creerAstuce("Erreur fréquente", exercice.erreurProbable));
@@ -1035,6 +1155,23 @@ function mettreAJourProgressionEtBadges(zoneProgression, zoneBadges) {
   }
 }
 
+function afficherPlanMaitrise(zone) {
+  if (!zone) return;
+  const progression = chargerProgression();
+  const competences = [
+    { cle: "aires-perimetres", label: "Aires / périmètres" },
+    { cle: "pourcentages", label: "Pourcentages" },
+    { cle: "situations-metier", label: "Situations métier" },
+  ];
+  const lignes = competences.map(function (item) {
+    const stats = progression.competences[item.cle] || { essais: 0, reussites: 0 };
+    const taux = stats.essais > 0 ? (stats.reussites / stats.essais) * 100 : 0;
+    const statut = taux >= 75 ? "✅ acquis" : (stats.essais >= 2 ? "⚠️ à renforcer" : "🟡 à travailler");
+    return "<li><strong>" + item.label + "</strong> — " + statut + " (" + arrondir(taux) + "%)</li>";
+  });
+  zone.innerHTML = "<strong>Plan de maîtrise (formatif)</strong><ul>" + lignes.join("") + "</ul>";
+}
+
 function mettreAJourProgressionSession(zone) {
   if (!zone) return;
   const taux = sessionStats.essais > 0 ? (sessionStats.reussites / sessionStats.essais) * 100 : 0;
@@ -1076,6 +1213,27 @@ function afficherObjectifEtCompetences(zoneObjectif, zoneCompetences, exercice, 
   }
 }
 
+function afficherFicheApprentissage(zone, exercice) {
+  if (!zone || !exercice) return;
+  zone.innerHTML =
+    "<strong>Fiche d'apprentissage</strong>" +
+    "<p><strong>Compétence visée :</strong> " + (exercice.competenceLabel || "Compétence transversale") + "</p>" +
+    "<p><strong>Critère de réussite :</strong> résultat juste avec l'unité correcte.</p>" +
+    "<p><strong>Erreur à éviter :</strong> " + (exercice.erreurProbable || "Relis l'énoncé.") + "</p>";
+}
+
+function afficherChecklistVerification(zone, exercice, estValide) {
+  if (!zone || !exercice) return;
+  zone.innerHTML =
+    "<strong>Check-list avant / après validation</strong>" +
+    "<ul>" +
+    "<li>" + (estValide ? "✅" : "⬜") + " J'ai utilisé la bonne formule.</li>" +
+    "<li>" + (estValide ? "✅" : "⬜") + " Mon unité finale est correcte.</li>" +
+    "<li>" + (estValide ? "✅" : "⬜") + " Mon résultat est cohérent avec la situation.</li>" +
+    "</ul>" +
+    "<small>Auto-contrôle : " + (exercice.verification || "relis ton calcul étape par étape.") + "</small>";
+}
+
 function determinerPalierCompetence(competence) {
   const progression = chargerProgression();
   const stats = progression.competences[competence] || { essais: 0, reussites: 0 };
@@ -1088,13 +1246,26 @@ function determinerPalierCompetence(competence) {
 
 function afficherPlanRemediation(zone, exercice, diagnostic) {
   if (!zone || !exercice) return;
+  const erreursConsecutives = compterErreursRecentes(exercice.erreurCode);
+  const microCours = erreursConsecutives >= 2
+    ? "<p><strong>Micro-cours (30 sec) :</strong> " + (diagnostic || exercice.erreurProbable) + " Ensuite, fais un exercice ciblé sans te presser.</p>"
+    : "";
   zone.innerHTML =
     "<strong>Plan de remédiation (3 étapes)</strong>" +
     "<ol class=\"resultat__etapes-liste\">" +
     "<li>Revoir la notion ciblée : " + (diagnostic || exercice.erreurProbable) + ".</li>" +
     "<li>Refaire un exercice similaire avec indice 1 puis indice 2.</li>" +
     "<li>Valider un nouvel exercice sans aide pour consolider.</li>" +
-    "</ol>";
+    "</ol>" +
+    microCours;
+}
+
+function compterErreursRecentes(erreurCode) {
+  if (!erreurCode) return 0;
+  const historique = lireHistorique()
+    .filter(function (item) { return item.estCorrect === false; })
+    .slice(0, 4);
+  return historique.filter(function (item) { return item.erreurCode === erreurCode; }).length;
 }
 
 function mettreAJourUniteAttendue(zone, exercice) {
@@ -1356,6 +1527,7 @@ function afficherChampsFormes(forme, conteneur) {
         '    aria-describedby="' + champ.id + '-erreur" ' +
         '    placeholder="' + champ.placeholder + '" ' +
         '    step="0.01" min="0">' +
+        '  <p class="unit-note">Unité attendue : ' + (champ.unite || "valeur") + "</p>" +
         '  <p class="field-error" id="' + champ.id + '-erreur" aria-live="polite"></p>' +
         "</div>"
       );
@@ -1376,20 +1548,20 @@ function afficherChampsFormes(forme, conteneur) {
 function afficherChampsPourcent(type, conteneur) {
   const champsParType = {
     "trouver-pourcentage": [
-      { id: "pourcent-val", label: "Pourcentage (%)", placeholder: "Ex : 15" },
-      { id: "nombre-val", label: "Nombre", placeholder: "Ex : 200" },
+      { id: "pourcent-val", label: "Pourcentage (%)", placeholder: "Ex : 15", unite: "%" },
+      { id: "nombre-val", label: "Nombre", placeholder: "Ex : 200", unite: "valeur brute" },
     ],
     "quel-pourcentage": [
-      { id: "partie-val", label: "Partie (A)", placeholder: "Ex : 30" },
-      { id: "total-val", label: "Total (B)", placeholder: "Ex : 200" },
+      { id: "partie-val", label: "Partie (A)", placeholder: "Ex : 30", unite: "valeur brute" },
+      { id: "total-val", label: "Total (B)", placeholder: "Ex : 200", unite: "valeur brute" },
     ],
     augmentation: [
-      { id: "valeur-depart", label: "Valeur de départ", placeholder: "Ex : 150" },
-      { id: "pourcent-aug", label: "Augmentation (%)", placeholder: "Ex : 20" },
+      { id: "valeur-depart", label: "Valeur de départ", placeholder: "Ex : 150", unite: "valeur brute" },
+      { id: "pourcent-aug", label: "Augmentation (%)", placeholder: "Ex : 20", unite: "%" },
     ],
     reduction: [
-      { id: "valeur-depart", label: "Valeur de départ", placeholder: "Ex : 150" },
-      { id: "pourcent-red", label: "Réduction (%)", placeholder: "Ex : 10" },
+      { id: "valeur-depart", label: "Valeur de départ", placeholder: "Ex : 150", unite: "valeur brute" },
+      { id: "pourcent-red", label: "Réduction (%)", placeholder: "Ex : 10", unite: "%" },
     ],
   };
 
@@ -1404,6 +1576,7 @@ function afficherChampsPourcent(type, conteneur) {
         '    aria-describedby="' + champ.id + '-erreur" ' +
         '    placeholder="' + champ.placeholder + '" ' +
         '    step="0.01" min="0">' +
+        '  <p class="unit-note">Unité attendue : ' + (champ.unite || "valeur") + "</p>" +
         '  <p class="field-error" id="' + champ.id + '-erreur" aria-live="polite"></p>' +
         "</div>"
       );

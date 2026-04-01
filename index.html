@@ -45,6 +45,30 @@
   </header>
 
   <main class="main">
+    <section class="card welcome-card" id="section-demarrage">
+      <h2 class="card__title">Démarrage rapide (30 secondes)</h2>
+      <p class="card__desc">Choisis un mode pour commencer sans te perdre dans les options.</p>
+      <div class="actions">
+        <button class="btn btn--primary" id="btn-demarrage-rapide" type="button">S'entraîner vite</button>
+        <button class="btn btn--secondary" id="btn-reviser-notion" type="button">Réviser une notion</button>
+      </div>
+      <p id="message-demarrage" class="welcome-card__message" aria-live="polite">
+        Astuce : active ensuite le mode adaptatif pour des exercices ciblés.
+      </p>
+    </section>
+
+    <section class="comfort-bar" aria-label="Réglages confort">
+      <div class="comfort-bar__group">
+        <strong>Confort lecture :</strong>
+        <button class="btn btn--secondary btn--compact" id="btn-font-minus" type="button" aria-label="Réduire la taille du texte">A-</button>
+        <button class="btn btn--secondary btn--compact" id="btn-font-plus" type="button" aria-label="Augmenter la taille du texte">A+</button>
+      </div>
+      <label class="coach-toggle" for="mode-contraste-fort">
+        <input type="checkbox" id="mode-contraste-fort">
+        <span>Contraste renforcé</span>
+      </label>
+    </section>
+
     <nav class="quick-nav" aria-label="Navigation rapide">
       <a class="quick-nav__link" href="#section-formes">Calculs surfaces</a>
       <a class="quick-nav__link" href="#section-pourcent">Calculs pourcentages</a>
@@ -202,6 +226,8 @@
       <div id="coach-etapes" class="exercise-panel exercise-panel--priority"></div>
       <div id="objectif-session" class="exercise-panel exercise-panel--priority"></div>
       <div id="competences-exercice" class="exercise-panel exercise-panel--priority"></div>
+      <div id="fiche-apprentissage" class="exercise-panel exercise-panel--priority"></div>
+      <div id="checklist-verification" class="exercise-panel exercise-panel--hint"></div>
       <div id="session-progression" class="exercise-panel exercise-panel--priority"></div>
 
       <div id="exercice-enonce" class="exercise-panel exercise-panel--priority" aria-live="polite">
@@ -227,6 +253,7 @@
       <details class="exercise-more">
         <summary>Afficher les outils avancés (diagnostic, remédiation, historique)</summary>
         <div id="plan-remediation" class="exercise-panel"></div>
+        <div id="plan-maitrise" class="exercise-panel"></div>
         <div id="chronometre-exercice" class="exercise-panel exercise-panel--hint"></div>
         <div id="diagnostic-exercice" class="exercise-panel"></div>
         <div id="plan-revision" class="exercise-panel"></div>

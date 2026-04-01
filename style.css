@@ -133,6 +133,14 @@ body {
   flex-direction: column;
 }
 
+body[data-font-scale="small"] { font-size: calc(var(--text-base) * 0.92); }
+body[data-font-scale="large"] { font-size: calc(var(--text-base) * 1.12); }
+body.contrast-fort {
+  --color-border: #8a8478;
+  --color-text-muted: #3f3a31;
+  --color-divider: #b8b2a8;
+}
+
 /* ---------- EN-TÊTE ---------- */
 .header {
   background: var(--color-primary);
@@ -197,6 +205,30 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+}
+
+.welcome-card__message {
+  margin-top: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.comfort-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+}
+
+.comfort-bar__group {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 /* ---------- MODE FOCUS (réduit les distractions) ---------- */
@@ -378,6 +410,11 @@ body.mode-focus #section-exercices {
   transition: background var(--transition), transform var(--transition);
 }
 
+.btn--compact {
+  padding: var(--space-2) var(--space-3);
+  min-width: 2.75rem;
+}
+
 .btn--primary {
   background: var(--color-primary);
   color: #fff;
@@ -522,6 +559,14 @@ body.mode-focus #section-exercices {
   background: var(--color-surface-offset);
 }
 
+.exercise-panel ul {
+  margin: var(--space-2) 0 0 1.1rem;
+}
+
+.exercise-panel li {
+  margin-top: 0.2rem;
+}
+
 .exercise-panel--priority {
   border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
   background: color-mix(in srgb, var(--color-primary-light) 45%, var(--color-surface) 55%);
@@ -564,10 +609,19 @@ body.mode-focus #section-exercices {
   font-size: var(--text-sm);
   color: var(--color-text);
   font-weight: 600;
+  min-height: 2.4rem;
 }
 
 .coach-toggle input[type="checkbox"] {
   accent-color: var(--color-primary);
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.unit-note {
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
 }
 
 .unit-hint {
