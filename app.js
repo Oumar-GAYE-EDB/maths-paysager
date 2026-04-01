@@ -68,6 +68,12 @@ document.addEventListener("DOMContentLoaded", function () {
   const historiqueExercice = document.getElementById("historique-exercice");
   const btnRejouerErreur = document.getElementById("btn-rejouer-erreur");
   const btnTestsFormules = document.getElementById("btn-tests-formules");
+  const btnDemarrageRapide = document.getElementById("btn-demarrage-rapide");
+  const btnReviserNotion = document.getElementById("btn-reviser-notion");
+  const messageDemarrage = document.getElementById("message-demarrage");
+  const btnFontMinus = document.getElementById("btn-font-minus");
+  const btnFontPlus = document.getElementById("btn-font-plus");
+  const modeContrasteFort = document.getElementById("mode-contraste-fort");
 
   // --- Afficher les champs dès le chargement ---
   afficherChampsFormes(selectForme.value, champsForme);
@@ -116,6 +122,15 @@ document.addEventListener("DOMContentLoaded", function () {
   initialiserTheme();
   initialiserSaisieDecimale();
   initialiserModeFocus(modeFocus);
+  initialiserConfortAccessibilite(btnFontMinus, btnFontPlus, modeContrasteFort);
+  initialiserDemarrageRapide(btnDemarrageRapide, btnReviserNotion, messageDemarrage, {
+    selectThemeExercice: selectThemeExercice,
+    selectNiveauExercice: selectNiveauExercice,
+    selectObjectifSeance: selectObjectifSeance,
+    modeFocus: modeFocus,
+    modeAdaptatif: modeAdaptatif,
+    btnGenererExercice: btnGenererExercice,
+  });
 
   // --- Mode exercices / progression ---
   initialiserModeExercices({
@@ -205,6 +220,67 @@ function initialiserModeFocus(caseFocus) {
     const actif = !!caseFocus.checked;
     body.classList.toggle("mode-focus", actif);
     localStorage.setItem(CLE_MODE_FOCUS, actif ? "1" : "0");
+  });
+}
+
+function initialiserConfortAccessibilite(btnMinus, btnPlus, toggleContraste) {
+  const CLE_FONT = "maths-paysager-font-scale";
+  const CLE_CONTRASTE = "maths-paysager-contrast";
+  const body = document.body;
+  if (!body) return;
+
+  const fontScale = localStorage.getItem(CLE_FONT) || "normal";
+  body.setAttribute("data-font-scale", fontScale);
+
+  const contrasteActif = localStorage.getItem(CLE_CONTRASTE) === "1";
+  body.classList.toggle("contrast-fort", contrasteActif);
+  if (toggleContraste) toggleContraste.checked = contrasteActif;
+
+  if (btnMinus) {
+    btnMinus.addEventListener("click", function () {
+      body.setAttribute("data-font-scale", "small");
+      localStorage.setItem(CLE_FONT, "small");
+    });
+  }
+  if (btnPlus) {
+    btnPlus.addEventListener("click", function () {
+      body.setAttribute("data-font-scale", "large");
+      localStorage.setItem(CLE_FONT, "large");
+    });
+  }
+  if (toggleContraste) {
+    toggleContraste.addEventListener("change", function () {
+      const actif = !!toggleContraste.checked;
+      body.classList.toggle("contrast-fort", actif);
+      localStorage.setItem(CLE_CONTRASTE, actif ? "1" : "0");
+    });
+  }
+}
+
+function initialiserDemarrageRapide(btnRapide, btnRevision, zoneMessage, ui) {
+  if (!btnRapide || !btnRevision || !ui) return;
+  btnRapide.addEventListener("click", function () {
+    ui.selectThemeExercice.value = "metier";
+    ui.selectNiveauExercice.value = "facile";
+    ui.selectObjectifSeance.value = "metier";
+    if (ui.modeFocus) ui.modeFocus.checked = true;
+    if (ui.modeAdaptatif) ui.modeAdaptatif.checked = true;
+    document.body.classList.toggle("mode-focus", true);
+    if (zoneMessage) {
+      zoneMessage.textContent = "Parcours rapide lancé : 3 exercices métiers niveau facile.";
+    }
+    ui.btnGenererExercice.click();
+  });
+
+  btnRevision.addEventListener("click", function () {
+    ui.selectThemeExercice.value = "aires";
+    ui.selectNiveauExercice.value = "facile";
+    ui.selectObjectifSeance.value = "unites";
+    if (ui.modeAdaptatif) ui.modeAdaptatif.checked = false;
+    if (zoneMessage) {
+      zoneMessage.textContent = "Parcours révision activé : notion + unité d'abord, puis validation.";
+    }
+    ui.btnGenererExercice.click();
   });
 }
 
@@ -879,32 +955,39 @@ function afficherFeedbackExercice(zone, exercice, reponseEleve, estCorrect, diag
   zone.className = "resultat resultat--visible" + (estCorrect ? "" : " resultat--erreur");
   viderElement(zone);
 
+  const progression = chargerProgression();
   const message = document.createElement("p");
   const messageFort = document.createElement("strong");
   messageFort.textContent = estCorrect ? "Bravo ✅" : "Presque ❌";
   message.appendChild(messageFort);
-  message.appendChild(document.createTextNode(estCorrect ? " Ta réponse est correcte." : " Ce n'est pas la bonne réponse."));
+  message.appendChild(document.createTextNode(estCorrect ? " Tu avances bien." : " On corrige ça ensemble."));
 
-  const reponse = document.createElement("p");
-  reponse.textContent = "Ta réponse : " + arrondir(reponseEleve) + (exercice.unite ? " " + exercice.unite : "");
-
-  const attendu = document.createElement("p");
-  attendu.textContent = "Réponse attendue : " + arrondir(exercice.reponse) + (exercice.unite ? " " + exercice.unite : "");
+  const bilan = document.createElement("p");
+  bilan.textContent = estCorrect
+    ? "✅ Correct : " + arrondir(exercice.reponse) + (exercice.unite ? " " + exercice.unite : "")
+    : "❌ Attendu : " + arrondir(exercice.reponse) + (exercice.unite ? " " + exercice.unite : "") + " (toi : " + arrondir(reponseEleve) + (exercice.unite ? " " + exercice.unite : "") + ")";
 
   const explication = document.createElement("div");
   explication.className = "resultat__formule";
   explication.textContent = exercice.explication;
+
   const action = document.createElement("p");
   action.className = "resultat__formule";
   action.textContent = estCorrect
-    ? "Action suivante : passe à un exercice similaire sans indice pour consolider."
-    : "Action suivante : utilise « Je bloque » ou Indice 1, puis recommence.";
+    ? "Action : continue sans indice pour consolider."
+    : "Action : corrige l'unité puis retente.";
+
+  const motivation = document.createElement("p");
+  motivation.className = "resultat__formule";
+  motivation.textContent = estCorrect && progression.serie >= 2
+    ? "Super : " + progression.serie + " réussites de suite 🔥"
+    : "Objectif : 2 réussites d'affilée pour débloquer une série.";
 
   zone.appendChild(message);
-  zone.appendChild(reponse);
-  zone.appendChild(attendu);
+  zone.appendChild(bilan);
   zone.appendChild(explication);
   zone.appendChild(action);
+  zone.appendChild(motivation);
 
   if (diagnostic) zone.appendChild(creerAstuce("Diagnostic probable", diagnostic));
   zone.appendChild(creerAstuce("Erreur fréquente", exercice.erreurProbable));
@@ -1088,13 +1171,26 @@ function determinerPalierCompetence(competence) {
 
 function afficherPlanRemediation(zone, exercice, diagnostic) {
   if (!zone || !exercice) return;
+  const erreursConsecutives = compterErreursRecentes(exercice.erreurCode);
+  const microCours = erreursConsecutives >= 2
+    ? "<p><strong>Micro-cours (30 sec) :</strong> " + (diagnostic || exercice.erreurProbable) + " Ensuite, fais un exercice ciblé sans te presser.</p>"
+    : "";
   zone.innerHTML =
     "<strong>Plan de remédiation (3 étapes)</strong>" +
     "<ol class=\"resultat__etapes-liste\">" +
     "<li>Revoir la notion ciblée : " + (diagnostic || exercice.erreurProbable) + ".</li>" +
     "<li>Refaire un exercice similaire avec indice 1 puis indice 2.</li>" +
     "<li>Valider un nouvel exercice sans aide pour consolider.</li>" +
-    "</ol>";
+    "</ol>" +
+    microCours;
+}
+
+function compterErreursRecentes(erreurCode) {
+  if (!erreurCode) return 0;
+  const historique = lireHistorique()
+    .filter(function (item) { return item.estCorrect === false; })
+    .slice(0, 4);
+  return historique.filter(function (item) { return item.erreurCode === erreurCode; }).length;
 }
 
 function mettreAJourUniteAttendue(zone, exercice) {
@@ -1356,6 +1452,7 @@ function afficherChampsFormes(forme, conteneur) {
         '    aria-describedby="' + champ.id + '-erreur" ' +
         '    placeholder="' + champ.placeholder + '" ' +
         '    step="0.01" min="0">' +
+        '  <p class="unit-note">Unité attendue : ' + (champ.unite || "valeur") + "</p>" +
         '  <p class="field-error" id="' + champ.id + '-erreur" aria-live="polite"></p>' +
         "</div>"
       );
@@ -1376,20 +1473,20 @@ function afficherChampsFormes(forme, conteneur) {
 function afficherChampsPourcent(type, conteneur) {
   const champsParType = {
     "trouver-pourcentage": [
-      { id: "pourcent-val", label: "Pourcentage (%)", placeholder: "Ex : 15" },
-      { id: "nombre-val", label: "Nombre", placeholder: "Ex : 200" },
+      { id: "pourcent-val", label: "Pourcentage (%)", placeholder: "Ex : 15", unite: "%" },
+      { id: "nombre-val", label: "Nombre", placeholder: "Ex : 200", unite: "valeur brute" },
     ],
     "quel-pourcentage": [
-      { id: "partie-val", label: "Partie (A)", placeholder: "Ex : 30" },
-      { id: "total-val", label: "Total (B)", placeholder: "Ex : 200" },
+      { id: "partie-val", label: "Partie (A)", placeholder: "Ex : 30", unite: "valeur brute" },
+      { id: "total-val", label: "Total (B)", placeholder: "Ex : 200", unite: "valeur brute" },
     ],
     augmentation: [
-      { id: "valeur-depart", label: "Valeur de départ", placeholder: "Ex : 150" },
-      { id: "pourcent-aug", label: "Augmentation (%)", placeholder: "Ex : 20" },
+      { id: "valeur-depart", label: "Valeur de départ", placeholder: "Ex : 150", unite: "valeur brute" },
+      { id: "pourcent-aug", label: "Augmentation (%)", placeholder: "Ex : 20", unite: "%" },
     ],
     reduction: [
-      { id: "valeur-depart", label: "Valeur de départ", placeholder: "Ex : 150" },
-      { id: "pourcent-red", label: "Réduction (%)", placeholder: "Ex : 10" },
+      { id: "valeur-depart", label: "Valeur de départ", placeholder: "Ex : 150", unite: "valeur brute" },
+      { id: "pourcent-red", label: "Réduction (%)", placeholder: "Ex : 10", unite: "%" },
     ],
   };
 
@@ -1404,6 +1501,7 @@ function afficherChampsPourcent(type, conteneur) {
         '    aria-describedby="' + champ.id + '-erreur" ' +
         '    placeholder="' + champ.placeholder + '" ' +
         '    step="0.01" min="0">' +
+        '  <p class="unit-note">Unité attendue : ' + (champ.unite || "valeur") + "</p>" +
         '  <p class="field-error" id="' + champ.id + '-erreur" aria-live="polite"></p>' +
         "</div>"
       );
