@@ -694,6 +694,31 @@ body.mode-focus #section-exercices {
   color: var(--color-primary);
 }
 
+.exercise-dashboard {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: var(--space-3);
+}
+
+.exercise-meta {
+  margin-bottom: var(--space-2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.exercise-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+  background: var(--color-surface);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
 .exercise-more {
   margin-top: var(--space-4);
   border: 1px dashed var(--color-border);
@@ -856,6 +881,10 @@ button[aria-disabled="true"] {
   }
 
   .progress-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .exercise-dashboard {
     grid-template-columns: 1fr;
   }
 }
