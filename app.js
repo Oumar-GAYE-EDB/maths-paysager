@@ -58,6 +58,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const coachEtapes = document.getElementById("coach-etapes");
   const objectifSession = document.getElementById("objectif-session");
   const competencesExercice = document.getElementById("competences-exercice");
+  const pontMathsMetier = document.getElementById("pont-maths-metier");
   const ficheApprentissage = document.getElementById("fiche-apprentissage");
   const checklistVerification = document.getElementById("checklist-verification");
   const planRemediation = document.getElementById("plan-remediation");
@@ -161,6 +162,7 @@ document.addEventListener("DOMContentLoaded", function () {
     coachEtapes: coachEtapes,
     objectifSession: objectifSession,
     competencesExercice: competencesExercice,
+    pontMathsMetier: pontMathsMetier,
     ficheApprentissage: ficheApprentissage,
     checklistVerification: checklistVerification,
     planRemediation: planRemediation,
@@ -372,6 +374,7 @@ function initialiserModeExercices(ui) {
     afficherRecommandation(ui.recommandationExercice, selection);
     afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
     afficherObjectifEtCompetences(ui.objectifSession, ui.competencesExercice, exerciceActuel, selection);
+    afficherPontMathsMetier(ui.pontMathsMetier, exerciceActuel);
     afficherFicheApprentissage(ui.ficheApprentissage, exerciceActuel);
     afficherChecklistVerification(ui.checklistVerification, exerciceActuel, false);
     afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
@@ -444,6 +447,7 @@ function initialiserModeExercices(ui) {
         objectifSeance: ui.selectObjectifSeance ? ui.selectObjectifSeance.value : "precision",
       });
       afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
+      afficherPontMathsMetier(ui.pontMathsMetier, exerciceActuel);
       afficherFicheApprentissage(ui.ficheApprentissage, exerciceActuel);
       afficherChecklistVerification(ui.checklistVerification, exerciceActuel, false);
       mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
@@ -510,6 +514,7 @@ function corrigerExercice(ui, passerAuSuivant) {
   afficherRecommandation(ui.recommandationExercice, selection);
   afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
   afficherObjectifEtCompetences(ui.objectifSession, ui.competencesExercice, exerciceActuel, selection);
+  afficherPontMathsMetier(ui.pontMathsMetier, exerciceActuel);
   afficherFicheApprentissage(ui.ficheApprentissage, exerciceActuel);
   afficherChecklistVerification(ui.checklistVerification, exerciceActuel, false);
   mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
@@ -688,7 +693,52 @@ function creerExerciceForme(niveau) {
     difficile: { min: 10, max: 40 },
   };
   const plage = difficultes[niveau] || difficultes.facile;
-  const type = nombreAleatoire(0, 1) === 0 ? "rectangle" : "cercle";
+  const type = ["rectangle", "rectangle-marge", "cercle", "triangle"][nombreAleatoire(0, 3)];
+
+  if (type === "rectangle-marge") {
+    const L = nombreAleatoire(plage.min + 6, plage.max + 10);
+    const l = nombreAleatoire(plage.min + 3, plage.max + 6);
+    const couvertureRouleau = niveau === "facile" ? 8 : 6;
+    const margePourcent = niveau === "difficile" ? 12 : 8;
+    const surface = L * l;
+    const surfaceAvecMarge = surface * (1 + margePourcent / 100);
+    const rouleaux = Math.ceil(surfaceAvecMarge / couvertureRouleau);
+    return {
+      theme: "aires",
+      competence: "aires-perimetres",
+      competenceLabel: "Aires et périmètres",
+      objectif: "Enchaîner plusieurs étapes (surface, marge, conversion en quantité).",
+      titre: "Préparation d'une commande de gazon",
+      enonce:
+        "Contexte : tu prépares un chantier d'engazonnement.\nDonnées : zone rectangulaire " + L + " m × " + l + " m ; marge de sécurité " + margePourcent + "% ; 1 rouleau couvre " + couvertureRouleau + " m².\nQuestion : combien de rouleaux faut-il commander (arrondi au supérieur) ?",
+      reponse: rouleaux,
+      tolerance: 0.01,
+      unite: "rouleaux",
+      explication:
+        "Étape 1 : surface = " + L + " × " + l + " = " + arrondir(surface) + " m². " +
+        "Étape 2 : avec marge, " + arrondir(surface) + " × (1 + " + margePourcent + "/100) = " + arrondir(surfaceAvecMarge) + " m². " +
+        "Étape 3 : " + arrondir(surfaceAvecMarge) + " ÷ " + couvertureRouleau + " = " + arrondir(surfaceAvecMarge / couvertureRouleau) + ", donc " + rouleaux + " rouleaux.",
+      erreurProbable: "Tu as peut-être oublié d'ajouter la marge ou d'arrondir au supérieur.",
+      erreurCode: "surface_marge_conversion",
+      palier: niveau === "difficile" ? "Or" : "Argent",
+      etapes: [
+        "Je calcule d'abord la surface totale en m².",
+        "J'ajoute la marge de sécurité en pourcentage.",
+        "Je convertis en rouleaux et j'arrondis au supérieur.",
+      ],
+      utiliteMetier: "Reproduit une vraie commande de chantier avec anticipation des pertes.",
+      verification: "Sans marge, le nombre de rouleaux doit être un peu plus petit.",
+      pontMathsMetier: {
+        mesure: "Surface réelle à couvrir + perte prévisible.",
+        decision: "Définir une commande de gazon fiable.",
+        impact: "Évite le sous-approvisionnement et les retours sur site.",
+      },
+      indices: [
+        "Indice 1 : commence par la surface du rectangle.",
+        "Indice 2 : applique la marge, puis divise par la couverture d'un rouleau.",
+      ],
+    };
+  }
 
   if (type === "rectangle") {
     const L = nombreAleatoire(plage.min, plage.max);
@@ -715,6 +765,11 @@ function creerExerciceForme(niveau) {
       ],
       utiliteMetier: "Connaître la surface permet d'estimer les rouleaux de gazon et le temps de préparation du sol.",
       verification: "Si ton résultat est en m (et non m²), c'est qu'il y a une erreur de formule.",
+      pontMathsMetier: {
+        mesure: "La surface d'une zone à engazonner.",
+        decision: "Prévoir la quantité de gazon à commander.",
+        impact: "Évite le manque de rouleaux et les retards sur chantier.",
+      },
       indices: [
         "Indice 1 : cherche une surface, donc une formule d'aire.",
         "Indice 2 : pour un rectangle, aire = longueur × largeur (pas ×2).",
@@ -722,70 +777,196 @@ function creerExerciceForme(niveau) {
     };
   }
 
-  const rayon = nombreAleatoire(plage.min, plage.max);
-  const perimetre = 2 * PI * rayon;
+  if (type === "cercle") {
+    const rayon = nombreAleatoire(plage.min, plage.max);
+    const perimetre = 2 * PI * rayon;
+    return {
+      theme: "aires",
+      competence: "aires-perimetres",
+      competenceLabel: "Aires et périmètres",
+      objectif: "Distinguer rayon et diamètre dans les formules du cercle.",
+      titre: "Périmètre de cercle",
+      enonce: "Contexte : tu poses une bordure autour d'un bassin circulaire.\nDonnée : rayon = " + rayon + " m.\nQuestion : quelle longueur de bordure (en m) faut-il prévoir ?",
+      reponse: perimetre,
+      tolerance: 0.1,
+      unite: "m",
+      explication: "Étape 1 : périmètre = 2 × π × r. Étape 2 : 2 × π × " + rayon + " = " + arrondir(perimetre) + " m.",
+      erreurProbable: "Attention : le rayon n'est pas le diamètre.",
+      erreurCode: "rayon_diametre",
+      palier: "Argent",
+      etapes: [
+        "Je repère que l'on cherche la longueur autour du bassin.",
+        "Je choisis la formule périmètre = 2 × π × rayon.",
+        "Je calcule puis j'arrondis au centième en m.",
+      ],
+      utiliteMetier: "Le périmètre aide à commander la bonne longueur de bordure ou de ganivelle.",
+      verification: "Le résultat doit être supérieur au diamètre (2r).",
+      pontMathsMetier: {
+        mesure: "La longueur totale de bordure à poser autour du bassin.",
+        decision: "Déterminer la quantité de matériaux à acheter.",
+        impact: "Réduit les pertes et évite les allers-retours fournisseur.",
+      },
+      indices: [
+        "Indice 1 : on cherche une longueur autour du cercle : c'est un périmètre.",
+        "Indice 2 : applique 2 × π × rayon, sans transformer le rayon en diamètre.",
+      ],
+    };
+  }
+
+  const base = nombreAleatoire(plage.min + 2, plage.max + 6);
+  const hauteur = nombreAleatoire(plage.min, plage.max);
+  const aireTriangle = (base * hauteur) / 2;
   return {
     theme: "aires",
     competence: "aires-perimetres",
     competenceLabel: "Aires et périmètres",
-    objectif: "Distinguer rayon et diamètre dans les formules du cercle.",
-    titre: "Périmètre de cercle",
-    enonce: "Contexte : tu poses une bordure autour d'un bassin circulaire.\nDonnée : rayon = " + rayon + " m.\nQuestion : quelle longueur de bordure (en m) faut-il prévoir ?",
-    reponse: perimetre,
-    tolerance: 0.1,
-    unite: "m",
-    explication: "Étape 1 : périmètre = 2 × π × r. Étape 2 : 2 × π × " + rayon + " = " + arrondir(perimetre) + " m.",
-    erreurProbable: "Attention : le rayon n'est pas le diamètre.",
-    erreurCode: "rayon_diametre",
-    palier: "Argent",
+    objectif: "Choisir la bonne formule d'aire d'un triangle pour une zone en pente.",
+    titre: "Aire de triangle",
+    enonce: "Contexte : un talus triangulaire doit être paillé.\nDonnées : base = " + base + " m, hauteur = " + hauteur + " m.\nQuestion : quelle surface (en m²) faut-il couvrir ?",
+    reponse: aireTriangle,
+    tolerance: 0.05,
+    unite: "m²",
+    explication: "Étape 1 : aire triangle = (base × hauteur) ÷ 2. Étape 2 : (" + base + " × " + hauteur + ") ÷ 2 = " + arrondir(aireTriangle) + " m².",
+    erreurProbable: "Tu as peut-être oublié de diviser par 2 à la fin.",
+    erreurCode: "triangle_div2",
+    palier: niveau === "difficile" ? "Or" : "Argent",
     etapes: [
-      "Je repère que l'on cherche la longueur autour du bassin.",
-      "Je choisis la formule périmètre = 2 × π × rayon.",
-      "Je calcule puis j'arrondis au centième en m.",
+      "Je repère la forme : triangle.",
+      "J'applique (base × hauteur) ÷ 2.",
+      "Je vérifie l'unité m² pour une surface.",
     ],
-    utiliteMetier: "Le périmètre aide à commander la bonne longueur de bordure ou de ganivelle.",
-    verification: "Le résultat doit être supérieur au diamètre (2r).",
+    utiliteMetier: "La surface du talus permet de calculer les besoins en toile et en paillage.",
+    verification: "L'aire d'un triangle doit être plus petite que base × hauteur.",
+    pontMathsMetier: {
+      mesure: "La surface réelle d'un talus triangulaire.",
+      decision: "Prévoir le volume de paillage ou de géotextile.",
+      impact: "Aide à sécuriser la pente sans surcoût matière.",
+    },
     indices: [
-      "Indice 1 : on cherche une longueur autour du cercle : c'est un périmètre.",
-      "Indice 2 : applique 2 × π × rayon, sans transformer le rayon en diamètre.",
+      "Indice 1 : pour un triangle, on n'utilise pas longueur × largeur.",
+      "Indice 2 : multiplie base et hauteur puis divise par 2.",
     ],
   };
 }
 
 function creerExercicePourcentage(niveau) {
-  const nombre = niveau === "difficile" ? nombreAleatoire(120, 800) : nombreAleatoire(50, 400);
-  const pourcent = niveau === "facile" ? nombreAleatoire(5, 30) : nombreAleatoire(10, 75);
-  const resultat = (pourcent * nombre) / 100;
+  const scenario = nombreAleatoire(1, 3);
+  if (scenario === 1) {
+    const nombre = niveau === "difficile" ? nombreAleatoire(120, 800) : nombreAleatoire(50, 400);
+    const pourcent = niveau === "facile" ? nombreAleatoire(5, 30) : nombreAleatoire(10, 75);
+    const resultat = (pourcent * nombre) / 100;
+    return {
+      theme: "pourcentages",
+      competence: "pourcentages",
+      competenceLabel: "Pourcentages",
+      objectif: "Maîtriser le passage « pourcentage » vers « division par 100 ».",
+      titre: "Calcul de remise fournisseur",
+      enonce: "Contexte : une remise de " + pourcent + "% est appliquée sur un montant de " + nombre + " €.\nQuestion : quel est le montant de la remise ?",
+      reponse: resultat,
+      tolerance: 0.05,
+      unite: "€",
+      explication: "Étape 1 : calculer " + pourcent + " × " + nombre + ". Étape 2 : diviser par 100. Résultat = " + arrondir(resultat) + " €.",
+      erreurProbable: "Pense à diviser par 100 à la fin.",
+      erreurCode: "pourcent_div100",
+      palier: niveau === "difficile" ? "Or" : "Argent",
+      etapes: [
+        "Je transforme le pourcentage en fraction sur 100.",
+        "Je multiplie le montant par ce pourcentage.",
+        "Je vérifie que la remise est plus petite que le montant initial.",
+      ],
+      utiliteMetier: "Calculer une remise est utile pour lire un devis fournisseur ou comparer des promotions.",
+      verification: "Une remise de x% doit rester entre 0 et le montant de départ.",
+      pontMathsMetier: {
+        mesure: "Le montant exact économisé sur le devis.",
+        decision: "Choisir le fournisseur le plus intéressant.",
+        impact: "Améliore la marge du chantier.",
+      },
+      indices: [
+        "Indice 1 : " + pourcent + "% signifie " + pourcent + "/100.",
+        "Indice 2 : fais la multiplication puis divise le résultat par 100.",
+      ],
+    };
+  }
+
+  if (scenario === 2) {
+    const totalPlants = niveau === "difficile" ? nombreAleatoire(300, 900) : nombreAleatoire(120, 320);
+    const partVivaces = niveau === "facile" ? nombreAleatoire(20, 45) : nombreAleatoire(30, 70);
+    const vivaces = (partVivaces * totalPlants) / 100;
+    return {
+      theme: "pourcentages",
+      competence: "pourcentages",
+      competenceLabel: "Pourcentages",
+      objectif: "Relier une proportion en % à une quantité de végétaux.",
+      titre: "Répartition de plantations",
+      enonce: "Contexte : plan de plantation d'un massif.\nDonnées : " + totalPlants + " plants au total, dont " + partVivaces + "% de vivaces.\nQuestion : combien de plants vivaces faut-il prévoir ?",
+      reponse: vivaces,
+      tolerance: 0.05,
+      unite: "plants",
+      explication: "Vivaces = (" + partVivaces + " × " + totalPlants + ") ÷ 100 = " + arrondir(vivaces) + " plants.",
+      erreurProbable: "Ne confonds pas pourcentage et quantité totale.",
+      erreurCode: "pourcent_div100",
+      palier: "Argent",
+      etapes: [
+        "Je repère le total de plants.",
+        "Je calcule la part vivaces avec le pourcentage.",
+        "Je vérifie que le résultat est inférieur au total.",
+      ],
+      utiliteMetier: "Cette répartition aide à commander les bonnes quantités de végétaux.",
+      verification: "Le nombre de vivaces doit rester entre 0 et le total de plants.",
+      pontMathsMetier: {
+        mesure: "La quantité de plants par catégorie.",
+        decision: "Passer les commandes aux pépinières.",
+        impact: "Évite les ruptures ou surplus de plants.",
+      },
+      indices: [
+        "Indice 1 : calcule x% d'un nombre avec (x × nombre) ÷ 100.",
+        "Indice 2 : ton résultat doit être inférieur au total de plants.",
+      ],
+    };
+  }
+
+  const devisInitial = niveau === "difficile" ? nombreAleatoire(2500, 6000) : nombreAleatoire(900, 2400);
+  const ajout = niveau === "facile" ? nombreAleatoire(120, 400) : nombreAleatoire(350, 900);
+  const devisFinal = devisInitial + ajout;
+  const augmentation = (ajout / devisInitial) * 100;
   return {
     theme: "pourcentages",
     competence: "pourcentages",
     competenceLabel: "Pourcentages",
-    objectif: "Maîtriser le passage « pourcentage » vers « division par 100 ».",
-    titre: "Calcul de pourcentage",
-    enonce: "Contexte : une remise de " + pourcent + "% est appliquée sur un montant de " + nombre + " €.\nQuestion : quel est le montant de la remise ?",
-    reponse: resultat,
-    tolerance: 0.05,
-    unite: "",
-    explication: "Étape 1 : calculer " + pourcent + " × " + nombre + ". Étape 2 : diviser par 100. Résultat = " + arrondir(resultat) + ".",
-    erreurProbable: "Pense à diviser par 100 à la fin.",
-    erreurCode: "pourcent_div100",
+    objectif: "Calculer un taux d'évolution pour analyser un devis révisé.",
+    titre: "Évolution d'un devis",
+    enonce:
+      "Contexte : après visite de chantier, le devis est ajusté.\nDonnées : devis initial = " + devisInitial + " €, devis révisé = " + devisFinal + " €.\nQuestion : de quel pourcentage le devis a-t-il augmenté ?",
+    reponse: augmentation,
+    tolerance: 0.1,
+    unite: "%",
+    explication:
+      "Étape 1 : hausse = " + devisFinal + " - " + devisInitial + " = " + ajout + " €. " +
+      "Étape 2 : taux = (hausse ÷ valeur initiale) × 100 = (" + ajout + " ÷ " + devisInitial + ") × 100 = " + arrondir(augmentation) + "%.",
+    erreurProbable: "Le pourcentage d'évolution se calcule avec la valeur initiale au dénominateur.",
+    erreurCode: "pourcentage_variation",
     palier: niveau === "difficile" ? "Or" : "Argent",
     etapes: [
-      "Je transforme le pourcentage en fraction sur 100.",
-      "Je multiplie le montant par ce pourcentage.",
-      "Je vérifie que la remise est plus petite que le montant initial.",
+      "Je calcule d'abord l'écart entre devis final et devis initial.",
+      "Je divise cet écart par le devis initial.",
+      "Je multiplie par 100 pour obtenir un pourcentage.",
     ],
-    utiliteMetier: "Calculer une remise est utile pour lire un devis fournisseur ou comparer des promotions.",
-    verification: "Une remise de x% doit rester entre 0 et le montant de départ.",
+    utiliteMetier: "Permet d'expliquer clairement au client la variation du budget.",
+    verification: "Si le devis final est plus grand, le taux doit être positif.",
+    pontMathsMetier: {
+      mesure: "L'évolution d'un budget entre deux versions de devis.",
+      decision: "Valider les ajustements ou renégocier des postes.",
+      impact: "Aide à piloter la rentabilité et la transparence client.",
+    },
     indices: [
-      "Indice 1 : " + pourcent + "% signifie " + pourcent + "/100.",
-      "Indice 2 : fais la multiplication puis divise le résultat par 100.",
+      "Indice 1 : commence par trouver la hausse en euros.",
+      "Indice 2 : taux d'évolution = (hausse ÷ initial) × 100.",
     ],
   };
 }
 
 function creerExerciceMetier(niveau) {
-  const scenario = nombreAleatoire(1, 3);
+  const scenario = nombreAleatoire(1, 5);
   if (scenario === 1) {
     const longueur = niveau === "facile" ? nombreAleatoire(4, 12) : nombreAleatoire(8, 25);
     const largeur = niveau === "difficile" ? nombreAleatoire(5, 16) : nombreAleatoire(3, 10);
@@ -815,6 +996,11 @@ function creerExerciceMetier(niveau) {
       verification: "Si la parcelle est grande, le nombre de sacs doit augmenter proportionnellement.",
       visuel: "🌱 Parcelle de semis",
       decisionChantier: "Décision : prévoir l'achat des sacs avant l'intervention.",
+      pontMathsMetier: {
+        mesure: "La surface d'une parcelle et sa conversion en sacs.",
+        decision: "Commander la quantité de semences.",
+        impact: "Évite les interruptions de chantier liées au manque de stock.",
+      },
       indices: ["Indice 1 : commence par calculer la surface en m².", "Indice 2 : convertis ensuite avec le coefficient en sac/m²."],
     };
   }
@@ -845,7 +1031,90 @@ function creerExerciceMetier(niveau) {
       verification: "Le coût total doit être supérieur au prix d'1 m².",
       visuel: "🧾 Devis paillage",
       decisionChantier: "Décision : valider le budget total du chantier.",
+      pontMathsMetier: {
+        mesure: "Le coût global à partir d'un prix unitaire.",
+        decision: "Valider (ou ajuster) le devis client.",
+        impact: "Sécurise la rentabilité du chantier.",
+      },
       indices: ["Indice 1 : €/m² = prix pour 1 m².", "Indice 2 : multiplie la surface totale par ce prix unitaire."],
+    };
+  }
+  if (scenario === 3) {
+    const perimetre = niveau === "facile" ? nombreAleatoire(18, 45) : nombreAleatoire(35, 130);
+    const prixMl = niveau === "difficile" ? nombreAleatoire(20, 45) : nombreAleatoire(12, 28);
+    const coutBordure = perimetre * prixMl;
+    return {
+      theme: "metier",
+      competence: "situations-metier",
+      competenceLabel: "Situations métier CAPa",
+      objectif: "Passer d'une longueur (ml) à un coût total.",
+      titre: "Situation métier CAPa — bordures",
+      enonce: "Contexte : pose de bordures pour un massif.\nDonnées : périmètre à border = " + perimetre + " m, prix de fourniture/pose = " + prixMl + " €/ml.\nQuestion : quel est le coût total des bordures ?",
+      reponse: coutBordure,
+      tolerance: 0.05,
+      unite: "€",
+      explication: "Coût = longueur totale × prix au mètre linéaire = " + perimetre + " × " + prixMl + " = " + arrondir(coutBordure) + " €.",
+      erreurProbable: "Attention à l'unité €/ml : c'est une multiplication par la longueur.",
+      erreurCode: "metier_cout_unitaire",
+      palier: "Argent",
+      etapes: [
+        "Je repère la longueur totale en mètres linéaires.",
+        "Je repère le prix pour 1 mètre.",
+        "Je multiplie pour obtenir le coût total.",
+      ],
+      utiliteMetier: "Permet de chiffrer précisément la finition d'un massif.",
+      verification: "Le coût total doit être plus grand que le prix d'un mètre linéaire.",
+      visuel: "🪵 Bordures du massif",
+      decisionChantier: "Décision : ajuster le budget bordures avant commande.",
+      pontMathsMetier: {
+        mesure: "Le linéaire de bordure à poser.",
+        decision: "Arbitrer entre différents matériaux de bordure.",
+        impact: "Évite les écarts de budget en fin de chantier.",
+      },
+      indices: ["Indice 1 : ml = mètre linéaire.", "Indice 2 : multiplie la longueur par le prix unitaire €/ml."],
+    };
+  }
+  if (scenario === 5) {
+    const surface = niveau === "facile" ? nombreAleatoire(30, 90) : nombreAleatoire(80, 260);
+    const doseKgM2 = niveau === "difficile" ? 0.18 : 0.12;
+    const poidsSac = 25;
+    const quantiteTotale = surface * doseKgM2;
+    const sacs = Math.ceil(quantiteTotale / poidsSac);
+    return {
+      theme: "metier",
+      competence: "situations-metier",
+      competenceLabel: "Situations métier CAPa",
+      objectif: "Combiner dosage par m² et conditionnement fournisseur.",
+      titre: "Situation métier CAPa — amendement du sol",
+      enonce:
+        "Contexte : préparation d'un sol avant plantation.\nDonnées : surface = " + surface + " m² ; dosage = " + doseKgM2 + " kg/m² ; sacs de " + poidsSac + " kg.\nQuestion : combien de sacs faut-il commander (arrondi au supérieur) ?",
+      reponse: sacs,
+      tolerance: 0.01,
+      unite: "sacs",
+      explication:
+        "Étape 1 : quantité totale = " + surface + " × " + doseKgM2 + " = " + arrondir(quantiteTotale) + " kg. " +
+        "Étape 2 : sacs = " + arrondir(quantiteTotale) + " ÷ " + poidsSac + " = " + arrondir(quantiteTotale / poidsSac) + ", donc " + sacs + " sacs.",
+      erreurProbable: "Ne pas oublier l'arrondi au supérieur lors du passage en nombre de sacs.",
+      erreurCode: "metier_surface_avant_conversion",
+      palier: "Or",
+      etapes: [
+        "Je calcule la quantité totale en kilogrammes.",
+        "Je divise par le poids d'un sac.",
+        "J'arrondis au supérieur pour une commande réaliste.",
+      ],
+      utiliteMetier: "C'est un calcul standard de préparation de sol avant intervention.",
+      verification: "Le nombre de sacs doit être entier et suffisant pour couvrir toute la surface.",
+      visuel: "🧪 Amendement du sol",
+      decisionChantier: "Décision : valider la commande de sacs auprès du fournisseur.",
+      pontMathsMetier: {
+        mesure: "Besoins en kg à partir d'une dose par m².",
+        decision: "Passer commande au bon conditionnement.",
+        impact: "Évite les ruptures de matière pendant la préparation du sol.",
+      },
+      indices: [
+        "Indice 1 : commence par calculer la quantité totale en kg.",
+        "Indice 2 : divise par 25 puis arrondis au supérieur.",
+      ],
     };
   }
   const longueurTuyau = niveau === "facile" ? nombreAleatoire(25, 60) : nombreAleatoire(50, 180);
@@ -874,6 +1143,11 @@ function creerExerciceMetier(niveau) {
     verification: "Si la longueur double, le volume doit doubler aussi.",
     visuel: "💧 Ligne d'arrosage",
     decisionChantier: "Décision : confirmer le volume d'eau à préparer.",
+    pontMathsMetier: {
+      mesure: "Le volume d'eau total à partir d'un débit par mètre.",
+      decision: "Préparer la réserve d'eau et la durée d'arrosage.",
+      impact: "Réduit les risques de sous-arrosage ou gaspillage.",
+    },
     indices: ["Indice 1 : L/m signifie « litres par mètre ».", "Indice 2 : multiplie la longueur totale par la valeur en L/m."],
   };
 }
@@ -916,6 +1190,42 @@ function creerExerciceRemediation(remediation) {
         ],
       };
     },
+    triangle_div2: function () {
+      return {
+        theme: "aires",
+        competence: "aires-perimetres",
+        titre: "Remédiation : aire du triangle",
+        enonce: "Contexte : talus triangulaire de base 10 m et hauteur 4 m.\nQuestion : calcule la surface à pailler en m².",
+        reponse: 20,
+        tolerance: 0.01,
+        unite: "m²",
+        explication: "Aire = (base × hauteur) ÷ 2 = (10 × 4) ÷ 2 = 20 m².",
+        erreurProbable: "Pense à la division par 2 dans la formule du triangle.",
+        erreurCode: "triangle_div2",
+        indices: [
+          "Indice 1 : écris d'abord la formule complète.",
+          "Indice 2 : fais 10 × 4 puis divise par 2.",
+        ],
+      };
+    },
+    surface_marge_conversion: function () {
+      return {
+        theme: "aires",
+        competence: "aires-perimetres",
+        titre: "Remédiation : marge et conversion",
+        enonce: "Contexte : zone 20 m × 10 m, marge 10%, rouleaux de 10 m².\nQuestion : combien de rouleaux commander (arrondi supérieur) ?",
+        reponse: 22,
+        tolerance: 0.01,
+        unite: "rouleaux",
+        explication: "Surface = 200 m², puis avec marge 200 × 1,10 = 220 m². Enfin 220 ÷ 10 = 22 rouleaux.",
+        erreurProbable: "Refais les étapes dans l'ordre : surface, marge, conversion.",
+        erreurCode: "surface_marge_conversion",
+        indices: [
+          "Indice 1 : ajoute la marge après avoir calculé la surface.",
+          "Indice 2 : termine par la conversion en rouleaux.",
+        ],
+      };
+    },
     pourcent_div100: function () {
       return {
         theme: "pourcentages",
@@ -931,6 +1241,24 @@ function creerExerciceRemediation(remediation) {
         indices: [
           "Indice 1 : 25% = 25/100.",
           "Indice 2 : fais 25 × 120 puis divise par 100.",
+        ],
+      };
+    },
+    pourcentage_variation: function () {
+      return {
+        theme: "pourcentages",
+        competence: "pourcentages",
+        titre: "Remédiation : taux d'évolution",
+        enonce: "Contexte : devis initial 1000 €, devis final 1150 €.\nQuestion : quel est le pourcentage d'augmentation ?",
+        reponse: 15,
+        tolerance: 0.01,
+        unite: "%",
+        explication: "Hausse = 1150 - 1000 = 150, puis (150 ÷ 1000) × 100 = 15%.",
+        erreurProbable: "Le dénominateur est toujours la valeur initiale.",
+        erreurCode: "pourcentage_variation",
+        indices: [
+          "Indice 1 : trouve d'abord la hausse en euros.",
+          "Indice 2 : divise par la valeur initiale, puis ×100.",
         ],
       };
     },
@@ -1282,6 +1610,21 @@ function afficherFicheApprentissage(zone, exercice) {
     "<p><strong>Compétence visée :</strong> " + (exercice.competenceLabel || "Compétence transversale") + "</p>" +
     "<p><strong>Critère de réussite :</strong> résultat juste avec l'unité correcte.</p>" +
     "<p><strong>Erreur à éviter :</strong> " + (exercice.erreurProbable || "Relis l'énoncé.") + "</p>";
+}
+
+function afficherPontMathsMetier(zone, exercice) {
+  if (!zone || !exercice) return;
+  const pont = exercice.pontMathsMetier || {};
+  const mesure = pont.mesure || "Quelle grandeur dois-je mesurer ou calculer ?";
+  const decision = pont.decision || "Quelle décision chantier prend-on avec ce résultat ?";
+  const impact = pont.impact || "Quel impact concret pour le chantier (coût, temps, sécurité, quantité) ?";
+  zone.innerHTML =
+    "<strong>Lien maths ↔ aménagement paysager</strong>" +
+    "<ul class=\"resultat__etapes-liste\">" +
+    "<li>📏 <strong>Mesure :</strong> " + mesure + "</li>" +
+    "<li>🧭 <strong>Décision :</strong> " + decision + "</li>" +
+    "<li>🌿 <strong>Impact terrain :</strong> " + impact + "</li>" +
+    "</ul>";
 }
 
 function afficherChecklistVerification(zone, exercice, estValide) {
