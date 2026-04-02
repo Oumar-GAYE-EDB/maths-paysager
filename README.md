@@ -65,6 +65,8 @@ Types de calcul :
 ### 6) Situations métier enrichies
 - Scénarios CAPa variés : semis, paillage (coût €/m²), arrosage (L/m)
 - Mise en contexte « utile sur chantier » + auto-contrôle rapide sur chaque exercice
+- Pont explicite « maths ↔ métier » pour chaque exercice (mesure, décision, impact terrain)
+- Nouveaux scénarios : talus triangulaire, répartition de plantations, coût de bordures en €/ml
 
 ### 7) Fiabilité des calculs
 - Vérifications supplémentaires sur les contraintes géométriques
