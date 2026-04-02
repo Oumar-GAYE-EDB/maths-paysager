@@ -16,6 +16,7 @@ const sessionStats = { essais: 0, reussites: 0 };
 let chronoInterval = null;
 let chronoRestant = 0;
 let parcoursCibleActif = null;
+let revisionErreursActive = null;
 
 let exerciceActuel = null;
 
@@ -76,7 +77,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const badgesExercice = document.getElementById("badges-exercice");
   const historiqueExercice = document.getElementById("historique-exercice");
   const btnRejouerErreur = document.getElementById("btn-rejouer-erreur");
+  const btnReviserErreurs = document.getElementById("btn-reviser-erreurs");
   const btnTestsFormules = document.getElementById("btn-tests-formules");
+  const bilanRevisionErreurs = document.getElementById("bilan-revision-erreurs");
   const btnDemarrageRapide = document.getElementById("btn-demarrage-rapide");
   const btnReviserNotion = document.getElementById("btn-reviser-notion");
   const messageDemarrage = document.getElementById("message-demarrage");
@@ -182,7 +185,9 @@ document.addEventListener("DOMContentLoaded", function () {
     badgesExercice: badgesExercice,
     historiqueExercice: historiqueExercice,
     btnRejouerErreur: btnRejouerErreur,
+    btnReviserErreurs: btnReviserErreurs,
     btnTestsFormules: btnTestsFormules,
+    bilanRevisionErreurs: bilanRevisionErreurs,
   });
 });
 
@@ -387,12 +392,15 @@ function initialiserModeExercices(ui) {
   if (ui.testsFormulesResultat) {
     ui.testsFormulesResultat.innerHTML = "Conseil fiabilité : lance « Vérifier les formules » avant une évaluation.";
   }
+  afficherBilanRevisionErreurs(ui.bilanRevisionErreurs, revisionErreursActive, false);
 
   ui.btnGenererExercice.addEventListener("click", function () {
     const objectifSeance = ui.selectObjectifSeance ? ui.selectObjectifSeance.value : "precision";
     const selection = ui.modeAdaptatif && ui.modeAdaptatif.checked
       ? choisirParcoursAdaptatif(ui.selectThemeExercice.value, ui.selectNiveauExercice.value, objectifSeance)
       : { theme: ui.selectThemeExercice.value, niveau: ui.selectNiveauExercice.value, source: "manuel", objectifSeance: objectifSeance };
+    revisionErreursActive = null;
+    afficherBilanRevisionErreurs(ui.bilanRevisionErreurs, revisionErreursActive, false);
     exerciceActuel = creerExercice(selection.theme, selection.niveau, selection);
     afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
     afficherRecommandation(ui.recommandationExercice, selection);
@@ -484,6 +492,11 @@ function initialiserModeExercices(ui) {
       demarrerChronoSiActif(ui, exerciceActuel);
     });
   }
+  if (ui.btnReviserErreurs) {
+    ui.btnReviserErreurs.addEventListener("click", function () {
+      lancerRevisionErreursFrequentes(ui);
+    });
+  }
   if (ui.btnTestsFormules) {
     ui.btnTestsFormules.addEventListener("click", function () {
       afficherBilanTestsFormules(ui.testsFormulesResultat);
@@ -524,6 +537,12 @@ function corrigerExercice(ui, passerAuSuivant) {
     if (!estCorrect) {
       ajouterRemediation(exerciceActuel);
     }
+    if (revisionErreursActive) {
+      revisionErreursActive.essais += 1;
+      revisionErreursActive.reussites += estCorrect ? 1 : 0;
+      revisionErreursActive.restant = Math.max(0, revisionErreursActive.total - revisionErreursActive.essais);
+      afficherBilanRevisionErreurs(ui.bilanRevisionErreurs, revisionErreursActive, revisionErreursActive.restant === 0);
+    }
     afficherFeedbackExercice(ui.feedbackExercice, exerciceActuel, reponse, estCorrect, diagnostic);
     ui.reponseExercice.classList.toggle("input-valid", estCorrect);
     ui.reponseExercice.classList.toggle("input-invalid", !estCorrect);
@@ -547,6 +566,35 @@ function corrigerExercice(ui, passerAuSuivant) {
     return;
   }
 
+  if (revisionErreursActive) {
+    if (revisionErreursActive.restant <= 0) {
+      ui.feedbackExercice.className = "resultat resultat--visible";
+      ui.feedbackExercice.innerHTML = "Mini-séance terminée ✅ Clique sur « Nouvel exercice » pour reprendre un parcours classique.";
+      return;
+    }
+    exerciceActuel = creerExerciceRemediation({ erreurCode: revisionErreursActive.erreurCode });
+    afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
+    afficherRecommandation(ui.recommandationExercice, {
+      source: "revision-erreurs",
+      message: "Révision ciblée en cours : " + libelleErreur(revisionErreursActive.erreurCode) + " (" + revisionErreursActive.restant + " restant).",
+    });
+    afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
+    afficherObjectifEtCompetences(ui.objectifSession, ui.competencesExercice, exerciceActuel, {
+      source: "revision-erreurs",
+      objectifSeance: "precision",
+    });
+    afficherFicheApprentissage(ui.ficheApprentissage, exerciceActuel);
+    afficherChecklistVerification(ui.checklistVerification, exerciceActuel, false);
+    mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
+    afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
+    demarrerChronoSiActif(ui, exerciceActuel);
+    reinitialiserAidesParcoursSimple(ui);
+    afficherPreviewReponse(ui.previewReponseExercice, exerciceActuel, null);
+    mettreAJourEtatValidationReponse(ui);
+    mettreAJourRubanSession(ui);
+    return;
+  }
+
   const selection = ui.modeAdaptatif && ui.modeAdaptatif.checked
     ? choisirParcoursAdaptatif(ui.selectThemeExercice.value, ui.selectNiveauExercice.value, ui.selectObjectifSeance ? ui.selectObjectifSeance.value : "precision")
     : { theme: ui.selectThemeExercice.value, niveau: ui.selectNiveauExercice.value, source: "manuel", objectifSeance: ui.selectObjectifSeance ? ui.selectObjectifSeance.value : "precision" };
@@ -564,6 +612,93 @@ function corrigerExercice(ui, passerAuSuivant) {
   afficherPreviewReponse(ui.previewReponseExercice, exerciceActuel, null);
   mettreAJourEtatValidationReponse(ui);
   mettreAJourRubanSession(ui);
+}
+
+function lancerRevisionErreursFrequentes(ui) {
+  if (!ui) return;
+  const erreurCible = trouverErreurFrequente();
+  if (!erreurCible) {
+    if (ui.bilanRevisionErreurs) {
+      ui.bilanRevisionErreurs.innerHTML = "Aucune erreur fréquente détectée pour le moment. Continue les exercices puis relance cette option.";
+    }
+    return;
+  }
+  revisionErreursActive = {
+    erreurCode: erreurCible,
+    total: 3,
+    essais: 0,
+    reussites: 0,
+    restant: 3,
+    erreursRecentes: compterOccurrencesErreur(erreurCible),
+  };
+  exerciceActuel = creerExerciceRemediation({ erreurCode: revisionErreursActive.erreurCode });
+  afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
+  afficherRecommandation(ui.recommandationExercice, {
+    source: "revision-erreurs",
+    message: "Mode ciblé activé : " + libelleErreur(erreurCible) + ". Objectif : 3 exercices pour consolider.",
+  });
+  afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
+  afficherObjectifEtCompetences(ui.objectifSession, ui.competencesExercice, exerciceActuel, {
+    source: "revision-erreurs",
+    objectifSeance: "precision",
+  });
+  afficherFicheApprentissage(ui.ficheApprentissage, exerciceActuel);
+  afficherChecklistVerification(ui.checklistVerification, exerciceActuel, false);
+  mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
+  afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
+  afficherBilanRevisionErreurs(ui.bilanRevisionErreurs, revisionErreursActive, false);
+  demarrerChronoSiActif(ui, exerciceActuel);
+  reinitialiserAidesParcoursSimple(ui);
+  afficherPreviewReponse(ui.previewReponseExercice, exerciceActuel, null);
+  mettreAJourEtatValidationReponse(ui);
+  mettreAJourRubanSession(ui);
+}
+
+function trouverErreurFrequente() {
+  const erreurs = lireHistorique()
+    .filter(function (item) { return item.estCorrect === false && item.erreurCode; })
+    .slice(0, 20);
+  if (erreurs.length === 0) return "";
+  const compteurs = {};
+  erreurs.forEach(function (item) {
+    compteurs[item.erreurCode] = (compteurs[item.erreurCode] || 0) + 1;
+  });
+  return Object.keys(compteurs).sort(function (a, b) { return compteurs[b] - compteurs[a]; })[0] || "";
+}
+
+function compterOccurrencesErreur(erreurCode) {
+  if (!erreurCode) return 0;
+  return lireHistorique()
+    .filter(function (item) { return item.estCorrect === false && item.erreurCode === erreurCode; })
+    .length;
+}
+
+function libelleErreur(erreurCode) {
+  const labels = {
+    aire_unite: "aire vs périmètre / unité",
+    rayon_diametre: "rayon vs diamètre",
+    pourcent_div100: "division par 100 en pourcentages",
+    metier_surface_avant_conversion: "ordre des étapes en situation métier",
+    metier_cout_unitaire: "coût unitaire → coût total",
+    metier_volume_unitaire: "volume à partir de L/m",
+  };
+  return labels[erreurCode] || "notion prioritaire";
+}
+
+function afficherBilanRevisionErreurs(zone, session, terminee) {
+  if (!zone) return;
+  if (!session) {
+    zone.innerHTML = "Révision ciblée : clique sur « Réviser mes erreurs fréquentes » pour lancer un entraînement de consolidation.";
+    return;
+  }
+  const taux = session.essais > 0 ? (session.reussites / session.essais) * 100 : 0;
+  zone.innerHTML =
+    "<strong>Révision des erreurs fréquentes</strong>" +
+    "<p><strong>Cible :</strong> " + libelleErreur(session.erreurCode) + "</p>" +
+    "<p><strong>Avant :</strong> " + session.erreursRecentes + " erreur(s) récente(s) sur ce thème.</p>" +
+    "<p><strong>Pendant la mini-séance :</strong> " + session.reussites + "/" + session.essais + " réussites (" + arrondir(taux) + "%).</p>" +
+    "<p><strong>Reste à faire :</strong> " + session.restant + " exercice(s).</p>" +
+    (terminee ? "<p><strong>Bravo :</strong> mini-séance terminée, passe maintenant à un exercice classique.</p>" : "");
 }
 
 function initialiserValidationReponse(ui) {
