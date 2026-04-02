@@ -353,6 +353,64 @@ body.contrast-fort {
   gap: var(--space-2);
 }
 
+.learning-cockpit {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.learning-cockpit__card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+}
+
+.learning-cockpit__card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.learning-cockpit__card--accent {
+  border-color: color-mix(in srgb, var(--color-primary) 40%, var(--color-border));
+  background: color-mix(in srgb, var(--color-primary-light) 58%, var(--color-surface) 42%);
+}
+
+.learning-cockpit__label {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  font-weight: 800;
+}
+
+.learning-cockpit__value {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.45;
+}
+
+.learning-cockpit__meter {
+  margin-top: var(--space-3);
+  width: 100%;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--color-border);
+  overflow: hidden;
+}
+
+.learning-cockpit__meter span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 72%, #9ad885 28%));
+  transition: width var(--transition);
+}
+
 /* ---------- MODE FOCUS (réduit les distractions) ---------- */
 body.mode-focus .quick-nav,
 body.mode-focus #section-formes,
@@ -969,6 +1027,10 @@ button[aria-disabled="true"] {
 
 @media (max-width: 700px) {
   .study-routine {
+    grid-template-columns: 1fr;
+  }
+
+  .learning-cockpit {
     grid-template-columns: 1fr;
   }
 

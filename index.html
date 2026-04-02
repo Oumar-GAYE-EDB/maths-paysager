@@ -97,6 +97,24 @@
       </label>
     </section>
 
+    <section class="learning-cockpit" aria-label="Tableau de bord élève">
+      <article class="learning-cockpit__card">
+        <p class="learning-cockpit__label">Progression de la séance</p>
+        <p id="cockpit-session-goal" class="learning-cockpit__value">0 / 5 exercices validés</p>
+        <div class="learning-cockpit__meter" aria-hidden="true">
+          <span id="cockpit-session-meter"></span>
+        </div>
+      </article>
+      <article class="learning-cockpit__card">
+        <p class="learning-cockpit__label">Dernière action</p>
+        <p id="cockpit-last-action" class="learning-cockpit__value">Prépare ton premier calcul.</p>
+      </article>
+      <article class="learning-cockpit__card learning-cockpit__card--accent">
+        <p class="learning-cockpit__label">Prochaine étape conseillée</p>
+        <p id="cockpit-next-step" class="learning-cockpit__value">Commence un exercice guidé pour lancer la séance.</p>
+      </article>
+    </section>
+
     <nav class="quick-nav" aria-label="Navigation rapide">
       <a class="quick-nav__link" href="#section-formes">Surfaces</a>
       <a class="quick-nav__link" href="#section-pourcent">Pourcentages</a>
