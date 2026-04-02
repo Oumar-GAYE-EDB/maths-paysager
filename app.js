@@ -10,6 +10,7 @@ const PI = Math.PI; // ≈ 3.14159265...
 const CLE_HISTORIQUE = "maths-paysager-historique";
 const CLE_PROGRESS = "maths-paysager-progression";
 const CLE_REMEDIATION = "maths-paysager-remediation";
+const CLE_MODE_PARCOURS_SIMPLE = "maths-paysager-parcours-simple";
 const MAX_HISTORIQUE = 20;
 const sessionStats = { essais: 0, reussites: 0 };
 let chronoInterval = null;
@@ -50,7 +51,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const modeFocus = document.getElementById("mode-focus");
   const modeEvaluation = document.getElementById("mode-evaluation");
   const modeChrono = document.getElementById("mode-chrono");
+  const modeParcoursSimple = document.getElementById("mode-parcours-simple");
   const enonceExercice = document.getElementById("exercice-enonce");
+  const rubanSessionExercice = document.getElementById("ruban-session-exercice");
   const recommandationExercice = document.getElementById("recommandation-exercice");
   const coachEtapes = document.getElementById("coach-etapes");
   const objectifSession = document.getElementById("objectif-session");
@@ -151,7 +154,9 @@ document.addEventListener("DOMContentLoaded", function () {
     modeAdaptatif: modeAdaptatif,
     modeEvaluation: modeEvaluation,
     modeChrono: modeChrono,
+    modeParcoursSimple: modeParcoursSimple,
     enonceExercice: enonceExercice,
+    rubanSessionExercice: rubanSessionExercice,
     recommandationExercice: recommandationExercice,
     coachEtapes: coachEtapes,
     objectifSession: objectifSession,
@@ -348,9 +353,11 @@ function mettreAJourIconeTheme(bouton, theme) {
 function initialiserModeExercices(ui) {
   if (!ui || !ui.btnGenererExercice) return;
 
+  initialiserParcoursSimplifie(ui);
   mettreAJourProgressionSession(ui.sessionProgression);
   mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
   mettreAJourChronometre(ui);
+  mettreAJourRubanSession(ui);
   if (ui.testsFormulesResultat) {
     ui.testsFormulesResultat.innerHTML = "Conseil fiabilité : lance « Vérifier les formules » avant une évaluation.";
   }
@@ -371,6 +378,8 @@ function initialiserModeExercices(ui) {
     mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
     appliquerModeEvaluation(ui.modeEvaluation, ui.btnIndice1, ui.btnIndice2, ui.btnMethode, ui.feedbackExercice);
     demarrerChronoSiActif(ui, exerciceActuel);
+    reinitialiserAidesParcoursSimple(ui);
+    mettreAJourRubanSession(ui);
   });
 
   ui.btnValiderExercice.addEventListener("click", function () {
@@ -488,6 +497,8 @@ function corrigerExercice(ui, passerAuSuivant) {
     if (parcoursCibleActif && !passerAuSuivant) parcoursCibleActif.restant = Math.max(0, parcoursCibleActif.restant - 1);
     afficherHistorique(ui.historiqueExercice);
     mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
+    if (!estCorrect) debloquerAidesParcoursSimple(ui);
+    mettreAJourRubanSession(ui);
     return;
   }
 
@@ -504,6 +515,37 @@ function corrigerExercice(ui, passerAuSuivant) {
   mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
   afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
   demarrerChronoSiActif(ui, exerciceActuel);
+  reinitialiserAidesParcoursSimple(ui);
+  mettreAJourRubanSession(ui);
+}
+
+function initialiserParcoursSimplifie(ui) {
+  if (!ui || !ui.modeParcoursSimple) return;
+  const modeEnregistre = localStorage.getItem(CLE_MODE_PARCOURS_SIMPLE);
+  const actif = modeEnregistre === null ? true : modeEnregistre === "1";
+  ui.modeParcoursSimple.checked = actif;
+  appliquerParcoursSimplifie(actif);
+  ui.modeParcoursSimple.addEventListener("change", function () {
+    const actifSelection = !!ui.modeParcoursSimple.checked;
+    appliquerParcoursSimplifie(actifSelection);
+    if (actifSelection) reinitialiserAidesParcoursSimple(ui);
+    localStorage.setItem(CLE_MODE_PARCOURS_SIMPLE, actifSelection ? "1" : "0");
+  });
+}
+
+function appliquerParcoursSimplifie(actif) {
+  document.body.classList.toggle("mode-parcours-simple", !!actif);
+  if (!actif) document.body.classList.remove("mode-parcours-simple-aides");
+}
+
+function debloquerAidesParcoursSimple(ui) {
+  if (!ui || !ui.modeParcoursSimple || !ui.modeParcoursSimple.checked) return;
+  document.body.classList.add("mode-parcours-simple-aides");
+}
+
+function reinitialiserAidesParcoursSimple(ui) {
+  if (!ui || !ui.modeParcoursSimple || !ui.modeParcoursSimple.checked) return;
+  document.body.classList.remove("mode-parcours-simple-aides");
 }
 
 function creerExercice(theme, niveau, meta) {
@@ -1186,6 +1228,26 @@ function mettreAJourProgressionSession(zone) {
     "<small>Objectif conseillé : atteindre 80% avant de passer au niveau supérieur.</small>";
 }
 
+function mettreAJourRubanSession(ui) {
+  if (!ui || !ui.rubanSessionExercice) return;
+  const taux = sessionStats.essais > 0 ? (sessionStats.reussites / sessionStats.essais) * 100 : 0;
+  const progressionTexte = Math.min(sessionStats.essais, 5) + "/5";
+  const unite = exerciceActuel && exerciceActuel.unite ? exerciceActuel.unite : "—";
+  const chronoTexte = ui.modeChrono && ui.modeChrono.checked
+    ? String(Math.floor(Math.max(0, chronoRestant) / 60)).padStart(2, "0") + ":" + String(Math.max(0, chronoRestant) % 60).padStart(2, "0")
+    : "désactivé";
+
+  ui.rubanSessionExercice.innerHTML =
+    '<div class="exercise-session-ribbon__line">' +
+    "<span><strong>Progression :</strong> " + progressionTexte + "</span>" +
+    "<span><strong>Réussite :</strong> " + arrondir(taux) + "%</span>" +
+    "</div>" +
+    '<div class="exercise-session-ribbon__line">' +
+    "<span><strong>Unité attendue :</strong> " + unite + "</span>" +
+    "<span><strong>Chrono :</strong> " + chronoTexte + "</span>" +
+    "</div>";
+}
+
 function afficherObjectifEtCompetences(zoneObjectif, zoneCompetences, exercice, selection) {
   const objectifs = {
     precision: "Appliquer la formule sans erreur de calcul.",
@@ -1316,6 +1378,7 @@ function mettreAJourChronometre(ui) {
   if (!ui || !ui.chronometreExercice) return;
   if (!ui.modeChrono || !ui.modeChrono.checked) {
     ui.chronometreExercice.innerHTML = "Mode chrono inactif : active-le pour travailler la rapidité en conditions d'évaluation.";
+    mettreAJourRubanSession(ui);
     return;
   }
   const minutes = Math.floor(Math.max(0, chronoRestant) / 60);
@@ -1326,6 +1389,7 @@ function mettreAJourChronometre(ui) {
     ":" +
     String(secondes).padStart(2, "0") +
     " <small>(objectif : méthode juste + temps maîtrisé)</small>";
+  mettreAJourRubanSession(ui);
 }
 
 function executerTestsFormules() {
