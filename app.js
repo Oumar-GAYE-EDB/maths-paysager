@@ -62,6 +62,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const competencesExercice = document.getElementById("competences-exercice");
   const pontMathsMetier = document.getElementById("pont-maths-metier");
   const ficheApprentissage = document.getElementById("fiche-apprentissage");
+  const missionSuivante = document.getElementById("mission-suivante");
   const checklistVerification = document.getElementById("checklist-verification");
   const planRemediation = document.getElementById("plan-remediation");
   const planMaitrise = document.getElementById("plan-maitrise");
@@ -170,6 +171,7 @@ document.addEventListener("DOMContentLoaded", function () {
     competencesExercice: competencesExercice,
     pontMathsMetier: pontMathsMetier,
     ficheApprentissage: ficheApprentissage,
+    missionSuivante: missionSuivante,
     checklistVerification: checklistVerification,
     planRemediation: planRemediation,
     planMaitrise: planMaitrise,
@@ -387,6 +389,7 @@ function initialiserModeExercices(ui) {
     afficherObjectifEtCompetences(ui.objectifSession, ui.competencesExercice, exerciceActuel, selection);
     afficherPontMathsMetier(ui.pontMathsMetier, exerciceActuel);
     afficherFicheApprentissage(ui.ficheApprentissage, exerciceActuel);
+    afficherMissionSuivante(ui.missionSuivante, exerciceActuel, null);
     afficherChecklistVerification(ui.checklistVerification, exerciceActuel, false);
     afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
     mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
@@ -460,6 +463,7 @@ function initialiserModeExercices(ui) {
       afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
       afficherPontMathsMetier(ui.pontMathsMetier, exerciceActuel);
       afficherFicheApprentissage(ui.ficheApprentissage, exerciceActuel);
+      afficherMissionSuivante(ui.missionSuivante, exerciceActuel, null);
       afficherChecklistVerification(ui.checklistVerification, exerciceActuel, false);
       mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
       afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
@@ -505,6 +509,7 @@ function corrigerExercice(ui, passerAuSuivant) {
       ajouterRemediation(exerciceActuel);
     }
     afficherFeedbackExercice(ui.feedbackExercice, exerciceActuel, reponse, estCorrect, diagnostic);
+    afficherMissionSuivante(ui.missionSuivante, exerciceActuel, estCorrect);
     afficherCoachEtapes(ui.coachEtapes, exerciceActuel, estCorrect ? "corrige-ok" : "corrige-ko");
     afficherChecklistVerification(ui.checklistVerification, exerciceActuel, estCorrect);
     afficherPlanRemediation(ui.planRemediation, exerciceActuel, estCorrect ? "" : diagnostic);
@@ -541,6 +546,7 @@ function corrigerExercice(ui, passerAuSuivant) {
   afficherObjectifEtCompetences(ui.objectifSession, ui.competencesExercice, exerciceActuel, selection);
   afficherPontMathsMetier(ui.pontMathsMetier, exerciceActuel);
   afficherFicheApprentissage(ui.ficheApprentissage, exerciceActuel);
+  afficherMissionSuivante(ui.missionSuivante, exerciceActuel, null);
   afficherChecklistVerification(ui.checklistVerification, exerciceActuel, false);
   mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
   afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
@@ -757,7 +763,7 @@ function creerExerciceForme(niveau) {
   const plage = difficultes[niveau] || difficultes.facile;
   const typesDisponibles = niveau === "facile"
     ? ["rectangle", "cercle", "triangle"]
-    : ["rectangle", "cercle", "triangle", "zone-mixte"];
+    : ["rectangle", "cercle", "triangle", "zone-mixte", "zone-composite"];
   const type = typesDisponibles[nombreAleatoire(0, typesDisponibles.length - 1)];
 
   if (type === "rectangle") {
@@ -836,6 +842,45 @@ function creerExerciceForme(niveau) {
   const base = nombreAleatoire(plage.min + 2, plage.max + 6);
   const hauteur = nombreAleatoire(plage.min, plage.max);
   const aireTriangle = (base * hauteur) / 2;
+  if (type === "zone-composite") {
+    const longueurRect = nombreAleatoire(plage.min + 6, plage.max + 8);
+    const largeurRect = nombreAleatoire(plage.min + 2, plage.max + 4);
+    const rayonBassin = nombreAleatoire(Math.max(2, plage.min - 2), Math.max(4, plage.max - 6));
+    const surfaceRect = longueurRect * largeurRect;
+    const surfaceBassin = PI * rayonBassin * rayonBassin;
+    const surfacePlantable = surfaceRect - surfaceBassin;
+    return {
+      theme: "aires",
+      competence: "aires-perimetres",
+      competenceLabel: "Aires et périmètres",
+      objectif: "Combiner deux formules d'aire (rectangle et cercle) dans un même aménagement.",
+      titre: "Surface composite d'un espace paysager",
+      enonce: "Contexte : un espace rectangulaire accueille un bassin circulaire au centre.\nDonnées : zone = " + longueurRect + " m × " + largeurRect + " m ; bassin de rayon " + rayonBassin + " m.\nQuestion : quelle surface reste disponible pour les plantations (en m²) ?",
+      reponse: surfacePlantable,
+      tolerance: 0.1,
+      unite: "m²",
+      explication: "Étape 1 : surface rectangle = " + longueurRect + " × " + largeurRect + " = " + arrondir(surfaceRect) + " m². Étape 2 : surface bassin = π × " + rayonBassin + "² = " + arrondir(surfaceBassin) + " m². Étape 3 : surface plantable = " + arrondir(surfaceRect) + " - " + arrondir(surfaceBassin) + " = " + arrondir(surfacePlantable) + " m².",
+      erreurProbable: "Pense à retirer la surface du bassin (zone non plantable).",
+      erreurCode: "aire_unite",
+      palier: "Or",
+      etapes: [
+        "Je calcule la surface totale rectangulaire.",
+        "Je calcule la surface circulaire du bassin.",
+        "Je soustrais pour obtenir la surface réellement plantable.",
+      ],
+      utiliteMetier: "Ce calcul évite de commander trop de plants quand une partie de la zone est occupée.",
+      verification: "La surface finale doit être positive et inférieure à la surface totale.",
+      pontMathsMetier: {
+        mesure: "La surface réellement disponible pour planter autour d'un bassin.",
+        decision: "Ajuster les quantités de végétaux et de paillage.",
+        impact: "Réduit les surplus et protège le budget chantier.",
+      },
+      indices: [
+        "Indice 1 : il faut deux aires différentes (rectangle puis cercle).",
+        "Indice 2 : surface plantable = surface totale - surface bassin.",
+      ],
+    };
+  }
   if (type === "zone-mixte") {
     const longueurZone = nombreAleatoire(plage.min + 8, plage.max + 10);
     const largeurZone = nombreAleatoire(plage.min + 4, plage.max + 6);
@@ -910,7 +955,7 @@ function creerExerciceForme(niveau) {
 }
 
 function creerExercicePourcentage(niveau) {
-  const scenarioMax = niveau === "facile" ? 2 : 4;
+  const scenarioMax = niveau === "facile" ? 2 : 5;
   const scenario = nombreAleatoire(1, scenarioMax);
   if (scenario === 1) {
     const nombre = niveau === "difficile" ? nombreAleatoire(120, 800) : nombreAleatoire(50, 400);
@@ -945,6 +990,42 @@ function creerExercicePourcentage(niveau) {
       indices: [
         "Indice 1 : " + pourcent + "% signifie " + pourcent + "/100.",
         "Indice 2 : fais la multiplication puis divise le résultat par 100.",
+      ],
+    };
+  }
+  if (scenario === 2) {
+    const total = niveau === "facile" ? nombreAleatoire(80, 220) : nombreAleatoire(180, 520);
+    const realise = niveau === "facile" ? nombreAleatoire(25, 70) : nombreAleatoire(40, 90);
+    const taux = (realise / total) * 100;
+    return {
+      theme: "pourcentages",
+      competence: "pourcentages",
+      competenceLabel: "Pourcentages",
+      objectif: "Interpréter un taux d'avancement à partir d'une partie et d'un total.",
+      titre: "Taux d'avancement du chantier",
+      enonce: "Contexte : sur " + total + " m² prévus, " + realise + " m² ont été traités aujourd'hui.\nQuestion : quel est le pourcentage d'avancement de la journée ?",
+      reponse: taux,
+      tolerance: 0.1,
+      unite: "%",
+      explication: "Étape 1 : part/total = " + realise + " ÷ " + total + ". Étape 2 : multiplier par 100. Taux = " + arrondir(taux) + " %.",
+      erreurProbable: "Utilise bien la formule (partie ÷ total) × 100.",
+      erreurCode: "pourcent_div100",
+      palier: niveau === "facile" ? "Bronze" : "Argent",
+      etapes: [
+        "Je repère la partie réalisée et le total prévu.",
+        "Je calcule la fraction réalisée (partie ÷ total).",
+        "Je convertis en pourcentage avec × 100.",
+      ],
+      utiliteMetier: "Le taux d'avancement aide à suivre le planning réel du chantier.",
+      verification: "Un taux doit rester entre 0% et 100%.",
+      pontMathsMetier: {
+        mesure: "La part réellement terminée d'une tâche.",
+        decision: "Ajuster les ressources pour tenir le délai.",
+        impact: "Améliore le pilotage quotidien du chantier.",
+      },
+      indices: [
+        "Indice 1 : commence par partie ÷ total.",
+        "Indice 2 : multiplie ensuite par 100 pour avoir un pourcentage.",
       ],
     };
   }
@@ -1020,6 +1101,42 @@ function creerExercicePourcentage(niveau) {
       indices: [
         "Indice 1 : perte = diminution, donc coefficient inférieur à 1.",
         "Indice 2 : applique surface finale = surface initiale × (1 - perte/100).",
+      ],
+    };
+  }
+  if (scenario === 5) {
+    const quantiteBase = niveau === "moyen" ? nombreAleatoire(200, 520) : nombreAleatoire(350, 900);
+    const hausse = niveau === "moyen" ? nombreAleatoire(8, 16) : nombreAleatoire(12, 24);
+    const quantiteFinale = quantiteBase * (1 + hausse / 100);
+    return {
+      theme: "pourcentages",
+      competence: "pourcentages",
+      competenceLabel: "Pourcentages",
+      objectif: "Convertir une hausse en pourcentage vers un volume final à prévoir.",
+      titre: "Besoin supplémentaire après hausse de commande",
+      enonce: "Contexte : la commande initiale est de " + quantiteBase + " plants.\nDonnée : le client ajoute " + hausse + "% de plants.\nQuestion : combien de plants faut-il prévoir au total ?",
+      reponse: quantiteFinale,
+      tolerance: 0.1,
+      unite: "plants",
+      explication: "Étape 1 : coefficient de hausse = 1 + " + hausse + "/100. Étape 2 : quantité finale = " + quantiteBase + " × (1 + " + hausse + "/100) = " + arrondir(quantiteFinale) + " plants.",
+      erreurProbable: "Pour une hausse, le coefficient est 1 + x/100.",
+      erreurCode: "pourcent_div100",
+      palier: "Or",
+      etapes: [
+        "Je repère qu'il s'agit d'une augmentation.",
+        "Je transforme la hausse en coefficient multiplicateur.",
+        "Je calcule la nouvelle quantité totale.",
+      ],
+      utiliteMetier: "Permet d'adapter rapidement la commande quand le besoin client évolue.",
+      verification: "Après hausse, la quantité finale doit être supérieure à la quantité de base.",
+      pontMathsMetier: {
+        mesure: "La variation de quantité à commander.",
+        decision: "Mettre à jour la commande fournisseur.",
+        impact: "Évite la rupture de plants en fin de chantier.",
+      },
+      indices: [
+        "Indice 1 : hausse = résultat plus grand que la base.",
+        "Indice 2 : applique quantité finale = base × (1 + hausse/100).",
       ],
     };
   }
@@ -1168,6 +1285,46 @@ function creerExerciceMetier(niveau) {
         impact: "Évite les écarts de budget en fin de chantier.",
       },
       indices: ["Indice 1 : ml = mètre linéaire.", "Indice 2 : multiplie la longueur par le prix unitaire €/ml."],
+    };
+  }
+  if (scenario === 4) {
+    const longueur = niveau === "facile" ? nombreAleatoire(12, 40) : nombreAleatoire(30, 95);
+    const debitMinute = niveau === "difficile" ? nombreAleatoire(12, 28) : nombreAleatoire(8, 18);
+    const duree = niveau === "facile" ? nombreAleatoire(10, 25) : nombreAleatoire(20, 45);
+    const volume = debitMinute * duree;
+    const volumeParMetre = volume / longueur;
+    return {
+      theme: "metier",
+      competence: "situations-metier",
+      competenceLabel: "Situations métier CAPa",
+      objectif: "Relier un débit, une durée et un linéaire pour évaluer une consommation.",
+      titre: "Situation métier CAPa — test de réseau d'arrosage",
+      enonce: "Contexte : test d'un réseau d'arrosage de " + longueur + " m.\nDonnées : débit mesuré = " + debitMinute + " L/min pendant " + duree + " min.\nQuestion : quel volume total d'eau est consommé pendant le test ?",
+      reponse: volume,
+      tolerance: 0.1,
+      unite: "L",
+      explication: "Volume total = débit × durée = " + debitMinute + " × " + duree + " = " + arrondir(volume) + " L. En repère : cela représente environ " + arrondir(volumeParMetre) + " L par mètre de réseau.",
+      erreurProbable: "Ne divise pas par la longueur si on demande le volume total.",
+      erreurCode: "metier_volume_unitaire",
+      palier: "Argent",
+      etapes: [
+        "Je repère les unités L/min et min.",
+        "Je multiplie débit par durée pour obtenir un volume.",
+        "Je vérifie que l'unité finale est en litres.",
+      ],
+      utiliteMetier: "Permet d'anticiper la consommation d'eau lors des essais de mise en service.",
+      verification: "Si le temps de test double, le volume consommé doit doubler.",
+      visuel: "🚿 Test réseau",
+      decisionChantier: "Décision : valider la réserve d'eau avant la phase d'arrosage.",
+      pontMathsMetier: {
+        mesure: "Le volume réellement utilisé pendant un test technique.",
+        decision: "Planifier les remplissages de cuve et les pauses.",
+        impact: "Évite les interruptions liées à un manque d'eau.",
+      },
+      indices: [
+        "Indice 1 : L/min × min = L.",
+        "Indice 2 : commence par le volume total demandé avant d'autres conversions.",
+      ],
     };
   }
   if (scenario === 5) {
@@ -1857,6 +2014,32 @@ function afficherFicheApprentissage(zone, exercice) {
     "<p><strong>Critère de réussite :</strong> résultat juste avec l'unité correcte.</p>" +
     "<p><strong>Erreur à éviter :</strong> " + (exercice.erreurProbable || "Relis l'énoncé.") + "</p>" +
     "<p><strong>Question flash :</strong> " + ((exercice.questionsFlash && exercice.questionsFlash[0]) || "Explique ton raisonnement à voix haute.") + "</p>";
+}
+
+function afficherMissionSuivante(zone, exercice, estCorrect) {
+  if (!zone || !exercice) return;
+  const missions = [];
+  if (exercice.competence === "aires-perimetres") {
+    missions.push("Mission 1 : refais le calcul en changeant les mesures de +2 m pour vérifier la méthode.");
+    missions.push("Mission 2 : explique à l'oral pourquoi l'unité est en m² (et pas en m).");
+  } else if (exercice.competence === "pourcentages") {
+    missions.push("Mission 1 : transforme le pourcentage en coefficient multiplicateur.");
+    missions.push("Mission 2 : vérifie si ton résultat est logique (partie < total, ou baisse/hausse cohérente).");
+  } else {
+    missions.push("Mission 1 : identifie la décision chantier que ce résultat permet de prendre.");
+    missions.push("Mission 2 : propose une marge de sécurité réaliste (5% à 10%) et recalcule.");
+  }
+
+  const statut = estCorrect === null
+    ? "🎒 Plan d'entraînement : prépare ta stratégie avant de répondre."
+    : (estCorrect
+      ? "🚀 Bravo, mission réussie ! Passe à la version défi."
+      : "🧩 Mission de remédiation : consolide la méthode puis retente.");
+
+  zone.innerHTML =
+    "<strong>Mission suivante</strong>" +
+    "<p>" + statut + "</p>" +
+    "<ul><li>" + missions.join("</li><li>") + "</li></ul>";
 }
 
 function afficherPontMathsMetier(zone, exercice) {
