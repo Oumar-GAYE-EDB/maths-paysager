@@ -88,6 +88,12 @@ document.addEventListener("DOMContentLoaded", function () {
   const btnFontMinus = document.getElementById("btn-font-minus");
   const btnFontPlus = document.getElementById("btn-font-plus");
   const modeContrasteFort = document.getElementById("mode-contraste-fort");
+  const cockpitSessionGoal = document.getElementById("cockpit-session-goal");
+  const cockpitSessionMeter = document.getElementById("cockpit-session-meter");
+  const cockpitLastAction = document.getElementById("cockpit-last-action");
+  const cockpitNextStep = document.getElementById("cockpit-next-step");
+  const coachContextMessage = document.getElementById("coach-context-message");
+  const coachContextSteps = document.getElementById("coach-context-steps");
 
   // --- Afficher les champs dès le chargement ---
   afficherChampsFormes(selectForme.value, champsForme);
@@ -138,6 +144,16 @@ document.addEventListener("DOMContentLoaded", function () {
   initialiserModeFocus(modeFocus);
   initialiserConfortAccessibilite(btnFontMinus, btnFontPlus, modeContrasteFort);
   initialiserNavigationConfort();
+  initialiserAssistantContextuel({
+    message: coachContextMessage,
+    steps: coachContextSteps,
+  });
+  initialiserCockpitApprentissage({
+    sessionGoal: cockpitSessionGoal,
+    sessionMeter: cockpitSessionMeter,
+    lastAction: cockpitLastAction,
+    nextStep: cockpitNextStep,
+  });
   initialiserCalculRapideClavier();
   initialiserDemarrageRapide(btnDemarrageRapide, btnReviserNotion, messageDemarrage, {
     selectThemeExercice: selectThemeExercice,
@@ -312,6 +328,129 @@ function initialiserDemarrageRapide(btnRapide, btnRevision, zoneMessage, ui) {
     }
     ui.btnGenererExercice.click();
   });
+}
+
+function initialiserCockpitApprentissage(elements) {
+  if (!elements) return;
+  mettreAJourCockpitApprentissage(elements, { type: "init" });
+  document.addEventListener("maths-paysager:action", function (event) {
+    mettreAJourCockpitApprentissage(elements, event && event.detail ? event.detail : { type: "maj" });
+  });
+}
+
+function notifierActionApprentissage(action) {
+  document.dispatchEvent(new CustomEvent("maths-paysager:action", { detail: action || { type: "maj" } }));
+}
+
+function mettreAJourCockpitApprentissage(elements, action) {
+  if (!elements.sessionGoal || !elements.sessionMeter || !elements.lastAction || !elements.nextStep) return;
+  const essaisSession = sessionStats.essais || 0;
+  const reussitesSession = sessionStats.reussites || 0;
+  const objectif = 5;
+  const progressionObjectif = Math.min(100, (reussitesSession / objectif) * 100);
+  elements.sessionGoal.textContent = reussitesSession + " / " + objectif + " exercices validés";
+  elements.sessionMeter.style.width = progressionObjectif + "%";
+
+  const progressionGlobale = chargerProgression();
+  const tauxGlobal = progressionGlobale.essais > 0
+    ? Math.round((progressionGlobale.reussites / progressionGlobale.essais) * 100)
+    : 0;
+
+  const typeAction = action && action.type ? action.type : "init";
+  if (typeAction === "calcul-forme") {
+    elements.lastAction.textContent = "Bravo, tu as finalisé un calcul d'aire et de périmètre.";
+    elements.nextStep.textContent = "Passe sur un exercice CAPa pour réutiliser la formule dans un contexte métier.";
+    return;
+  }
+  if (typeAction === "calcul-pourcentage") {
+    elements.lastAction.textContent = "Calcul de pourcentage réussi : méthode appliquée correctement.";
+    elements.nextStep.textContent = "Enchaîne avec un deuxième calcul pour automatiser le réflexe ×/÷ 100.";
+    return;
+  }
+  if (typeAction === "exercice-correct") {
+    elements.lastAction.textContent = "Exercice validé ✅ (" + reussitesSession + " réussite(s) cette séance).";
+    elements.nextStep.textContent = essaisSession < objectif
+      ? "Continue : vise encore " + Math.max(0, objectif - reussitesSession) + " réussite(s)."
+      : "Excellent rythme : tente un niveau supérieur pour consolider.";
+    return;
+  }
+  if (typeAction === "exercice-erreur") {
+    elements.lastAction.textContent = "Pas grave, l'erreur fait partie de l'apprentissage.";
+    elements.nextStep.textContent = "Lis l'indice, corrige l'unité puis refais un exercice similaire.";
+    return;
+  }
+  if (typeAction === "nouvel-exercice") {
+    elements.lastAction.textContent = "Nouvel exercice lancé : concentre-toi sur les données utiles.";
+    elements.nextStep.textContent = "Astuce : estime d'abord l'ordre de grandeur, puis calcule.";
+    return;
+  }
+
+  elements.lastAction.textContent = "Historique global : " + progressionGlobale.reussites + " réussites sur " + progressionGlobale.essais + " essais.";
+  elements.nextStep.textContent = tauxGlobal >= 70
+    ? "Tu progresses bien (" + tauxGlobal + "%) : teste le mode autonome."
+    : "Objectif du jour : atteindre 70% de réussite en prenant ton temps.";
+}
+
+function initialiserAssistantContextuel(ui) {
+  if (!ui || !ui.message || !ui.steps) return;
+  const liensRapides = Array.from(document.querySelectorAll(".quick-nav__link"));
+  const sections = [
+    {
+      id: "section-formes",
+      message: "Section Surfaces : identifie les mesures utiles puis applique la formule adaptée.",
+      steps: ["1. Repère longueur/largeur", "2. Calcule aire + périmètre", "3. Vérifie m² et m"],
+    },
+    {
+      id: "section-pourcent",
+      message: "Section Pourcentages : choisis bien entre part, hausse et réduction.",
+      steps: ["1. Choisis le bon type", "2. Multiplie ou divise par 100", "3. Contrôle la cohérence"],
+    },
+    {
+      id: "section-exercices",
+      message: "Mode exercices : réponds, lis le feedback, puis applique la correction tout de suite.",
+      steps: ["1. Lire l'énoncé", "2. Poser le calcul", "3. Corriger et rejouer"],
+    },
+    {
+      id: "section-memo",
+      message: "Aide-mémoire : révise une formule puis retourne la pratiquer immédiatement.",
+      steps: ["1. Choisis une formule", "2. Note l'unité", "3. Réutilise dans un exercice"],
+    },
+  ];
+
+  function appliquerEtatSection(sectionId) {
+    const courant = sections.find(function (item) { return item.id === sectionId; }) || sections[0];
+    ui.message.textContent = courant.message;
+    ui.steps.innerHTML = courant.steps
+      .map(function (etape) { return '<span class="context-coach__step">' + etape + "</span>"; })
+      .join("");
+    liensRapides.forEach(function (lien) {
+      const actif = lien.getAttribute("href") === "#" + courant.id;
+      lien.classList.toggle("quick-nav__link--active", actif);
+      if (actif) lien.setAttribute("aria-current", "location");
+      else lien.removeAttribute("aria-current");
+    });
+  }
+
+  const observateur = new IntersectionObserver(function (entries) {
+    const visibles = entries
+      .filter(function (entry) { return entry.isIntersecting; })
+      .sort(function (a, b) { return b.intersectionRatio - a.intersectionRatio; });
+    if (visibles.length > 0) appliquerEtatSection(visibles[0].target.id);
+  }, { rootMargin: "-25% 0px -45% 0px", threshold: [0.2, 0.45, 0.7] });
+
+  sections.forEach(function (section) {
+    const element = document.getElementById(section.id);
+    if (element) observateur.observe(element);
+  });
+
+  liensRapides.forEach(function (lien) {
+    lien.addEventListener("click", function () {
+      const cible = (lien.getAttribute("href") || "").replace("#", "");
+      if (cible) appliquerEtatSection(cible);
+    });
+  });
+
+  appliquerEtatSection("section-formes");
 }
 
 
@@ -584,6 +723,7 @@ function corrigerExercice(ui, passerAuSuivant) {
     mettreAJourTableauMotivation(ui.motivationEleve, ui.defiJour);
     if (!estCorrect) debloquerAidesParcoursSimple(ui);
     mettreAJourRubanSession(ui);
+    notifierActionApprentissage({ type: estCorrect ? "exercice-correct" : "exercice-erreur" });
     return;
   }
 
@@ -616,6 +756,7 @@ function corrigerExercice(ui, passerAuSuivant) {
   demarrerChronoSiActif(ui, exerciceActuel);
   reinitialiserAidesParcoursSimple(ui);
   mettreAJourRubanSession(ui);
+  notifierActionApprentissage({ type: "nouvel-exercice" });
 }
 
 function initialiserParcoursSimplifie(ui) {
@@ -3150,6 +3291,7 @@ function afficherResultat(zone, aire, perimetre, formuleAire, formulePerimetre, 
       (perimetre !== null ? " | Périmètre " + arrondir(perimetre) + " m" : ""),
   });
   afficherHistorique(document.getElementById("historique-exercice"));
+  notifierActionApprentissage({ type: "calcul-forme" });
 }
 
 /**
@@ -3176,6 +3318,7 @@ function afficherResultatPourcent(zone, valeur, formule, etapes, type) {
     resultat: "Résultat : " + valeur,
   });
   afficherHistorique(document.getElementById("historique-exercice"));
+  notifierActionApprentissage({ type: "calcul-pourcentage" });
 }
 
 function creerBlocEtapesElement(titre, etapes) {
