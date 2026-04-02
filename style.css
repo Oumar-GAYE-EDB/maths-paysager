@@ -141,6 +141,58 @@ body.contrast-fort {
   --color-divider: #b8b2a8;
 }
 
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: color-mix(in srgb, var(--color-surface-offset) 70%, transparent 30%);
+  z-index: 200;
+}
+
+.scroll-progress__bar {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 72%, #94d67c 28%));
+  transition: width var(--transition);
+}
+
+.btn-top {
+  position: fixed;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  width: 2.6rem;
+  height: 2.6rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity var(--transition), transform var(--transition), background var(--transition);
+  z-index: 110;
+}
+
+.btn-top:hover {
+  background: var(--color-primary-hover);
+}
+
+.btn-top:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 25%, #fff 75%);
+  outline-offset: 3px;
+}
+
+.btn-top--visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
 /* ---------- EN-TÊTE ---------- */
 .header {
   background:
@@ -983,8 +1035,13 @@ button[aria-disabled="true"] {
 
 /* ---------- RÉDUCTION DE MOUVEMENT ---------- */
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }

@@ -137,6 +137,8 @@ document.addEventListener("DOMContentLoaded", function () {
   initialiserSaisieDecimale();
   initialiserModeFocus(modeFocus);
   initialiserConfortAccessibilite(btnFontMinus, btnFontPlus, modeContrasteFort);
+  initialiserNavigationConfort();
+  initialiserCalculRapideClavier();
   initialiserDemarrageRapide(btnDemarrageRapide, btnReviserNotion, messageDemarrage, {
     selectThemeExercice: selectThemeExercice,
     selectNiveauExercice: selectNiveauExercice,
@@ -309,6 +311,58 @@ function initialiserDemarrageRapide(btnRapide, btnRevision, zoneMessage, ui) {
       zoneMessage.textContent = "Parcours révision activé : notion + unité d'abord, puis validation.";
     }
     ui.btnGenererExercice.click();
+  });
+}
+
+
+function initialiserNavigationConfort() {
+  const boutonTop = document.getElementById("btn-retour-haut");
+  const barreProgression = document.getElementById("scroll-progress-bar");
+
+  function actualiserProgression() {
+    const hauteurScrollable = document.documentElement.scrollHeight - window.innerHeight;
+    const progression = hauteurScrollable > 0 ? (window.scrollY / hauteurScrollable) * 100 : 0;
+    if (barreProgression) {
+      barreProgression.style.width = Math.min(100, Math.max(0, progression)) + "%";
+    }
+    if (boutonTop) {
+      boutonTop.classList.toggle("btn-top--visible", window.scrollY > 260);
+    }
+  }
+
+  if (boutonTop) {
+    boutonTop.addEventListener("click", function () {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
+  window.addEventListener("scroll", actualiserProgression, { passive: true });
+  window.addEventListener("resize", actualiserProgression);
+  actualiserProgression();
+}
+
+function initialiserCalculRapideClavier() {
+  document.addEventListener("keydown", function (event) {
+    if (event.key !== "Enter" || event.shiftKey || event.ctrlKey || event.metaKey || event.altKey) return;
+    const cible = event.target;
+    if (!(cible instanceof HTMLInputElement) || cible.type !== "number") return;
+
+    if (cible.closest("#section-formes")) {
+      const bouton = document.getElementById("btn-calculer-forme");
+      if (bouton) {
+        event.preventDefault();
+        bouton.click();
+      }
+      return;
+    }
+
+    if (cible.closest("#section-pourcent")) {
+      const bouton = document.getElementById("btn-calculer-pourcent");
+      if (bouton) {
+        event.preventDefault();
+        bouton.click();
+      }
+    }
   });
 }
 
