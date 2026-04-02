@@ -86,6 +86,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const btnReviserNotion = document.getElementById("btn-reviser-notion");
   const messageDemarrage = document.getElementById("message-demarrage");
   const btnFontMinus = document.getElementById("btn-font-minus");
+  const btnFontReset = document.getElementById("btn-font-reset");
   const btnFontPlus = document.getElementById("btn-font-plus");
   const modeContrasteFort = document.getElementById("mode-contraste-fort");
 
@@ -136,7 +137,9 @@ document.addEventListener("DOMContentLoaded", function () {
   initialiserTheme();
   initialiserSaisieDecimale();
   initialiserModeFocus(modeFocus);
-  initialiserConfortAccessibilite(btnFontMinus, btnFontPlus, modeContrasteFort);
+  initialiserConfortAccessibilite(btnFontMinus, btnFontReset, btnFontPlus, modeContrasteFort);
+  initialiserNavigationConfort();
+  initialiserCalculRapideClavier();
   initialiserDemarrageRapide(btnDemarrageRapide, btnReviserNotion, messageDemarrage, {
     selectThemeExercice: selectThemeExercice,
     selectNiveauExercice: selectNiveauExercice,
@@ -233,23 +236,28 @@ function initialiserTheme() {
   }
 }
 
+function appliquerModeFocus(caseFocus, actif) {
+  const body = document.body;
+  if (!body || !caseFocus) return;
+  caseFocus.checked = !!actif;
+  body.classList.toggle("mode-focus", !!actif);
+  localStorage.setItem("maths-paysager-mode-focus", actif ? "1" : "0");
+}
+
 function initialiserModeFocus(caseFocus) {
   const CLE_MODE_FOCUS = "maths-paysager-mode-focus";
   const body = document.body;
   if (!caseFocus || !body) return;
 
   const modeMemoire = localStorage.getItem(CLE_MODE_FOCUS) === "1";
-  caseFocus.checked = modeMemoire;
-  body.classList.toggle("mode-focus", modeMemoire);
+  appliquerModeFocus(caseFocus, modeMemoire);
 
   caseFocus.addEventListener("change", function () {
-    const actif = !!caseFocus.checked;
-    body.classList.toggle("mode-focus", actif);
-    localStorage.setItem(CLE_MODE_FOCUS, actif ? "1" : "0");
+    appliquerModeFocus(caseFocus, !!caseFocus.checked);
   });
 }
 
-function initialiserConfortAccessibilite(btnMinus, btnPlus, toggleContraste) {
+function initialiserConfortAccessibilite(btnMinus, btnReset, btnPlus, toggleContraste) {
   const CLE_FONT = "maths-paysager-font-scale";
   const CLE_CONTRASTE = "maths-paysager-contrast";
   const body = document.body;
@@ -262,16 +270,24 @@ function initialiserConfortAccessibilite(btnMinus, btnPlus, toggleContraste) {
   body.classList.toggle("contrast-fort", contrasteActif);
   if (toggleContraste) toggleContraste.checked = contrasteActif;
 
+  function appliquerTailleTexte(taille) {
+    body.setAttribute("data-font-scale", taille);
+    localStorage.setItem(CLE_FONT, taille);
+  }
+
   if (btnMinus) {
     btnMinus.addEventListener("click", function () {
-      body.setAttribute("data-font-scale", "small");
-      localStorage.setItem(CLE_FONT, "small");
+      appliquerTailleTexte("small");
+    });
+  }
+  if (btnReset) {
+    btnReset.addEventListener("click", function () {
+      appliquerTailleTexte("normal");
     });
   }
   if (btnPlus) {
     btnPlus.addEventListener("click", function () {
-      body.setAttribute("data-font-scale", "large");
-      localStorage.setItem(CLE_FONT, "large");
+      appliquerTailleTexte("large");
     });
   }
   if (toggleContraste) {
@@ -290,9 +306,8 @@ function initialiserDemarrageRapide(btnRapide, btnRevision, zoneMessage, ui) {
     ui.selectNiveauExercice.value = "facile";
     ui.selectObjectifSeance.value = "metier";
     if (ui.selectModeAccompagnement) ui.selectModeAccompagnement.value = "guide";
-    if (ui.modeFocus) ui.modeFocus.checked = true;
+    if (ui.modeFocus) appliquerModeFocus(ui.modeFocus, true);
     if (ui.modeAdaptatif) ui.modeAdaptatif.checked = true;
-    document.body.classList.toggle("mode-focus", true);
     if (zoneMessage) {
       zoneMessage.textContent = "Parcours rapide lancé : 3 exercices métiers niveau facile.";
     }
@@ -309,6 +324,101 @@ function initialiserDemarrageRapide(btnRapide, btnRevision, zoneMessage, ui) {
       zoneMessage.textContent = "Parcours révision activé : notion + unité d'abord, puis validation.";
     }
     ui.btnGenererExercice.click();
+  });
+}
+
+
+function initialiserNavigationConfort() {
+  const boutonTop = document.getElementById("btn-retour-haut");
+  const barreProgression = document.getElementById("scroll-progress-bar");
+  const liensNavRapide = Array.from(document.querySelectorAll(".quick-nav__link"));
+
+  function activerLienNavigation(idSection) {
+    liensNavRapide.forEach(function (lien) {
+      const actif = lien.getAttribute("href") === "#" + idSection;
+      lien.classList.toggle("quick-nav__link--active", actif);
+      if (actif) {
+        lien.setAttribute("aria-current", "true");
+      } else {
+        lien.removeAttribute("aria-current");
+      }
+    });
+  }
+
+  function initialiserSuiviSections() {
+    if (!liensNavRapide.length || typeof IntersectionObserver === "undefined") return;
+    const sections = liensNavRapide
+      .map(function (lien) {
+        const cible = document.querySelector(lien.getAttribute("href"));
+        return cible || null;
+      })
+      .filter(Boolean);
+
+    if (!sections.length) return;
+
+    const observateur = new IntersectionObserver(function (entries) {
+      const visible = entries
+        .filter(function (entry) { return entry.isIntersecting; })
+        .sort(function (a, b) { return b.intersectionRatio - a.intersectionRatio; })[0];
+      if (visible && visible.target && visible.target.id) {
+        activerLienNavigation(visible.target.id);
+      }
+    }, {
+      rootMargin: "-35% 0px -50% 0px",
+      threshold: [0.2, 0.45, 0.7],
+    });
+
+    sections.forEach(function (section) {
+      observateur.observe(section);
+    });
+    activerLienNavigation(sections[0].id);
+  }
+
+  function actualiserProgression() {
+    const hauteurScrollable = document.documentElement.scrollHeight - window.innerHeight;
+    const progression = hauteurScrollable > 0 ? (window.scrollY / hauteurScrollable) * 100 : 0;
+    if (barreProgression) {
+      barreProgression.style.width = Math.min(100, Math.max(0, progression)) + "%";
+    }
+    if (boutonTop) {
+      boutonTop.classList.toggle("btn-top--visible", window.scrollY > 260);
+    }
+  }
+
+  if (boutonTop) {
+    boutonTop.addEventListener("click", function () {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
+  initialiserSuiviSections();
+  window.addEventListener("scroll", actualiserProgression, { passive: true });
+  window.addEventListener("resize", actualiserProgression);
+  actualiserProgression();
+}
+
+function initialiserCalculRapideClavier() {
+  document.addEventListener("keydown", function (event) {
+    if (event.key !== "Enter" || event.shiftKey || event.ctrlKey || event.metaKey || event.altKey) return;
+    const cible = event.target;
+    if (!(cible instanceof HTMLInputElement) || cible.type !== "number") return;
+
+    if (cible.closest("#section-formes")) {
+      const bouton = document.getElementById("btn-calculer-forme");
+      if (bouton) {
+        event.preventDefault();
+        bouton.click();
+      }
+      return;
+    }
+
+    if (cible.closest("#section-pourcent")) {
+      const bouton = document.getElementById("btn-calculer-pourcent");
+      if (bouton) {
+        event.preventDefault();
+        bouton.click();
+      }
+    }
   });
 }
 
