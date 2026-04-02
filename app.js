@@ -25,6 +25,7 @@ let exerciceActuel = null;
 // ============================================================
 
 document.addEventListener("DOMContentLoaded", function () {
+  document.body.classList.add("js-enhanced");
   // On récupère les éléments HTML importants
   const selectForme = document.getElementById("forme");
   const champsForme = document.getElementById("champs-forme");
@@ -92,6 +93,12 @@ document.addEventListener("DOMContentLoaded", function () {
   const cockpitSessionMeter = document.getElementById("cockpit-session-meter");
   const cockpitLastAction = document.getElementById("cockpit-last-action");
   const cockpitNextStep = document.getElementById("cockpit-next-step");
+  const journeySteps = [
+    document.getElementById("journey-step-1"),
+    document.getElementById("journey-step-2"),
+    document.getElementById("journey-step-3"),
+    document.getElementById("journey-step-4"),
+  ];
 
   // --- Afficher les champs dès le chargement ---
   afficherChampsFormes(selectForme.value, champsForme);
@@ -142,6 +149,8 @@ document.addEventListener("DOMContentLoaded", function () {
   initialiserModeFocus(modeFocus);
   initialiserConfortAccessibilite(btnFontMinus, btnFontPlus, modeContrasteFort);
   initialiserNavigationConfort();
+  initialiserExperienceFluide();
+  initialiserFilConducteur(journeySteps);
   initialiserCockpitApprentissage({
     sessionGoal: cockpitSessionGoal,
     sessionMeter: cockpitSessionMeter,
@@ -410,6 +419,105 @@ function initialiserNavigationConfort() {
   window.addEventListener("scroll", actualiserProgression, { passive: true });
   window.addEventListener("resize", actualiserProgression);
   actualiserProgression();
+}
+
+function initialiserExperienceFluide() {
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const elementsReveles = document.querySelectorAll(".card, .study-routine__card, .learning-cockpit__card, .comfort-bar, .orientation-strip__item");
+
+  if (prefersReducedMotion || typeof IntersectionObserver === "undefined") {
+    elementsReveles.forEach(function (element) {
+      element.classList.add("is-visible");
+    });
+  } else {
+    const observateurRevelation = new IntersectionObserver(function (entries, observer) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+
+    elementsReveles.forEach(function (element) {
+      observateurRevelation.observe(element);
+    });
+  }
+
+  const liensNavigation = Array.from(document.querySelectorAll(".quick-nav__link"));
+  if (!liensNavigation.length || typeof IntersectionObserver === "undefined") return;
+
+  const sectionsObservees = liensNavigation
+    .map(function (lien) {
+      const href = lien.getAttribute("href");
+      if (!href || href.charAt(0) !== "#") return null;
+      const section = document.querySelector(href);
+      if (!section) return null;
+      return { lien: lien, section: section };
+    })
+    .filter(Boolean);
+
+  if (!sectionsObservees.length) return;
+
+  const observateurSections = new IntersectionObserver(function (entries) {
+    const visibles = entries
+      .filter(function (entry) { return entry.isIntersecting; })
+      .sort(function (a, b) { return b.intersectionRatio - a.intersectionRatio; });
+
+    if (!visibles.length) return;
+    const sectionActive = visibles[0].target;
+    sectionsObservees.forEach(function (item) {
+      const active = item.section === sectionActive;
+      item.lien.classList.toggle("is-active", active);
+      if (active) {
+        item.lien.setAttribute("aria-current", "page");
+      } else {
+        item.lien.removeAttribute("aria-current");
+      }
+    });
+  }, { threshold: [0.3, 0.5, 0.75], rootMargin: "-20% 0px -35% 0px" });
+
+  sectionsObservees.forEach(function (item) {
+    observateurSections.observe(item.section);
+  });
+}
+
+function initialiserFilConducteur(steps) {
+  if (!Array.isArray(steps) || steps.length < 4 || steps.some(function (step) { return !step; })) return;
+
+  function activerEtape(indexActif, indexValideMax) {
+    steps.forEach(function (step, index) {
+      const estActif = index === indexActif;
+      const estValide = index <= indexValideMax;
+      step.classList.toggle("learning-journey__step--active", estActif);
+      step.classList.toggle("learning-journey__step--done", estValide);
+    });
+  }
+
+  activerEtape(0, -1);
+
+  document.addEventListener("maths-paysager:action", function (event) {
+    const action = event && event.detail ? event.detail : { type: "init" };
+    const typeAction = action.type || "init";
+    const reussites = sessionStats.reussites || 0;
+
+    if (typeAction === "calcul-forme" || typeAction === "calcul-pourcentage") {
+      activerEtape(2, 1);
+      return;
+    }
+    if (typeAction === "nouvel-exercice") {
+      activerEtape(2, 1);
+      return;
+    }
+    if (typeAction === "exercice-correct") {
+      if (reussites >= 5) {
+        activerEtape(3, 3);
+      } else if (reussites >= 3) {
+        activerEtape(3, 2);
+      } else {
+        activerEtape(2, 1);
+      }
+    }
+  });
 }
 
 function initialiserCalculRapideClavier() {

@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <a class="skip-link" href="#contenu-principal">Aller au contenu principal</a>
   <div class="scroll-progress" aria-hidden="true">
     <span id="scroll-progress-bar" class="scroll-progress__bar"></span>
   </div>
@@ -38,7 +39,56 @@
     <p class="header__subtitle">Ton application claire pour progresser en maths en CAPa Aménagement Paysager</p>
   </header>
 
-  <main class="main">
+  <main class="main" id="contenu-principal">
+    <section class="orientation-strip" aria-label="Repères rapides pour les élèves">
+      <article class="orientation-strip__item">
+        <p class="orientation-strip__label">Objectif quotidien</p>
+        <p class="orientation-strip__value">3 exercices utiles</p>
+      </article>
+      <article class="orientation-strip__item">
+        <p class="orientation-strip__label">Temps recommandé</p>
+        <p class="orientation-strip__value">15 minutes</p>
+      </article>
+      <article class="orientation-strip__item orientation-strip__item--accent">
+        <p class="orientation-strip__label">Méthode repère</p>
+        <p class="orientation-strip__value">Comprendre → Choisir → Vérifier</p>
+      </article>
+    </section>
+
+    <section class="learning-journey" aria-label="Fil conducteur de la séance">
+      <h2 class="learning-journey__title">Ton fil conducteur</h2>
+      <ol class="learning-journey__steps">
+        <li id="journey-step-1" class="learning-journey__step learning-journey__step--active">
+          <span class="learning-journey__badge">1</span>
+          <div>
+            <p class="learning-journey__label">Démarrage</p>
+            <p class="learning-journey__desc">Choisis ton mode et ton objectif.</p>
+          </div>
+        </li>
+        <li id="journey-step-2" class="learning-journey__step">
+          <span class="learning-journey__badge">2</span>
+          <div>
+            <p class="learning-journey__label">Calculs fondamentaux</p>
+            <p class="learning-journey__desc">Fais au moins un calcul de surface ou pourcentage.</p>
+          </div>
+        </li>
+        <li id="journey-step-3" class="learning-journey__step">
+          <span class="learning-journey__badge">3</span>
+          <div>
+            <p class="learning-journey__label">Entraînement CAPa</p>
+            <p class="learning-journey__desc">Valide 3 exercices utiles au chantier.</p>
+          </div>
+        </li>
+        <li id="journey-step-4" class="learning-journey__step">
+          <span class="learning-journey__badge">4</span>
+          <div>
+            <p class="learning-journey__label">Consolidation</p>
+            <p class="learning-journey__desc">Passe en autonomie ou niveau supérieur.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
     <section class="card welcome-card" id="section-demarrage">
       <h2 class="card__title">Parcours guidé (30 secondes)</h2>
       <p class="card__desc">1. Choisis un mode. 2. Réponds. 3. Corrige. Tu progresses exercice après exercice.</p>
