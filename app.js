@@ -695,7 +695,7 @@ function creerExerciceForme(niveau) {
   const plage = difficultes[niveau] || difficultes.facile;
   const typesDisponibles = niveau === "facile"
     ? ["rectangle", "cercle", "triangle"]
-    : ["rectangle", "cercle", "triangle", "zone-mixte"];
+    : ["rectangle", "cercle", "triangle", "zone-mixte", "trapeze"];
   const type = typesDisponibles[nombreAleatoire(0, typesDisponibles.length - 1)];
 
   if (type === "rectangle") {
@@ -767,6 +767,44 @@ function creerExerciceForme(niveau) {
       indices: [
         "Indice 1 : on cherche une longueur autour du cercle : c'est un périmètre.",
         "Indice 2 : applique 2 × π × rayon, sans transformer le rayon en diamètre.",
+      ],
+    };
+  }
+
+  if (type === "trapeze") {
+    const grandeBase = nombreAleatoire(plage.min + 8, plage.max + 10);
+    const petiteBase = nombreAleatoire(plage.min + 3, grandeBase - 2);
+    const hauteurTrapeze = nombreAleatoire(plage.min, plage.max);
+    const aireTrapeze = ((grandeBase + petiteBase) * hauteurTrapeze) / 2;
+    return {
+      theme: "aires",
+      competence: "aires-perimetres",
+      competenceLabel: "Aires et périmètres",
+      objectif: "Utiliser la formule du trapèze pour chiffrer une zone irrégulière.",
+      titre: "Aire d'un trapèze",
+      enonce: "Contexte : plate-bande en forme de trapèze.\nDonnées : grande base = " + grandeBase + " m, petite base = " + petiteBase + " m, hauteur = " + hauteurTrapeze + " m.\nQuestion : quelle surface (en m²) faut-il couvrir ?",
+      reponse: aireTrapeze,
+      tolerance: 0.05,
+      unite: "m²",
+      explication: "Étape 1 : aire trapèze = ((B + b) × h) ÷ 2. Étape 2 : ((" + grandeBase + " + " + petiteBase + ") × " + hauteurTrapeze + ") ÷ 2 = " + arrondir(aireTrapeze) + " m².",
+      erreurProbable: "N'oublie pas d'additionner les deux bases avant de multiplier par la hauteur.",
+      erreurCode: "aire_unite",
+      palier: niveau === "difficile" ? "Or" : "Argent",
+      etapes: [
+        "Je repère les deux bases parallèles du trapèze.",
+        "J'applique ((grande base + petite base) × hauteur) ÷ 2.",
+        "Je vérifie que le résultat est en m².",
+      ],
+      utiliteMetier: "Beaucoup de zones réelles sont irrégulières : le trapèze modélise bien certaines plate-bandes.",
+      verification: "L'aire trouvée doit être entre l'aire des deux rectangles extrêmes (petite base × h et grande base × h).",
+      pontMathsMetier: {
+        mesure: "La surface d'une zone non rectangulaire mais simple à modéliser.",
+        decision: "Commander la bonne quantité de paillage/plants.",
+        impact: "Réduit les approximations de coût sur les zones irrégulières.",
+      },
+      indices: [
+        "Indice 1 : commence par additionner les deux bases.",
+        "Indice 2 : multiplie par la hauteur puis divise par 2.",
       ],
     };
   }
@@ -848,7 +886,7 @@ function creerExerciceForme(niveau) {
 }
 
 function creerExercicePourcentage(niveau) {
-  const scenarioMax = niveau === "facile" ? 2 : 3;
+  const scenarioMax = niveau === "facile" ? 2 : 4;
   const scenario = nombreAleatoire(1, scenarioMax);
   if (scenario === 1) {
     const nombre = niveau === "difficile" ? nombreAleatoire(120, 800) : nombreAleatoire(50, 400);
@@ -925,6 +963,43 @@ function creerExercicePourcentage(niveau) {
     };
   }
 
+  if (scenario === 4) {
+    const surfaceInitiale = niveau === "difficile" ? nombreAleatoire(260, 900) : nombreAleatoire(120, 420);
+    const perte = niveau === "difficile" ? nombreAleatoire(8, 22) : nombreAleatoire(5, 15);
+    const surfaceFinale = surfaceInitiale * (1 - perte / 100);
+    return {
+      theme: "pourcentages",
+      competence: "pourcentages",
+      competenceLabel: "Pourcentages",
+      objectif: "Interpréter une perte en pourcentage pour estimer une quantité réellement disponible.",
+      titre: "Surface utile après perte de végétaux",
+      enonce: "Contexte : après préparation, " + perte + "% des plants deviennent inutilisables.\nDonnée : surface initialement prévue = " + surfaceInitiale + " m².\nQuestion : quelle surface peut encore être plantée ?",
+      reponse: surfaceFinale,
+      tolerance: 0.05,
+      unite: "m²",
+      explication: "Étape 1 : coefficient de conservation = 1 - " + perte + "/100. Étape 2 : surface utile = " + surfaceInitiale + " × (1 - " + perte + "/100) = " + arrondir(surfaceFinale) + " m².",
+      erreurProbable: "Pour une perte, on retire x% (coefficient 1 - x/100), on ne l'ajoute pas.",
+      erreurCode: "pourcent_div100",
+      palier: "Or",
+      etapes: [
+        "Je repère qu'il s'agit d'une diminution (perte).",
+        "Je transforme la perte en coefficient multiplicateur.",
+        "Je multiplie la surface initiale par ce coefficient.",
+      ],
+      utiliteMetier: "Permet d'anticiper les pertes sur chantier et d'ajuster la commande de végétaux.",
+      verification: "Après une perte, le résultat doit être inférieur à la surface initiale.",
+      pontMathsMetier: {
+        mesure: "La surface réellement exploitable après aléas.",
+        decision: "Ajuster la quantité de plants de remplacement.",
+        impact: "Limite les ruptures de stock en cours de chantier.",
+      },
+      indices: [
+        "Indice 1 : perte = diminution, donc coefficient inférieur à 1.",
+        "Indice 2 : applique surface finale = surface initiale × (1 - perte/100).",
+      ],
+    };
+  }
+
   const totalPlants = niveau === "difficile" ? nombreAleatoire(300, 900) : nombreAleatoire(120, 320);
   const partVivaces = niveau === "facile" ? nombreAleatoire(20, 45) : nombreAleatoire(30, 70);
   const vivaces = (partVivaces * totalPlants) / 100;
@@ -962,7 +1037,7 @@ function creerExercicePourcentage(niveau) {
 }
 
 function creerExerciceMetier(niveau) {
-  const scenarioMax = niveau === "facile" ? 4 : 5;
+  const scenarioMax = niveau === "facile" ? 4 : 6;
   const scenario = nombreAleatoire(1, scenarioMax);
   if (scenario === 1) {
     const longueur = niveau === "facile" ? nombreAleatoire(4, 12) : nombreAleatoire(8, 25);
@@ -1110,6 +1185,46 @@ function creerExerciceMetier(niveau) {
       indices: [
         "Indice 1 : calcule d'abord le coût sans marge.",
         "Indice 2 : ajoute ensuite x% avec un coefficient (1 + x/100).",
+      ],
+    };
+  }
+  if (scenario === 6) {
+    const surface = niveau === "moyen" ? nombreAleatoire(90, 220) : nombreAleatoire(180, 420);
+    const dosage = niveau === "moyen" ? nombreAleatoire(2, 4) : nombreAleatoire(4, 6);
+    const perte = niveau === "moyen" ? nombreAleatoire(4, 8) : nombreAleatoire(8, 12);
+    const litresSansPerte = surface * dosage;
+    const litresTotaux = litresSansPerte * (1 + perte / 100);
+    return {
+      theme: "metier",
+      competence: "situations-metier",
+      competenceLabel: "Situations métier CAPa",
+      objectif: "Combiner conversion d'un dosage et marge de sécurité en pourcentage.",
+      titre: "Situation métier CAPa — préparation de solution nutritive",
+      enonce: "Contexte : préparation d'une solution nutritive sur " + surface + " m².\nDonnées : dosage = " + dosage + " L/m² ; marge de sécurité (pertes/pulvérisation) = " + perte + "%.\nQuestion : quel volume total faut-il préparer ?",
+      reponse: litresTotaux,
+      tolerance: 0.1,
+      unite: "L",
+      explication: "Étape 1 : volume de base = " + surface + " × " + dosage + " = " + arrondir(litresSansPerte) + " L. Étape 2 : volume total = " + arrondir(litresSansPerte) + " × (1 + " + perte + "/100) = " + arrondir(litresTotaux) + " L.",
+      erreurProbable: "Applique d'abord le dosage, puis ajoute la marge en pourcentage.",
+      erreurCode: "metier_volume_unitaire",
+      palier: "Or",
+      etapes: [
+        "Je calcule le volume de base avec L/m².",
+        "J'ajoute la marge de sécurité en pourcentage.",
+        "Je vérifie que le volume final est supérieur au volume de base.",
+      ],
+      utiliteMetier: "Cette méthode évite les arrêts de chantier liés à une préparation insuffisante.",
+      verification: "Avec une marge positive, le volume final doit être plus grand que le volume de base.",
+      visuel: "🧪 Préparation solution",
+      decisionChantier: "Décision : planifier le volume total à préparer avant intervention.",
+      pontMathsMetier: {
+        mesure: "Le volume total de solution à emporter sur le terrain.",
+        decision: "Dimensionner les cuves et le nombre de remplissages.",
+        impact: "Réduit les interruptions et la perte de productivité.",
+      },
+      indices: [
+        "Indice 1 : commence par le volume sans marge (surface × dosage).",
+        "Indice 2 : ajoute ensuite la marge avec un coefficient (1 + x/100).",
       ],
     };
   }
@@ -1301,6 +1416,7 @@ function afficherExercice(zoneEnonce, zoneFeedback, champReponse, exercice) {
 
   zoneEnonce.appendChild(titre);
   zoneEnonce.appendChild(enonce);
+  zoneEnonce.appendChild(creerAideMentaleExercice(exercice));
   if (exercice.visuel) {
     const visuel = document.createElement("p");
     visuel.textContent = exercice.visuel;
@@ -1315,6 +1431,40 @@ function afficherExercice(zoneEnonce, zoneFeedback, champReponse, exercice) {
   zoneFeedback.textContent = "";
   champReponse.value = "";
   champReponse.focus();
+}
+
+function creerAideMentaleExercice(exercice) {
+  const bloc = document.createElement("p");
+  bloc.className = "resultat__formule";
+  const estimation = obtenirPlageEstimation(exercice);
+  const formule = suggererFormuleRapide(exercice);
+  bloc.innerHTML =
+    "<strong>Aide mentale rapide :</strong> formule type <em>" +
+    formule +
+    "</em> · ordre de grandeur attendu ≈ " +
+    estimation.min +
+    " à " +
+    estimation.max +
+    (exercice && exercice.unite ? " " + exercice.unite : "");
+  return bloc;
+}
+
+function obtenirPlageEstimation(exercice) {
+  const valeur = exercice && typeof exercice.reponse === "number" ? exercice.reponse : 0;
+  const min = Math.max(0, valeur * 0.75);
+  const max = valeur * 1.25;
+  return { min: arrondir(min), max: arrondir(max) };
+}
+
+function suggererFormuleRapide(exercice) {
+  if (!exercice) return "calcul en étapes";
+  const titre = (exercice.titre || "").toLowerCase();
+  if (titre.indexOf("rectangle") >= 0) return "L × l";
+  if (titre.indexOf("triangle") >= 0) return "(b × h) ÷ 2";
+  if (titre.indexOf("trapèze") >= 0 || titre.indexOf("trapeze") >= 0) return "((B + b) × h) ÷ 2";
+  if (titre.indexOf("cercle") >= 0) return "2 × π × r";
+  if (exercice.theme === "pourcentages") return "valeur × (taux/100) ou coefficient";
+  return "donnée × coefficient";
 }
 
 function afficherFeedbackExercice(zone, exercice, reponseEleve, estCorrect, diagnostic) {
@@ -1334,6 +1484,15 @@ function afficherFeedbackExercice(zone, exercice, reponseEleve, estCorrect, diag
     ? "✅ Correct : " + arrondir(exercice.reponse) + (exercice.unite ? " " + exercice.unite : "")
     : "❌ Attendu : " + arrondir(exercice.reponse) + (exercice.unite ? " " + exercice.unite : "") + " (toi : " + arrondir(reponseEleve) + (exercice.unite ? " " + exercice.unite : "") + ")";
 
+  const ecartTexte = document.createElement("p");
+  const ecartAbsolu = Math.abs((reponseEleve || 0) - exercice.reponse);
+  const base = Math.max(Math.abs(exercice.reponse), 1e-9);
+  const ecartRelatif = (ecartAbsolu / base) * 100;
+  ecartTexte.className = "resultat__formule";
+  ecartTexte.textContent = estCorrect
+    ? "Précision : écart de " + arrondir(ecartAbsolu) + (exercice.unite ? " " + exercice.unite : "") + "."
+    : "Écart actuel : " + arrondir(ecartAbsolu) + (exercice.unite ? " " + exercice.unite : "") + " (≈ " + arrondir(ecartRelatif) + "%).";
+
   const explication = document.createElement("div");
   explication.className = "resultat__formule";
   explication.textContent = exercice.explication;
@@ -1342,7 +1501,7 @@ function afficherFeedbackExercice(zone, exercice, reponseEleve, estCorrect, diag
   action.className = "resultat__formule";
   action.textContent = estCorrect
     ? "Action : continue sans indice pour consolider."
-    : "Action : corrige l'unité puis retente.";
+    : "Action : reprends l'étape 2 de la méthode puis retente avec l'unité finale.";
 
   const motivation = document.createElement("p");
   motivation.className = "resultat__formule";
@@ -1352,6 +1511,7 @@ function afficherFeedbackExercice(zone, exercice, reponseEleve, estCorrect, diag
 
   zone.appendChild(message);
   zone.appendChild(bilan);
+  zone.appendChild(ecartTexte);
   zone.appendChild(explication);
   zone.appendChild(action);
   zone.appendChild(motivation);
