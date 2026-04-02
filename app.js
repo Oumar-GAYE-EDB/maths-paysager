@@ -11,6 +11,7 @@ const CLE_HISTORIQUE = "maths-paysager-historique";
 const CLE_PROGRESS = "maths-paysager-progression";
 const CLE_REMEDIATION = "maths-paysager-remediation";
 const CLE_MODE_PARCOURS_SIMPLE = "maths-paysager-parcours-simple";
+const CLE_MOTIVATION = "maths-paysager-motivation";
 const MAX_HISTORIQUE = 20;
 const sessionStats = { essais: 0, reussites: 0 };
 let chronoInterval = null;
@@ -68,6 +69,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const diagnosticExercice = document.getElementById("diagnostic-exercice");
   const planRevision = document.getElementById("plan-revision");
   const sessionProgression = document.getElementById("session-progression");
+  const motivationEleve = document.getElementById("motivation-eleve");
+  const defiJour = document.getElementById("defi-jour");
   const uniteAttendue = document.getElementById("unite-attendue");
   const testsFormulesResultat = document.getElementById("tests-formules-resultat");
   const reponseExercice = document.getElementById("reponse-exercice");
@@ -174,6 +177,8 @@ document.addEventListener("DOMContentLoaded", function () {
     diagnosticExercice: diagnosticExercice,
     planRevision: planRevision,
     sessionProgression: sessionProgression,
+    motivationEleve: motivationEleve,
+    defiJour: defiJour,
     uniteAttendue: uniteAttendue,
     testsFormulesResultat: testsFormulesResultat,
     reponseExercice: reponseExercice,
@@ -471,6 +476,7 @@ function initialiserModeExercices(ui) {
   afficherPlanMaitrise(ui.planMaitrise);
   afficherHistorique(ui.historiqueExercice);
   mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
+  mettreAJourTableauMotivation(ui.motivationEleve, ui.defiJour);
 }
 
 function corrigerExercice(ui, passerAuSuivant) {
@@ -494,6 +500,7 @@ function corrigerExercice(ui, passerAuSuivant) {
     sessionStats.essais += 1;
     sessionStats.reussites += estCorrect ? 1 : 0;
     enregistrerTentativeExercice(exerciceActuel, reponse, estCorrect);
+    enregistrerMotivation(exerciceActuel, estCorrect);
     if (!estCorrect) {
       ajouterRemediation(exerciceActuel);
     }
@@ -507,6 +514,7 @@ function corrigerExercice(ui, passerAuSuivant) {
     if (parcoursCibleActif && !passerAuSuivant) parcoursCibleActif.restant = Math.max(0, parcoursCibleActif.restant - 1);
     afficherHistorique(ui.historiqueExercice);
     mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
+    mettreAJourTableauMotivation(ui.motivationEleve, ui.defiJour);
     if (!estCorrect) debloquerAidesParcoursSimple(ui);
     mettreAJourRubanSession(ui);
     return;
@@ -1418,6 +1426,20 @@ function creerExerciceRemediation(remediation) {
 function afficherExercice(zoneEnonce, zoneFeedback, champReponse, exercice) {
   if (!zoneEnonce || !exercice) return;
   viderElement(zoneEnonce);
+  const meta = document.createElement("div");
+  meta.className = "exercise-meta";
+  const chips = [
+    "🎯 " + (exercice.competenceLabel || "Compétence"),
+    "🪜 Palier " + (exercice.palier || "Bronze"),
+    "📌 " + (exercice.objectif || "Raisonner étape par étape"),
+  ];
+  chips.forEach(function (label) {
+    const chip = document.createElement("span");
+    chip.className = "exercise-chip";
+    chip.textContent = label;
+    meta.appendChild(chip);
+  });
+
   const titre = document.createElement("p");
   const titreFort = document.createElement("strong");
   titreFort.textContent = exercice.titre;
@@ -1430,6 +1452,7 @@ function afficherExercice(zoneEnonce, zoneFeedback, champReponse, exercice) {
     if (index < lignes.length - 1) enonce.appendChild(document.createElement("br"));
   });
 
+  zoneEnonce.appendChild(meta);
   zoneEnonce.appendChild(titre);
   zoneEnonce.appendChild(enonce);
   if (exercice.visuel) {
@@ -1454,6 +1477,7 @@ function afficherFeedbackExercice(zone, exercice, reponseEleve, estCorrect, diag
   viderElement(zone);
 
   const progression = chargerProgression();
+  const motivationData = chargerMotivation();
   const message = document.createElement("p");
   const messageFort = document.createElement("strong");
   messageFort.textContent = estCorrect ? "Bravo ✅" : "Presque ❌";
@@ -1486,9 +1510,9 @@ function afficherFeedbackExercice(zone, exercice, reponseEleve, estCorrect, diag
 
   const motivation = document.createElement("p");
   motivation.className = "resultat__formule";
-  motivation.textContent = estCorrect && progression.serie >= 2
-    ? "Super : " + progression.serie + " réussites de suite 🔥"
-    : "Objectif : 2 réussites d'affilée pour débloquer une série.";
+  motivation.textContent = estCorrect
+    ? messageEncouragement(progression, motivationData)
+    : "Objectif : corriger la méthode puis viser une réponse juste au prochain essai.";
 
   const accompagnement = document.createElement("p");
   accompagnement.className = "resultat__formule";
@@ -1511,6 +1535,111 @@ function afficherFeedbackExercice(zone, exercice, reponseEleve, estCorrect, diag
   if (exercice.questionsFlash && exercice.questionsFlash.length) {
     zone.appendChild(creerAstuce("Questions flash (30 sec)", exercice.questionsFlash.join(" • ")));
   }
+}
+
+function dateJourISO(dateObj) {
+  const date = dateObj || new Date();
+  return date.toISOString().slice(0, 10);
+}
+
+function ajouterJours(dateISO, delta) {
+  const d = new Date(dateISO + "T00:00:00");
+  d.setDate(d.getDate() + delta);
+  return dateJourISO(d);
+}
+
+function construireDefiDuJour(dateISO) {
+  const date = dateISO || dateJourISO();
+  const seed = Number(date.replace(/-/g, ""));
+  const objectif = (seed % 3) + 3; // entre 3 et 5 réussites
+  return { date: date, objectif: objectif, reussites: 0, termine: false };
+}
+
+function chargerMotivation() {
+  try {
+    const brute = localStorage.getItem(CLE_MOTIVATION);
+    const base = {
+      points: 0,
+      serieJours: 0,
+      dernierJourReussi: "",
+      defisTermines: 0,
+      defi: construireDefiDuJour(dateJourISO()),
+    };
+    if (!brute) return base;
+    const data = JSON.parse(brute);
+    if (!data.defi || data.defi.date !== dateJourISO()) data.defi = construireDefiDuJour(dateJourISO());
+    return Object.assign(base, data);
+  } catch (e) {
+    return {
+      points: 0,
+      serieJours: 0,
+      dernierJourReussi: "",
+      defisTermines: 0,
+      defi: construireDefiDuJour(dateJourISO()),
+    };
+  }
+}
+
+function sauvegarderMotivation(data) {
+  localStorage.setItem(CLE_MOTIVATION, JSON.stringify(data));
+}
+
+function enregistrerMotivation(exercice, estCorrect) {
+  const data = chargerMotivation();
+  if (!estCorrect || !exercice) {
+    sauvegarderMotivation(data);
+    return;
+  }
+  const pointsParPalier = { Bronze: 10, Argent: 14, Or: 18 };
+  data.points += pointsParPalier[exercice.palier] || 10;
+  data.defi.reussites += 1;
+  if (!data.defi.termine && data.defi.reussites >= data.defi.objectif) {
+    data.defi.termine = true;
+    data.defisTermines += 1;
+    data.points += 25;
+  }
+  const aujourdhui = dateJourISO();
+  if (data.dernierJourReussi !== aujourdhui) {
+    const hier = ajouterJours(aujourdhui, -1);
+    data.serieJours = data.dernierJourReussi === hier ? data.serieJours + 1 : 1;
+    data.dernierJourReussi = aujourdhui;
+  }
+  sauvegarderMotivation(data);
+}
+
+function mettreAJourTableauMotivation(zoneMotivation, zoneDefi) {
+  const data = chargerMotivation();
+  if (zoneMotivation) {
+    zoneMotivation.innerHTML =
+      "<strong>Tableau motivation</strong>" +
+      "<ul>" +
+      "<li>⭐ Points d'apprentissage : <strong>" + data.points + "</strong></li>" +
+      "<li>🔥 Série de jours actifs : <strong>" + data.serieJours + "</strong></li>" +
+      "<li>🏅 Défis réussis : <strong>" + data.defisTermines + "</strong></li>" +
+      "</ul>";
+  }
+  if (zoneDefi) {
+    const restant = Math.max(0, data.defi.objectif - data.defi.reussites);
+    zoneDefi.innerHTML =
+      "<strong>Défi du jour (" + data.defi.date + ")</strong>" +
+      "<p>Réussis <strong>" + data.defi.objectif + "</strong> exercices justes pour débloquer le bonus motivation.</p>" +
+      "<p>Progression : <strong>" + data.defi.reussites + "/" + data.defi.objectif + "</strong> " +
+      (data.defi.termine ? "✅ Défi validé !" : "• Encore " + restant + " réussite(s).") +
+      "</p>";
+  }
+}
+
+function messageEncouragement(progression, motivationData) {
+  if ((progression.serie || 0) >= 3) {
+    return "Super : " + progression.serie + " réussites de suite 🔥";
+  }
+  if (motivationData && motivationData.defi && motivationData.defi.termine) {
+    return "Défi du jour validé 🎉 Bonus points débloqué, continue comme ça.";
+  }
+  if (motivationData && motivationData.serieJours >= 3) {
+    return "Régularité au top : " + motivationData.serieJours + " jours de suite 👏";
+  }
+  return "Bravo, tu progresses exercice après exercice.";
 }
 
 function analyserErreur(exercice, reponseEleve) {
