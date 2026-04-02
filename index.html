@@ -46,6 +46,31 @@
       <p id="message-demarrage" class="welcome-card__message" aria-live="polite">
         Objectif du jour : réussir 3 exercices utiles sur chantier.
       </p>
+      <div class="learning-pills" aria-label="Repères d'apprentissage">
+        <span class="learning-pill">🎯 Objectif clair</span>
+        <span class="learning-pill">🧠 Astuces visuelles</span>
+        <span class="learning-pill">🌱 Progression pas à pas</span>
+      </div>
+    </section>
+
+    <section class="study-routine" aria-label="Routine conseillée">
+      <article class="study-routine__card">
+        <p class="study-routine__eyebrow">Routine conseillée</p>
+        <h2>15 minutes pour progresser chaque jour</h2>
+        <ul>
+          <li><strong>5 min :</strong> revoir une formule dans l'aide-mémoire.</li>
+          <li><strong>7 min :</strong> faire 2 exercices ciblés.</li>
+          <li><strong>3 min :</strong> corriger et noter le point à retravailler.</li>
+        </ul>
+      </article>
+      <article class="study-routine__card study-routine__card--accent">
+        <p class="study-routine__eyebrow">Astuce CAPa</p>
+        <h2>Pense “terrain” pour mieux mémoriser</h2>
+        <p>
+          Associe chaque calcul à une situation réelle : bordure, dalle, bassin ou dosage.
+          Ton cerveau retient mieux quand la notion est liée à une action métier.
+        </p>
+      </article>
     </section>
 
     <section class="card card--steps" aria-labelledby="titre-methode">
@@ -75,6 +100,29 @@
       <a class="quick-nav__link" href="#section-exercices">Exercices</a>
       <a class="quick-nav__link" href="#section-memo">Formules</a>
     </nav>
+
+    <section class="card session-planner" aria-labelledby="titre-plan-seance">
+      <h2 class="card__title" id="titre-plan-seance">Plan de séance visuel</h2>
+      <p class="card__desc">Coche les étapes au fur et à mesure pour rester concentré et voir ton avancée.</p>
+      <div class="session-planner__grid">
+        <label class="session-step">
+          <input type="checkbox">
+          <span>Je révise 1 formule clé</span>
+        </label>
+        <label class="session-step">
+          <input type="checkbox">
+          <span>Je fais 2 exercices</span>
+        </label>
+        <label class="session-step">
+          <input type="checkbox">
+          <span>Je vérifie les unités</span>
+        </label>
+        <label class="session-step">
+          <input type="checkbox">
+          <span>Je note mon erreur fréquente</span>
+        </label>
+      </div>
+    </section>
 
     <section class="card" id="section-formes">
       <h2 class="card__title">
@@ -298,6 +346,10 @@
   <footer class="footer">
     <p>Application pédagogique — CAPa Aménagement Paysager</p>
   </footer>
+
+  <button class="back-to-top" id="btn-retour-haut" type="button" aria-label="Revenir en haut de la page">
+    ↑ Haut
+  </button>
 
   <script src="app.js"></script>
 </body>

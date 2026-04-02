@@ -130,6 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
   initialiserSaisieDecimale();
   initialiserModeFocus(modeFocus);
   initialiserConfortAccessibilite(btnFontMinus, btnFontPlus, modeContrasteFort);
+  initialiserBoutonRetourHaut();
   initialiserDemarrageRapide(btnDemarrageRapide, btnReviserNotion, messageDemarrage, {
     selectThemeExercice: selectThemeExercice,
     selectNiveauExercice: selectNiveauExercice,
@@ -217,6 +218,23 @@ function initialiserTheme() {
       localStorage.setItem(CLE_THEME, theme);
     });
   }
+}
+
+function initialiserBoutonRetourHaut() {
+  const bouton = document.getElementById("btn-retour-haut");
+  if (!bouton) return;
+
+  const mettreAJourVisibilite = function () {
+    const visible = window.scrollY > 280;
+    bouton.classList.toggle("back-to-top--visible", visible);
+  };
+
+  window.addEventListener("scroll", mettreAJourVisibilite, { passive: true });
+  mettreAJourVisibilite();
+
+  bouton.addEventListener("click", function () {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
 }
 
 function initialiserModeFocus(caseFocus) {
