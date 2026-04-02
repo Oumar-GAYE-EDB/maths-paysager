@@ -133,6 +133,22 @@ body {
   flex-direction: column;
 }
 
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  background: var(--color-primary);
+  color: #fff;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  z-index: 100;
+}
+
+.skip-link:focus {
+  left: var(--space-3);
+  top: var(--space-3);
+}
+
 body[data-font-scale="small"] { font-size: calc(var(--text-base) * 0.92); }
 body[data-font-scale="large"] { font-size: calc(var(--text-base) * 1.12); }
 body.contrast-fort {
@@ -205,6 +221,11 @@ body.contrast-fort {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+}
+
+.onboarding-grid {
+  display: grid;
+  gap: var(--space-4);
 }
 
 .welcome-card__message {
@@ -315,6 +336,50 @@ body.mode-focus #section-exercices {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
   margin-bottom: var(--space-5);
+}
+
+.card--steps {
+  border-left: 4px solid var(--color-primary);
+}
+
+.steps-list {
+  margin-left: 1.2rem;
+  display: grid;
+  gap: var(--space-2);
+  color: var(--color-text);
+}
+
+.steps-list li {
+  line-height: 1.55;
+}
+
+.card--dashboard {
+  background: color-mix(in srgb, var(--color-primary-light) 45%, var(--color-surface));
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.dashboard-item {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  background: var(--color-surface);
+}
+
+.dashboard-item h3 {
+  color: var(--color-primary);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-1);
+}
+
+.dashboard-item p {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
 }
 
 /* ---------- FORMULAIRES ---------- */
@@ -728,6 +793,20 @@ button[aria-disabled="true"] {
 
   .progress-grid {
     grid-template-columns: 1fr;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 860px) {
+  .main {
+    max-width: 980px;
+  }
+
+  .onboarding-grid {
+    grid-template-columns: 1.2fr 1fr;
   }
 }
 

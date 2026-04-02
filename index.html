@@ -6,7 +6,6 @@
   <title>Maths Paysager — Calculateur</title>
   <meta name="description" content="Calculateur d'aire, périmètre et pourcentage pour les élèves de CAPa Aménagement Paysager">
 
-  <!-- Police : Nunito (amicale, lisible) pour le corps, Plus Jakarta Sans pour les titres -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
@@ -14,19 +13,13 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <a class="skip-link" href="#contenu-principal">Aller au contenu principal</a>
 
-  <!-- ============================== -->
-  <!-- EN-TÊTE avec logo SVG et titre -->
-  <!-- ============================== -->
   <header class="header">
     <div class="header__inner">
-      <!-- Logo SVG : une feuille stylisée avec un compas -->
       <svg class="header__logo" viewBox="0 0 40 40" width="40" height="40" aria-label="Logo Maths Paysager" fill="none">
-        <!-- Feuille -->
         <path d="M20 4C12 10 6 20 10 32c4-2 8-6 10-12 2 6 6 10 10 12C34 20 28 10 20 4z" fill="currentColor" opacity="0.2" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-        <!-- Nervure centrale -->
         <line x1="20" y1="8" x2="20" y2="30" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        <!-- Petites nervures -->
         <line x1="20" y1="14" x2="15" y2="18" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
         <line x1="20" y1="14" x2="25" y2="18" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
         <line x1="20" y1="20" x2="13" y2="25" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
@@ -34,27 +27,56 @@
       </svg>
       <h1 class="header__title">Maths Paysager</h1>
 
-      <!-- Bouton mode sombre/clair -->
       <button data-theme-toggle aria-label="Basculer en mode sombre" class="theme-toggle">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
         </svg>
       </button>
     </div>
-    <p class="header__subtitle">Calculateur pour CAPa Aménagement Paysager</p>
+    <p class="header__subtitle">Ton application claire pour progresser en maths en CAPa Aménagement Paysager</p>
   </header>
 
-  <main class="main">
-    <section class="card welcome-card" id="section-demarrage">
-      <h2 class="card__title">Démarrage rapide (30 secondes)</h2>
-      <p class="card__desc">Choisis un mode pour commencer sans te perdre dans les options.</p>
-      <div class="actions">
-        <button class="btn btn--primary" id="btn-demarrage-rapide" type="button">S'entraîner vite</button>
-        <button class="btn btn--secondary" id="btn-reviser-notion" type="button">Réviser une notion</button>
+  <main class="main" id="contenu-principal">
+    <section class="onboarding-grid" aria-label="Démarrage guidé">
+      <section class="card welcome-card" id="section-demarrage">
+        <h2 class="card__title">Parcours guidé (30 secondes)</h2>
+        <p class="card__desc">1. Choisis un mode. 2. Réponds. 3. Corrige. Tu progresses exercice après exercice.</p>
+        <div class="actions">
+          <button class="btn btn--primary" id="btn-demarrage-rapide" type="button">Commencer tout de suite</button>
+          <button class="btn btn--secondary" id="btn-reviser-notion" type="button">Réviser une notion</button>
+        </div>
+        <p id="message-demarrage" class="welcome-card__message" aria-live="polite">
+          Objectif du jour : réussir 3 exercices utiles sur chantier.
+        </p>
+      </section>
+
+      <section class="card card--steps" aria-labelledby="titre-methode">
+        <h2 class="card__title" id="titre-methode">Méthode gagnante en 3 étapes</h2>
+        <ol class="steps-list">
+          <li><strong>Comprendre :</strong> repère les données, l'unité et la question.</li>
+          <li><strong>Choisir :</strong> sélectionne la bonne formule dans l'aide-mémoire.</li>
+          <li><strong>Vérifier :</strong> contrôle l'unité et l'ordre de grandeur.</li>
+        </ol>
+      </section>
+    </section>
+
+    <section class="card card--dashboard" aria-labelledby="titre-tableau-bord">
+      <h2 class="card__title" id="titre-tableau-bord">Tableau de bord de séance</h2>
+      <p class="card__desc">Une séance efficace = petit objectif + entraînement régulier + vérification finale.</p>
+      <div class="dashboard-grid">
+        <article class="dashboard-item">
+          <h3>Objectif</h3>
+          <p>Réussir 3 exercices sans oublier les unités.</p>
+        </article>
+        <article class="dashboard-item">
+          <h3>Rythme conseillé</h3>
+          <p>10 minutes de calculs + 2 minutes d'auto-contrôle.</p>
+        </article>
+        <article class="dashboard-item">
+          <h3>Astuce motivation</h3>
+          <p>Après chaque réussite, explique la méthode à un camarade.</p>
+        </article>
       </div>
-      <p id="message-demarrage" class="welcome-card__message" aria-live="polite">
-        Astuce : active ensuite le mode adaptatif pour des exercices ciblés.
-      </p>
     </section>
 
     <section class="comfort-bar" aria-label="Réglages confort">
@@ -70,103 +92,74 @@
     </section>
 
     <nav class="quick-nav" aria-label="Navigation rapide">
-      <a class="quick-nav__link" href="#section-formes">Calculs surfaces</a>
-      <a class="quick-nav__link" href="#section-pourcent">Calculs pourcentages</a>
-      <a class="quick-nav__link" href="#section-exercices">Mode exercices</a>
-      <a class="quick-nav__link" href="#section-memo">Aide-mémoire</a>
+      <a class="quick-nav__link" href="#section-formes">Surfaces</a>
+      <a class="quick-nav__link" href="#section-pourcent">Pourcentages</a>
+      <a class="quick-nav__link" href="#section-exercices">Exercices</a>
+      <a class="quick-nav__link" href="#section-memo">Formules</a>
     </nav>
 
-    <!-- ================================== -->
-    <!-- SECTION 1 : AIRES ET PÉRIMÈTRES    -->
-    <!-- ================================== -->
     <section class="card" id="section-formes">
       <h2 class="card__title">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-        Aire et Périmètre
+        Aire et périmètre
       </h2>
-      <p class="card__desc">Sélectionnez une forme, entrez les mesures en mètres, puis cliquez sur <strong>Calculer</strong>.</p>
+      <p class="card__desc">Choisis une forme, saisis les mesures en mètres, puis clique sur <strong>Calculer</strong>.</p>
 
-      <!-- Sélection de la forme -->
       <div class="form-group">
         <label for="forme">Forme géométrique :</label>
         <select id="forme">
-          <option value="rectangle">Rectangle (ex : terrasse, massif)</option>
-          <option value="carre">Carré (ex : dalle, bac)</option>
-          <option value="cercle">Cercle (ex : bassin, rond-point)</option>
-          <option value="triangle">Triangle (ex : parcelle)</option>
-          <option value="trapeze">Trapèze (ex : plate-bande)</option>
+          <option value="rectangle">Rectangle (terrasse, massif)</option>
+          <option value="carre">Carré (dalle, bac)</option>
+          <option value="cercle">Cercle (bassin, rond-point)</option>
+          <option value="triangle">Triangle (parcelle)</option>
+          <option value="trapeze">Trapèze (plate-bande)</option>
         </select>
       </div>
 
-      <!-- Champs de saisie dynamiques -->
-      <div id="champs-forme" class="form-fields">
-        <!-- Les champs sont générés par JavaScript -->
-      </div>
+      <div id="champs-forme" class="form-fields"></div>
 
       <div class="actions">
-        <button class="btn btn--primary" id="btn-calculer-forme" type="button">
-          Calculer
-        </button>
-        <button class="btn btn--secondary" id="btn-reset-forme" type="button">
-          Réinitialiser
-        </button>
+        <button class="btn btn--primary" id="btn-calculer-forme" type="button">Calculer</button>
+        <button class="btn btn--secondary" id="btn-reset-forme" type="button">Réinitialiser</button>
       </div>
 
-      <!-- Zone de résultat -->
       <div id="resultat-forme" class="resultat" aria-live="polite"></div>
-
-      <!-- Schéma de la forme -->
       <div id="schema-forme" class="schema-container"></div>
     </section>
 
-    <!-- ================================ -->
-    <!-- SECTION 2 : POURCENTAGES          -->
-    <!-- ================================ -->
     <section class="card" id="section-pourcent">
       <h2 class="card__title">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><line x1="4" y1="20" x2="20" y2="4"/></svg>
         Pourcentages
       </h2>
-      <p class="card__desc">Choisissez le type de calcul, remplissez les valeurs, puis cliquez sur <strong>Calculer</strong>.</p>
+      <p class="card__desc">Choisis le calcul, remplis les valeurs, puis clique sur <strong>Calculer</strong>.</p>
 
-      <!-- Sélection du type de calcul -->
       <div class="form-group">
         <label for="type-pourcent">Type de calcul :</label>
         <select id="type-pourcent">
-          <option value="trouver-pourcentage">Trouver un pourcentage d'un nombre (ex : 15% de 200)</option>
+          <option value="trouver-pourcentage">Trouver un pourcentage d'un nombre (15 % de 200)</option>
           <option value="quel-pourcentage">Quel pourcentage représente A par rapport à B ?</option>
           <option value="augmentation">Augmentation en pourcentage</option>
           <option value="reduction">Réduction en pourcentage</option>
         </select>
       </div>
 
-      <!-- Champs de saisie dynamiques -->
-      <div id="champs-pourcent" class="form-fields">
-        <!-- Les champs sont générés par JavaScript -->
-      </div>
+      <div id="champs-pourcent" class="form-fields"></div>
 
       <div class="actions">
-        <button class="btn btn--primary" id="btn-calculer-pourcent" type="button">
-          Calculer
-        </button>
-        <button class="btn btn--secondary" id="btn-reset-pourcent" type="button">
-          Réinitialiser
-        </button>
+        <button class="btn btn--primary" id="btn-calculer-pourcent" type="button">Calculer</button>
+        <button class="btn btn--secondary" id="btn-reset-pourcent" type="button">Réinitialiser</button>
       </div>
 
-      <!-- Zone de résultat -->
       <div id="resultat-pourcent" class="resultat" aria-live="polite"></div>
     </section>
 
-    <!-- ================================ -->
-    <!-- SECTION 3 : MODE EXERCICES       -->
-    <!-- ================================ -->
     <section class="card" id="section-exercices">
       <h2 class="card__title">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        Mode Exercices (CAPa)
+        Mode exercices (CAPa)
       </h2>
-      <p class="card__desc">Entraînez-vous avec des exercices progressifs et des situations métier, puis consultez vos progrès.</p>
+      <p class="card__desc">Tu t'entraînes, tu reçois un feedback clair, tu vois ta progression.</p>
 
       <div class="form-fields">
         <div class="form-group">
@@ -198,7 +191,7 @@
       <div class="coach-row">
         <label class="coach-toggle" for="mode-focus">
           <input type="checkbox" id="mode-focus">
-          <span>Mode focus (interface simplifiée)</span>
+          <span>Mode focus (moins de distractions)</span>
         </label>
         <label class="coach-toggle" for="mode-adaptatif">
           <input type="checkbox" id="mode-adaptatif">
@@ -251,7 +244,7 @@
       <div id="feedback-exercice" class="resultat" aria-live="polite"></div>
 
       <details class="exercise-more">
-        <summary>Afficher les outils avancés (diagnostic, remédiation, historique)</summary>
+        <summary>Afficher les outils avancés (si besoin)</summary>
         <div id="plan-remediation" class="exercise-panel"></div>
         <div id="plan-maitrise" class="exercise-panel"></div>
         <div id="chronometre-exercice" class="exercise-panel exercise-panel--hint"></div>
@@ -277,65 +270,52 @@
       </details>
     </section>
 
-    <!-- ================================ -->
-    <!-- SECTION 4 : AIDE-MÉMOIRE          -->
-    <!-- ================================ -->
     <section class="card card--memo" id="section-memo">
       <h2 class="card__title">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-        Aide-mémoire : Formules
+        Aide-mémoire : formules essentielles
       </h2>
 
       <div class="memo-grid">
-        <!-- Rectangle -->
         <div class="memo-item">
           <h3>Rectangle</h3>
-          <p><strong>Aire</strong> = Longueur &times; Largeur</p>
-          <p><strong>Périmètre</strong> = 2 &times; (Longueur + Largeur)</p>
+          <p><strong>Aire</strong> = Longueur × Largeur</p>
+          <p><strong>Périmètre</strong> = 2 × (Longueur + Largeur)</p>
         </div>
-        <!-- Carré -->
         <div class="memo-item">
           <h3>Carré</h3>
-          <p><strong>Aire</strong> = Côté &times; Côté = Côté&sup2;</p>
-          <p><strong>Périmètre</strong> = 4 &times; Côté</p>
+          <p><strong>Aire</strong> = Côté × Côté = Côté²</p>
+          <p><strong>Périmètre</strong> = 4 × Côté</p>
         </div>
-        <!-- Cercle -->
         <div class="memo-item">
           <h3>Cercle</h3>
-          <p><strong>Aire</strong> = &pi; &times; Rayon&sup2;</p>
-          <p><strong>Périmètre</strong> = 2 &times; &pi; &times; Rayon</p>
+          <p><strong>Aire</strong> = π × Rayon²</p>
+          <p><strong>Périmètre</strong> = 2 × π × Rayon</p>
         </div>
-        <!-- Triangle -->
         <div class="memo-item">
           <h3>Triangle</h3>
-          <p><strong>Aire</strong> = (Base &times; Hauteur) &divide; 2</p>
+          <p><strong>Aire</strong> = (Base × Hauteur) ÷ 2</p>
           <p><strong>Périmètre</strong> = Côté 1 + Côté 2 + Côté 3</p>
         </div>
-        <!-- Trapèze -->
         <div class="memo-item">
           <h3>Trapèze</h3>
-          <p><strong>Aire</strong> = ((Base 1 + Base 2) &times; Hauteur) &divide; 2</p>
+          <p><strong>Aire</strong> = ((Base 1 + Base 2) × Hauteur) ÷ 2</p>
           <p><strong>Périmètre</strong> = Somme des 4 côtés</p>
         </div>
-        <!-- Pourcentage -->
         <div class="memo-item">
           <h3>Pourcentage</h3>
-          <p><strong>X% de N</strong> = (X &times; N) &divide; 100</p>
-          <p><strong>Part en %</strong> = (Partie &divide; Total) &times; 100</p>
+          <p><strong>X % de N</strong> = (X × N) ÷ 100</p>
+          <p><strong>Part en %</strong> = (Partie ÷ Total) × 100</p>
         </div>
       </div>
     </section>
 
   </main>
 
-  <!-- Pied de page -->
   <footer class="footer">
     <p>Application pédagogique — CAPa Aménagement Paysager</p>
   </footer>
 
-  <!-- ============================== -->
-  <!-- SCRIPT PRINCIPAL (commenté)    -->
-  <!-- ============================== -->
   <script src="app.js"></script>
 </body>
 </html>
