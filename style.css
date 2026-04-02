@@ -317,6 +317,21 @@ body.mode-focus #section-exercices {
   margin-bottom: var(--space-5);
 }
 
+.card--steps {
+  border-left: 4px solid var(--color-primary);
+}
+
+.steps-list {
+  margin-left: 1.2rem;
+  display: grid;
+  gap: var(--space-2);
+  color: var(--color-text);
+}
+
+.steps-list li {
+  line-height: 1.55;
+}
+
 /* ---------- FORMULAIRES ---------- */
 .form-group {
   margin-bottom: var(--space-4);
