@@ -68,6 +68,8 @@ Types de calcul :
 - Pont explicite « maths ↔ métier » pour chaque exercice (mesure, décision, impact terrain)
 - Nouveaux scénarios : talus triangulaire, répartition de plantations, coût de bordures en €/ml
 - Exercices plus riches en plusieurs étapes : surface utile (zone - allée), enchaînement de pourcentages (hausse puis remise), chiffrage complet avec marge de sécurité
+- Nouvelles mises en situation : perte de plants en %, préparation de solution avec dosage + marge de sécurité
+- Feedback renforcé après validation : affichage de l'écart (valeur et %) pour guider la correction
 
 ### 7) Fiabilité des calculs
 - Vérifications supplémentaires sur les contraintes géométriques
