@@ -25,6 +25,7 @@ let exerciceActuel = null;
 // ============================================================
 
 document.addEventListener("DOMContentLoaded", function () {
+  document.body.classList.add("js-enhanced");
   // On récupère les éléments HTML importants
   const selectForme = document.getElementById("forme");
   const champsForme = document.getElementById("champs-forme");
@@ -142,6 +143,7 @@ document.addEventListener("DOMContentLoaded", function () {
   initialiserModeFocus(modeFocus);
   initialiserConfortAccessibilite(btnFontMinus, btnFontPlus, modeContrasteFort);
   initialiserNavigationConfort();
+  initialiserExperienceFluide();
   initialiserCockpitApprentissage({
     sessionGoal: cockpitSessionGoal,
     sessionMeter: cockpitSessionMeter,
@@ -410,6 +412,66 @@ function initialiserNavigationConfort() {
   window.addEventListener("scroll", actualiserProgression, { passive: true });
   window.addEventListener("resize", actualiserProgression);
   actualiserProgression();
+}
+
+function initialiserExperienceFluide() {
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const elementsReveles = document.querySelectorAll(".card, .study-routine__card, .learning-cockpit__card, .comfort-bar, .orientation-strip__item");
+
+  if (prefersReducedMotion || typeof IntersectionObserver === "undefined") {
+    elementsReveles.forEach(function (element) {
+      element.classList.add("is-visible");
+    });
+  } else {
+    const observateurRevelation = new IntersectionObserver(function (entries, observer) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+
+    elementsReveles.forEach(function (element) {
+      observateurRevelation.observe(element);
+    });
+  }
+
+  const liensNavigation = Array.from(document.querySelectorAll(".quick-nav__link"));
+  if (!liensNavigation.length || typeof IntersectionObserver === "undefined") return;
+
+  const sectionsObservees = liensNavigation
+    .map(function (lien) {
+      const href = lien.getAttribute("href");
+      if (!href || href.charAt(0) !== "#") return null;
+      const section = document.querySelector(href);
+      if (!section) return null;
+      return { lien: lien, section: section };
+    })
+    .filter(Boolean);
+
+  if (!sectionsObservees.length) return;
+
+  const observateurSections = new IntersectionObserver(function (entries) {
+    const visibles = entries
+      .filter(function (entry) { return entry.isIntersecting; })
+      .sort(function (a, b) { return b.intersectionRatio - a.intersectionRatio; });
+
+    if (!visibles.length) return;
+    const sectionActive = visibles[0].target;
+    sectionsObservees.forEach(function (item) {
+      const active = item.section === sectionActive;
+      item.lien.classList.toggle("is-active", active);
+      if (active) {
+        item.lien.setAttribute("aria-current", "page");
+      } else {
+        item.lien.removeAttribute("aria-current");
+      }
+    });
+  }, { threshold: [0.3, 0.5, 0.75], rootMargin: "-20% 0px -35% 0px" });
+
+  sectionsObservees.forEach(function (item) {
+    observateurSections.observe(item.section);
+  });
 }
 
 function initialiserCalculRapideClavier() {
