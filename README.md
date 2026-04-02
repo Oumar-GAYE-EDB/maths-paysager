@@ -61,6 +61,7 @@ Types de calcul :
 - Objectif de séance affiché avant chaque exercice
 - Micro-compétence ciblée + palier de maîtrise (Bronze / Argent / Or)
 - Barre de progression de session (réussites en cours)
+- Nouveau réglage de **niveau d'accompagnement** (Guidé / Autonome / Défi) pour ajuster la tolérance et le niveau d'exigence
 
 ### 6) Situations métier enrichies
 - Scénarios CAPa variés : semis, paillage (coût €/m²), arrosage (L/m)
@@ -70,6 +71,7 @@ Types de calcul :
 - Exercices plus riches en plusieurs étapes : surface utile (zone - allée), enchaînement de pourcentages (hausse puis remise), chiffrage complet avec marge de sécurité
 - Nouvelles mises en situation : perte de plants en %, préparation de solution avec dosage + marge de sécurité
 - Feedback renforcé après validation : affichage de l'écart (valeur et %) pour guider la correction
+- Questions flash de métacognition (30 sec) après correction pour verbaliser la méthode et favoriser le transfert
 
 ### 7) Fiabilité des calculs
 - Vérifications supplémentaires sur les contraintes géométriques
