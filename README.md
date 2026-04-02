@@ -67,6 +67,7 @@ Types de calcul :
 - Mise en contexte « utile sur chantier » + auto-contrôle rapide sur chaque exercice
 - Pont explicite « maths ↔ métier » pour chaque exercice (mesure, décision, impact terrain)
 - Nouveaux scénarios : talus triangulaire, répartition de plantations, coût de bordures en €/ml
+- Exercices plus riches en plusieurs étapes : surface utile (zone - allée), enchaînement de pourcentages (hausse puis remise), chiffrage complet avec marge de sécurité
 
 ### 7) Fiabilité des calculs
 - Vérifications supplémentaires sur les contraintes géométriques
