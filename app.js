@@ -693,7 +693,10 @@ function creerExerciceForme(niveau) {
     difficile: { min: 10, max: 40 },
   };
   const plage = difficultes[niveau] || difficultes.facile;
-  const type = ["rectangle", "cercle", "triangle"][nombreAleatoire(0, 2)];
+  const typesDisponibles = niveau === "facile"
+    ? ["rectangle", "cercle", "triangle"]
+    : ["rectangle", "cercle", "triangle", "zone-mixte"];
+  const type = typesDisponibles[nombreAleatoire(0, typesDisponibles.length - 1)];
 
   if (type === "rectangle") {
     const L = nombreAleatoire(plage.min, plage.max);
@@ -771,6 +774,46 @@ function creerExerciceForme(niveau) {
   const base = nombreAleatoire(plage.min + 2, plage.max + 6);
   const hauteur = nombreAleatoire(plage.min, plage.max);
   const aireTriangle = (base * hauteur) / 2;
+  if (type === "zone-mixte") {
+    const longueurZone = nombreAleatoire(plage.min + 8, plage.max + 10);
+    const largeurZone = nombreAleatoire(plage.min + 4, plage.max + 6);
+    const longueurAllee = nombreAleatoire(Math.max(2, plage.min - 1), Math.max(4, plage.max - 4));
+    const largeurAllee = nombreAleatoire(2, 4);
+    const surfaceTotale = longueurZone * largeurZone;
+    const surfaceAllee = longueurAllee * largeurAllee;
+    const surfacePlantation = surfaceTotale - surfaceAllee;
+    return {
+      theme: "aires",
+      competence: "aires-perimetres",
+      competenceLabel: "Aires et périmètres",
+      objectif: "Résoudre un exercice en plusieurs étapes avec retrait d'une zone non plantée.",
+      titre: "Surface utile d'un aménagement",
+      enonce: "Contexte : tu aménages un massif rectangulaire avec une allée centrale.\nDonnées : zone totale = " + longueurZone + " m × " + largeurZone + " m ; allée = " + longueurAllee + " m × " + largeurAllee + " m.\nQuestion : quelle surface utile (en m²) reste à planter ?",
+      reponse: surfacePlantation,
+      tolerance: 0.05,
+      unite: "m²",
+      explication: "Étape 1 : surface totale = " + longueurZone + " × " + largeurZone + " = " + arrondir(surfaceTotale) + " m². Étape 2 : surface allée = " + longueurAllee + " × " + largeurAllee + " = " + arrondir(surfaceAllee) + " m². Étape 3 : surface utile = " + arrondir(surfaceTotale) + " - " + arrondir(surfaceAllee) + " = " + arrondir(surfacePlantation) + " m².",
+      erreurProbable: "Pense à retirer l'allée : on ne plante pas sur cette zone.",
+      erreurCode: "aire_unite",
+      palier: niveau === "difficile" ? "Or" : "Argent",
+      etapes: [
+        "Je calcule la surface totale de la zone.",
+        "Je calcule la surface de l'allée qui n'est pas plantée.",
+        "Je soustrais pour obtenir la surface utile en m².",
+      ],
+      utiliteMetier: "Cette méthode permet d'estimer précisément les quantités de terre végétale, plants et paillage.",
+      verification: "La surface utile doit être inférieure à la surface totale et rester positive.",
+      pontMathsMetier: {
+        mesure: "Surface réellement plantable sur la zone.",
+        decision: "Commander les matériaux en fonction de la surface utile.",
+        impact: "Évite le surdosage de fournitures et les coûts inutiles.",
+      },
+      indices: [
+        "Indice 1 : il y a deux rectangles à traiter (zone totale et allée).",
+        "Indice 2 : surface utile = surface totale - surface allée.",
+      ],
+    };
+  }
   return {
     theme: "aires",
     competence: "aires-perimetres",
@@ -805,7 +848,8 @@ function creerExerciceForme(niveau) {
 }
 
 function creerExercicePourcentage(niveau) {
-  const scenario = nombreAleatoire(1, 2);
+  const scenarioMax = niveau === "facile" ? 2 : 4;
+  const scenario = nombreAleatoire(1, scenarioMax);
   if (scenario === 1) {
     const nombre = niveau === "difficile" ? nombreAleatoire(120, 800) : nombreAleatoire(50, 400);
     const pourcent = niveau === "facile" ? nombreAleatoire(5, 30) : nombreAleatoire(10, 75);
@@ -840,6 +884,82 @@ function creerExercicePourcentage(niveau) {
         "Indice 1 : " + pourcent + "% signifie " + pourcent + "/100.",
         "Indice 2 : fais la multiplication puis divise le résultat par 100.",
       ],
+    };
+  }
+  if (scenario === 3) {
+    const montantBase = nombreAleatoire(180, 950);
+    const hausse = nombreAleatoire(5, 18);
+    const remise = nombreAleatoire(5, 15);
+    const apresHausse = montantBase * (1 + hausse / 100);
+    const montantFinal = apresHausse * (1 - remise / 100);
+    return {
+      theme: "pourcentages",
+      competence: "pourcentages",
+      competenceLabel: "Pourcentages",
+      objectif: "Enchaîner deux pourcentages successifs dans une situation de devis.",
+      titre: "Devis ajusté : hausse puis remise",
+      enonce: "Contexte : un devis de " + montantBase + " € subit d'abord une hausse de " + hausse + "% (matières), puis une remise commerciale de " + remise + "%.\nQuestion : quel est le montant final après ces deux ajustements ?",
+      reponse: montantFinal,
+      tolerance: 0.05,
+      unite: "€",
+      explication: "Étape 1 : après hausse = " + montantBase + " × (1 + " + hausse + "/100) = " + arrondir(apresHausse) + " €. Étape 2 : montant final = " + arrondir(apresHausse) + " × (1 - " + remise + "/100) = " + arrondir(montantFinal) + " €.",
+      erreurProbable: "Ne soustrais pas directement les pourcentages : il faut appliquer les étapes l'une après l'autre.",
+      erreurCode: "pourcent_div100",
+      palier: "Or",
+      etapes: [
+        "Je calcule le montant après la hausse.",
+        "J'applique ensuite la remise sur ce nouveau montant.",
+        "Je vérifie que le résultat final reste cohérent avec les deux variations.",
+      ],
+      utiliteMetier: "Ce raisonnement sert pour comparer des devis quand plusieurs ajustements sont appliqués.",
+      verification: "Hausse puis remise ne reviennent pas au montant initial sauf cas particuliers.",
+      pontMathsMetier: {
+        mesure: "L'évolution réelle du coût final.",
+        decision: "Négocier et valider un devis plus fiable.",
+        impact: "Réduit les écarts entre budget prévu et coût réel.",
+      },
+      indices: [
+        "Indice 1 : transforme chaque variation en coefficient multiplicateur.",
+        "Indice 2 : applique d'abord la hausse, puis la remise sur le nouveau montant.",
+      ],
+      reflexeMetacognitif: "Explique en une phrase pourquoi +x% puis -x% ne s'annulent pas automatiquement.",
+    };
+  }
+  if (scenario === 4) {
+    const total = niveau === "moyen" ? nombreAleatoire(180, 520) : nombreAleatoire(350, 1100);
+    const pertes = niveau === "moyen" ? nombreAleatoire(10, 80) : nombreAleatoire(40, 180);
+    const tauxPertes = (pertes / total) * 100;
+    return {
+      theme: "pourcentages",
+      competence: "pourcentages",
+      competenceLabel: "Pourcentages",
+      objectif: "Calculer un pourcentage à partir de deux quantités (partie / total).",
+      titre: "Taux de pertes sur livraison",
+      enonce: "Contexte : sur une livraison de " + total + " plants, " + pertes + " n'ont pas repris.\nQuestion : quel est le taux de pertes (en %) ?",
+      reponse: tauxPertes,
+      tolerance: 0.05,
+      unite: "%",
+      explication: "Étape 1 : taux = (partie ÷ total) × 100. Étape 2 : (" + pertes + " ÷ " + total + ") × 100 = " + arrondir(tauxPertes) + " %.",
+      erreurProbable: "Inversion fréquente : il faut partie ÷ total, pas total ÷ partie.",
+      erreurCode: "pourcent_div100",
+      palier: niveau === "difficile" ? "Or" : "Argent",
+      etapes: [
+        "Je repère la partie (pertes) et le total.",
+        "Je fais partie ÷ total.",
+        "Je multiplie par 100 pour obtenir un pourcentage.",
+      ],
+      utiliteMetier: "Ce taux aide à suivre la qualité des livraisons et à discuter avec le fournisseur.",
+      verification: "Le pourcentage obtenu doit rester entre 0% et 100%.",
+      pontMathsMetier: {
+        mesure: "La part de plants perdus par rapport au lot total.",
+        decision: "Décider d'une réclamation ou d'un ajustement de commande.",
+        impact: "Améliore le pilotage qualité sur chantier.",
+      },
+      indices: [
+        "Indice 1 : commence par une division partie ÷ total.",
+        "Indice 2 : transforme ensuite en % en multipliant par 100.",
+      ],
+      reflexeMetacognitif: "Vérifie que ton résultat est plausible : 100% signifierait que tout est perdu.",
     };
   }
 
@@ -880,7 +1000,8 @@ function creerExercicePourcentage(niveau) {
 }
 
 function creerExerciceMetier(niveau) {
-  const scenario = nombreAleatoire(1, 4);
+  const scenarioMax = niveau === "facile" ? 4 : 6;
+  const scenario = nombreAleatoire(1, scenarioMax);
   if (scenario === 1) {
     const longueur = niveau === "facile" ? nombreAleatoire(4, 12) : nombreAleatoire(8, 25);
     const largeur = niveau === "difficile" ? nombreAleatoire(5, 16) : nombreAleatoire(3, 10);
@@ -986,6 +1107,90 @@ function creerExerciceMetier(niveau) {
         impact: "Évite les écarts de budget en fin de chantier.",
       },
       indices: ["Indice 1 : ml = mètre linéaire.", "Indice 2 : multiplie la longueur par le prix unitaire €/ml."],
+    };
+  }
+  if (scenario === 5) {
+    const longueur = niveau === "moyen" ? nombreAleatoire(10, 24) : nombreAleatoire(18, 38);
+    const largeur = niveau === "moyen" ? nombreAleatoire(8, 18) : nombreAleatoire(14, 26);
+    const prixM2 = niveau === "moyen" ? nombreAleatoire(7, 12) : nombreAleatoire(10, 16);
+    const margePct = niveau === "moyen" ? nombreAleatoire(6, 10) : nombreAleatoire(8, 14);
+    const surface = longueur * largeur;
+    const coutDirect = surface * prixM2;
+    const coutFinal = coutDirect * (1 + margePct / 100);
+    return {
+      theme: "metier",
+      competence: "situations-metier",
+      competenceLabel: "Situations métier CAPa",
+      objectif: "Construire un calcul complet : surface, coût direct, puis marge de sécurité.",
+      titre: "Situation métier CAPa — chiffrage complet d'un massif",
+      enonce: "Contexte : chiffrage d'un massif à pailler.\nDonnées : zone = " + longueur + " m × " + largeur + " m ; prix de fourniture/pose = " + prixM2 + " €/m² ; marge de sécurité = " + margePct + "%.\nQuestion : quel budget total faut-il prévoir (marge incluse) ?",
+      reponse: coutFinal,
+      tolerance: 0.1,
+      unite: "€",
+      explication: "Étape 1 : surface = " + longueur + " × " + largeur + " = " + arrondir(surface) + " m². Étape 2 : coût direct = " + arrondir(surface) + " × " + prixM2 + " = " + arrondir(coutDirect) + " €. Étape 3 : budget final = " + arrondir(coutDirect) + " × (1 + " + margePct + "/100) = " + arrondir(coutFinal) + " €.",
+      erreurProbable: "La marge (%) s'applique au coût direct, pas à la surface.",
+      erreurCode: "metier_cout_unitaire",
+      palier: "Or",
+      etapes: [
+        "Je calcule d'abord la surface du massif.",
+        "Je transforme la surface en coût direct avec le prix unitaire €/m².",
+        "J'ajoute la marge de sécurité en pourcentage.",
+      ],
+      utiliteMetier: "Ce type de calcul reflète un vrai chiffrage de chantier avec aléa intégré.",
+      verification: "Le budget final doit être supérieur au coût direct.",
+      visuel: "📐 + 🧾 Chiffrage terrain complet",
+      decisionChantier: "Décision : valider un budget réaliste avant signature du devis.",
+      pontMathsMetier: {
+        mesure: "Le coût final d'intervention après marge de sécurité.",
+        decision: "Fixer un prix cohérent pour éviter les pertes.",
+        impact: "Sécurise la rentabilité globale du chantier.",
+      },
+      indices: [
+        "Indice 1 : calcule d'abord le coût sans marge.",
+        "Indice 2 : ajoute ensuite x% avec un coefficient (1 + x/100).",
+      ],
+      reflexeMetacognitif: "Explique la différence entre coût direct et budget final.",
+    };
+  }
+  if (scenario === 6) {
+    const surface = niveau === "moyen" ? nombreAleatoire(22, 65) : nombreAleatoire(45, 140);
+    const epaisseurCm = niveau === "moyen" ? nombreAleatoire(5, 8) : nombreAleatoire(7, 12);
+    const volumeM3 = surface * (epaisseurCm / 100);
+    const sacsM3 = 0.07; // sac de 70 L
+    const sacs = volumeM3 / sacsM3;
+    return {
+      theme: "metier",
+      competence: "situations-metier",
+      competenceLabel: "Situations métier CAPa",
+      objectif: "Combiner calcul d'aire, conversion d'unité et estimation de quantité.",
+      titre: "Situation métier CAPa — volume de paillage en sacs",
+      enonce: "Contexte : paillage d'un massif de " + surface + " m² avec une épaisseur de " + epaisseurCm + " cm.\nDonnée : un sac contient 70 L (soit 0,07 m³).\nQuestion : combien de sacs faut-il prévoir ?",
+      reponse: sacs,
+      tolerance: 0.2,
+      unite: "sacs",
+      explication: "Étape 1 : convertir l'épaisseur en m : " + epaisseurCm + " cm = " + arrondir(epaisseurCm / 100) + " m. Étape 2 : volume = surface × épaisseur = " + surface + " × " + arrondir(epaisseurCm / 100) + " = " + arrondir(volumeM3) + " m³. Étape 3 : sacs = volume ÷ 0,07 = " + arrondir(sacs) + ".",
+      erreurProbable: "Erreur fréquente : oublier de convertir les cm en m avant le calcul du volume.",
+      erreurCode: "metier_surface_avant_conversion",
+      palier: "Or",
+      etapes: [
+        "Je convertis l'épaisseur de cm vers m.",
+        "Je calcule le volume total en m³.",
+        "Je divise par le volume d'un sac pour obtenir le nombre de sacs.",
+      ],
+      utiliteMetier: "Ce calcul sert directement à préparer une commande réaliste de paillage.",
+      verification: "Le nombre de sacs doit augmenter si la surface ou l'épaisseur augmente.",
+      visuel: "🪴 Volume de paillage",
+      decisionChantier: "Décision : anticiper la logistique de livraison des sacs.",
+      pontMathsMetier: {
+        mesure: "Le volume de paillage total requis.",
+        decision: "Dimensionner la commande en sacs de 70 L.",
+        impact: "Évite les ruptures de matériau au milieu de l'intervention.",
+      },
+      indices: [
+        "Indice 1 : 1 cm = 0,01 m.",
+        "Indice 2 : calcule d'abord le volume total, puis convertis en nombre de sacs.",
+      ],
+      reflexeMetacognitif: "Compare ton résultat à un ordre de grandeur : quelques sacs ou plusieurs dizaines ?",
     };
   }
   const longueurTuyau = niveau === "facile" ? nombreAleatoire(25, 60) : nombreAleatoire(50, 180);
@@ -1185,6 +1390,11 @@ function afficherExercice(zoneEnonce, zoneFeedback, champReponse, exercice) {
     const decision = document.createElement("p");
     decision.innerHTML = "<strong>" + exercice.decisionChantier + "</strong>";
     zoneEnonce.appendChild(decision);
+  }
+  if (exercice.reflexeMetacognitif) {
+    const reflexe = document.createElement("p");
+    reflexe.innerHTML = "<strong>Réflexe expert :</strong> " + exercice.reflexeMetacognitif;
+    zoneEnonce.appendChild(reflexe);
   }
   zoneFeedback.className = "resultat";
   zoneFeedback.textContent = "";
