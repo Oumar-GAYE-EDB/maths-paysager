@@ -57,6 +57,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const enonceExercice = document.getElementById("exercice-enonce");
   const rubanSessionExercice = document.getElementById("ruban-session-exercice");
   const recommandationExercice = document.getElementById("recommandation-exercice");
+  const parcoursVisual = document.getElementById("parcours-visual");
   const coachEtapes = document.getElementById("coach-etapes");
   const objectifSession = document.getElementById("objectif-session");
   const competencesExercice = document.getElementById("competences-exercice");
@@ -87,6 +88,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const btnFontMinus = document.getElementById("btn-font-minus");
   const btnFontPlus = document.getElementById("btn-font-plus");
   const modeContrasteFort = document.getElementById("mode-contraste-fort");
+  const boutonsPresetsExercice = Array.from(document.querySelectorAll("[data-exercice-preset]"));
 
   // --- Afficher les champs dès le chargement ---
   afficherChampsFormes(selectForme.value, champsForme);
@@ -145,6 +147,14 @@ document.addEventListener("DOMContentLoaded", function () {
     modeAdaptatif: modeAdaptatif,
     btnGenererExercice: btnGenererExercice,
   });
+  initialiserPresetsExercices(boutonsPresetsExercice, {
+    selectThemeExercice: selectThemeExercice,
+    selectNiveauExercice: selectNiveauExercice,
+    selectObjectifSeance: selectObjectifSeance,
+    selectModeAccompagnement: selectModeAccompagnement,
+    modeAdaptatif: modeAdaptatif,
+    btnGenererExercice: btnGenererExercice,
+  });
 
   // --- Mode exercices / progression ---
   initialiserModeExercices({
@@ -166,6 +176,7 @@ document.addEventListener("DOMContentLoaded", function () {
     enonceExercice: enonceExercice,
     rubanSessionExercice: rubanSessionExercice,
     recommandationExercice: recommandationExercice,
+    parcoursVisual: parcoursVisual,
     coachEtapes: coachEtapes,
     objectifSession: objectifSession,
     competencesExercice: competencesExercice,
@@ -310,6 +321,27 @@ function initialiserDemarrageRapide(btnRapide, btnRevision, zoneMessage, ui) {
   });
 }
 
+function initialiserPresetsExercices(boutons, ui) {
+  if (!Array.isArray(boutons) || !boutons.length || !ui || !ui.btnGenererExercice) return;
+  const presets = {
+    surfaces: { theme: "aires", niveau: "facile", objectif: "precision", accompagnement: "guide", adaptatif: false },
+    pourcentages: { theme: "pourcentages", niveau: "moyen", objectif: "unites", accompagnement: "autonome", adaptatif: false },
+    metier: { theme: "metier", niveau: "moyen", objectif: "metier", accompagnement: "guide", adaptatif: true },
+  };
+  boutons.forEach(function (bouton) {
+    bouton.addEventListener("click", function () {
+      const preset = presets[bouton.getAttribute("data-exercice-preset")];
+      if (!preset) return;
+      ui.selectThemeExercice.value = preset.theme;
+      ui.selectNiveauExercice.value = preset.niveau;
+      if (ui.selectObjectifSeance) ui.selectObjectifSeance.value = preset.objectif;
+      if (ui.selectModeAccompagnement) ui.selectModeAccompagnement.value = preset.accompagnement;
+      if (ui.modeAdaptatif) ui.modeAdaptatif.checked = !!preset.adaptatif;
+      ui.btnGenererExercice.click();
+    });
+  });
+}
+
 /**
  * Remet la section formes dans son état initial
  */
@@ -375,6 +407,8 @@ function initialiserModeExercices(ui) {
   if (ui.testsFormulesResultat) {
     ui.testsFormulesResultat.innerHTML = "Conseil fiabilité : lance « Vérifier les formules » avant une évaluation.";
   }
+  afficherBarreParcours(ui.parcoursVisual, 1);
+  initialiserRaccourcisExercice(ui);
 
   ui.btnGenererExercice.addEventListener("click", function () {
     const objectifSeance = ui.selectObjectifSeance ? ui.selectObjectifSeance.value : "precision";
@@ -385,6 +419,7 @@ function initialiserModeExercices(ui) {
     exerciceActuel = creerExercice(selection.theme, selection.niveau, selection);
     afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
     afficherRecommandation(ui.recommandationExercice, selection);
+    afficherBarreParcours(ui.parcoursVisual, 2);
     afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
     afficherObjectifEtCompetences(ui.objectifSession, ui.competencesExercice, exerciceActuel, selection);
     afficherPontMathsMetier(ui.pontMathsMetier, exerciceActuel);
@@ -410,6 +445,7 @@ function initialiserModeExercices(ui) {
     ui.btnJokerExercice.addEventListener("click", function () {
       if (!exerciceActuel) return;
       afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "blocage");
+      afficherBarreParcours(ui.parcoursVisual, 3);
       afficherIndiceProgressif(ui.feedbackExercice, exerciceActuel, 0);
     });
   }
@@ -461,6 +497,7 @@ function initialiserModeExercices(ui) {
         objectifSeance: ui.selectObjectifSeance ? ui.selectObjectifSeance.value : "precision",
       });
       afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
+      afficherBarreParcours(ui.parcoursVisual, 2);
       afficherPontMathsMetier(ui.pontMathsMetier, exerciceActuel);
       afficherFicheApprentissage(ui.ficheApprentissage, exerciceActuel);
       afficherMissionSuivante(ui.missionSuivante, exerciceActuel, null);
@@ -511,6 +548,7 @@ function corrigerExercice(ui, passerAuSuivant) {
     afficherFeedbackExercice(ui.feedbackExercice, exerciceActuel, reponse, estCorrect, diagnostic);
     afficherMissionSuivante(ui.missionSuivante, exerciceActuel, estCorrect);
     afficherCoachEtapes(ui.coachEtapes, exerciceActuel, estCorrect ? "corrige-ok" : "corrige-ko");
+    afficherBarreParcours(ui.parcoursVisual, estCorrect ? 4 : 3);
     afficherChecklistVerification(ui.checklistVerification, exerciceActuel, estCorrect);
     afficherPlanRemediation(ui.planRemediation, exerciceActuel, estCorrect ? "" : diagnostic);
     mettreAJourProgressionEtBadges(ui.progressionExercice, ui.badgesExercice);
@@ -542,6 +580,7 @@ function corrigerExercice(ui, passerAuSuivant) {
   exerciceActuel = creerExercice(selection.theme, selection.niveau, selection);
   afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
   afficherRecommandation(ui.recommandationExercice, selection);
+  afficherBarreParcours(ui.parcoursVisual, 2);
   afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
   afficherObjectifEtCompetences(ui.objectifSession, ui.competencesExercice, exerciceActuel, selection);
   afficherPontMathsMetier(ui.pontMathsMetier, exerciceActuel);
@@ -763,7 +802,7 @@ function creerExerciceForme(niveau) {
   const plage = difficultes[niveau] || difficultes.facile;
   const typesDisponibles = niveau === "facile"
     ? ["rectangle", "cercle", "triangle"]
-    : ["rectangle", "cercle", "triangle", "zone-mixte", "zone-composite"];
+    : ["rectangle", "cercle", "triangle", "trapeze", "zone-mixte", "zone-composite"];
   const type = typesDisponibles[nombreAleatoire(0, typesDisponibles.length - 1)];
 
   if (type === "rectangle") {
@@ -842,6 +881,43 @@ function creerExerciceForme(niveau) {
   const base = nombreAleatoire(plage.min + 2, plage.max + 6);
   const hauteur = nombreAleatoire(plage.min, plage.max);
   const aireTriangle = (base * hauteur) / 2;
+  if (type === "trapeze") {
+    const grandeBase = nombreAleatoire(plage.min + 6, plage.max + 10);
+    const petiteBase = nombreAleatoire(Math.max(2, plage.min), Math.max(4, plage.max - 4));
+    const h = nombreAleatoire(Math.max(2, plage.min - 1), plage.max);
+    const aireTrapeze = ((grandeBase + petiteBase) * h) / 2;
+    return {
+      theme: "aires",
+      competence: "aires-perimetres",
+      competenceLabel: "Aires et périmètres",
+      objectif: "Appliquer la formule d'aire du trapèze dans un contexte d'aménagement réel.",
+      titre: "Aire d'une plate-bande trapézoïdale",
+      enonce: "Contexte : une plate-bande a une forme de trapèze.\nDonnées : grande base = " + grandeBase + " m, petite base = " + petiteBase + " m, hauteur = " + h + " m.\nQuestion : quelle surface faut-il pailler (en m²) ?",
+      reponse: aireTrapeze,
+      tolerance: 0.1,
+      unite: "m²",
+      explication: "Aire trapèze = ((B + b) × h) ÷ 2 = ((" + grandeBase + " + " + petiteBase + ") × " + h + ") ÷ 2 = " + arrondir(aireTrapeze) + " m².",
+      erreurProbable: "N'oublie pas la division par 2 après avoir multiplié par la hauteur.",
+      erreurCode: "triangle_div2",
+      palier: "Or",
+      etapes: [
+        "J'additionne les deux bases.",
+        "Je multiplie par la hauteur.",
+        "Je divise par 2 et j'indique l'unité m².",
+      ],
+      utiliteMetier: "Utile pour estimer le paillage ou le géotextile sur des formes non rectangulaires.",
+      verification: "L'aire du trapèze doit être comprise entre les aires des rectangles de bases b et B.",
+      pontMathsMetier: {
+        mesure: "La surface d'une zone irrégulière.",
+        decision: "Ajuster les quantités de matériaux pour les zones complexes.",
+        impact: "Limite les erreurs de commande sur les aménagements atypiques.",
+      },
+      indices: [
+        "Indice 1 : commence par additionner grande base + petite base.",
+        "Indice 2 : applique ensuite × hauteur puis ÷ 2.",
+      ],
+    };
+  }
   if (type === "zone-composite") {
     const longueurRect = nombreAleatoire(plage.min + 6, plage.max + 8);
     const largeurRect = nombreAleatoire(plage.min + 2, plage.max + 4);
@@ -955,7 +1031,7 @@ function creerExerciceForme(niveau) {
 }
 
 function creerExercicePourcentage(niveau) {
-  const scenarioMax = niveau === "facile" ? 2 : 5;
+  const scenarioMax = niveau === "facile" ? 2 : 7;
   const scenario = nombreAleatoire(1, scenarioMax);
   if (scenario === 1) {
     const nombre = niveau === "difficile" ? nombreAleatoire(120, 800) : nombreAleatoire(50, 400);
@@ -1140,6 +1216,81 @@ function creerExercicePourcentage(niveau) {
       ],
     };
   }
+  if (scenario === 6) {
+    const budgetInitial = niveau === "moyen" ? nombreAleatoire(1400, 4200) : nombreAleatoire(3000, 9800);
+    const partMateriaux = niveau === "moyen" ? nombreAleatoire(35, 55) : nombreAleatoire(45, 68);
+    const partMainOeuvre = niveau === "moyen" ? nombreAleatoire(18, 34) : nombreAleatoire(25, 40);
+    const montantMateriaux = (budgetInitial * partMateriaux) / 100;
+    const montantMainOeuvre = (budgetInitial * partMainOeuvre) / 100;
+    const reserveAleas = budgetInitial - montantMateriaux - montantMainOeuvre;
+    return {
+      theme: "pourcentages",
+      competence: "pourcentages",
+      competenceLabel: "Pourcentages",
+      objectif: "Décomposer un budget en parts (%) puis retrouver la réserve restante.",
+      titre: "Répartition budgétaire d'un chantier",
+      enonce: "Contexte : budget global de " + budgetInitial + " €.\nDonnées : " + partMateriaux + "% pour les matériaux et " + partMainOeuvre + "% pour la main-d'œuvre.\nQuestion : quel montant reste pour la réserve aléas ?",
+      reponse: reserveAleas,
+      tolerance: 0.1,
+      unite: "€",
+      explication: "Étape 1 : matériaux = " + budgetInitial + " × " + partMateriaux + "/100 = " + arrondir(montantMateriaux) + " €. Étape 2 : main-d'œuvre = " + budgetInitial + " × " + partMainOeuvre + "/100 = " + arrondir(montantMainOeuvre) + " €. Étape 3 : réserve = budget - matériaux - main-d'œuvre = " + arrondir(reserveAleas) + " €.",
+      erreurProbable: "Pense à calculer les deux pourcentages avant de soustraire.",
+      erreurCode: "pourcent_div100",
+      palier: "Or",
+      etapes: [
+        "Je calcule le montant des matériaux.",
+        "Je calcule le montant de main-d'œuvre.",
+        "Je retire ces deux montants du budget total.",
+      ],
+      utiliteMetier: "La réserve aléas sécurise le chantier en cas d'imprévu (casse, retards, météo).",
+      verification: "La réserve doit rester positive et inférieure au budget initial.",
+      pontMathsMetier: {
+        mesure: "La part disponible pour absorber les imprévus.",
+        decision: "Valider un budget plus réaliste avant lancement.",
+        impact: "Évite les dépassements de budget non anticipés.",
+      },
+      indices: [
+        "Indice 1 : commence par calculer chaque part en euros.",
+        "Indice 2 : réserve = budget total - part 1 - part 2.",
+      ],
+    };
+  }
+  if (scenario === 7) {
+    const quantitePrevue = niveau === "moyen" ? nombreAleatoire(180, 420) : nombreAleatoire(320, 760);
+    const rendement = niveau === "moyen" ? nombreAleatoire(68, 88) : nombreAleatoire(72, 92);
+    const quantiteReelle = (quantitePrevue * rendement) / 100;
+    return {
+      theme: "pourcentages",
+      competence: "pourcentages",
+      competenceLabel: "Pourcentages",
+      objectif: "Passer d'un taux de rendement (%) à une quantité réelle exploitable.",
+      titre: "Rendement réel d'une préparation",
+      enonce: "Contexte : une préparation prévoit " + quantitePrevue + " plants utilisables.\nDonnée : le rendement réel observé est de " + rendement + "%.\nQuestion : combien de plants sont réellement exploitables ?",
+      reponse: quantiteReelle,
+      tolerance: 0.1,
+      unite: "plants",
+      explication: "Quantité exploitable = (" + quantitePrevue + " × " + rendement + ") ÷ 100 = " + arrondir(quantiteReelle) + " plants.",
+      erreurProbable: "Le rendement est une part de la quantité prévue : il faut donc calculer x% de la base.",
+      erreurCode: "pourcent_div100",
+      palier: "Or",
+      etapes: [
+        "Je repère la quantité prévue (base 100%).",
+        "Je calcule le pourcentage correspondant au rendement réel.",
+        "Je vérifie que le résultat reste inférieur ou égal à la base.",
+      ],
+      utiliteMetier: "Permet d'anticiper les écarts entre prévision et réalité sur chantier.",
+      verification: "Un rendement inférieur à 100% donne forcément une quantité plus faible que la base.",
+      pontMathsMetier: {
+        mesure: "La quantité réellement utilisable après tri/perte.",
+        decision: "Prévoir un complément de commande si nécessaire.",
+        impact: "Sécurise la continuité du chantier.",
+      },
+      indices: [
+        "Indice 1 : rendement de x% = x/100 de la quantité prévue.",
+        "Indice 2 : applique (quantité prévue × rendement) ÷ 100.",
+      ],
+    };
+  }
 
   const totalPlants = niveau === "difficile" ? nombreAleatoire(300, 900) : nombreAleatoire(120, 320);
   const partVivaces = niveau === "facile" ? nombreAleatoire(20, 45) : nombreAleatoire(30, 70);
@@ -1178,7 +1329,7 @@ function creerExercicePourcentage(niveau) {
 }
 
 function creerExerciceMetier(niveau) {
-  const scenarioMax = niveau === "facile" ? 4 : 6;
+  const scenarioMax = niveau === "facile" ? 4 : 7;
   const scenario = nombreAleatoire(1, scenarioMax);
   if (scenario === 1) {
     const longueur = niveau === "facile" ? nombreAleatoire(4, 12) : nombreAleatoire(8, 25);
@@ -1409,6 +1560,46 @@ function creerExerciceMetier(niveau) {
       ],
     };
   }
+  if (scenario === 7) {
+    const nbBacs = niveau === "moyen" ? nombreAleatoire(6, 16) : nombreAleatoire(12, 26);
+    const volumeBac = niveau === "moyen" ? nombreAleatoire(45, 85) : nombreAleatoire(70, 120);
+    const perte = niveau === "moyen" ? nombreAleatoire(5, 10) : nombreAleatoire(9, 16);
+    const volumeTheorique = nbBacs * volumeBac;
+    const volumeAvecMarge = volumeTheorique * (1 + perte / 100);
+    return {
+      theme: "metier",
+      competence: "situations-metier",
+      competenceLabel: "Situations métier CAPa",
+      objectif: "Prévoir un volume total avec marge de perte lors du remplissage.",
+      titre: "Situation métier CAPa — remplissage de bacs",
+      enonce: "Contexte : préparation d'un substrat pour " + nbBacs + " bacs.\nDonnées : " + volumeBac + " L par bac ; pertes estimées lors du remplissage = " + perte + "%.\nQuestion : quel volume total de substrat faut-il préparer ?",
+      reponse: volumeAvecMarge,
+      tolerance: 0.1,
+      unite: "L",
+      explication: "Étape 1 : volume théorique = " + nbBacs + " × " + volumeBac + " = " + arrondir(volumeTheorique) + " L. Étape 2 : volume avec marge = " + arrondir(volumeTheorique) + " × (1 + " + perte + "/100) = " + arrondir(volumeAvecMarge) + " L.",
+      erreurProbable: "Ajoute la marge seulement après avoir calculé le volume théorique.",
+      erreurCode: "metier_volume_unitaire",
+      palier: "Or",
+      etapes: [
+        "Je calcule le volume nécessaire sans pertes.",
+        "Je convertis la perte en coefficient multiplicateur.",
+        "Je calcule le volume final à préparer avant le chantier.",
+      ],
+      utiliteMetier: "Anticiper les pertes évite de relancer une préparation en pleine intervention.",
+      verification: "Le volume final doit être supérieur au volume théorique.",
+      visuel: "🪴 Préparation des bacs",
+      decisionChantier: "Décision : dimensionner la zone de stockage et les livraisons.",
+      pontMathsMetier: {
+        mesure: "Le volume réel de substrat à mobiliser.",
+        decision: "Planifier commande + logistique de manutention.",
+        impact: "Fluidifie le chantier et réduit les arrêts.",
+      },
+      indices: [
+        "Indice 1 : commence par multiplier nombre de bacs × litres par bac.",
+        "Indice 2 : applique ensuite la marge avec (1 + x/100).",
+      ],
+    };
+  }
   const longueurTuyau = niveau === "facile" ? nombreAleatoire(25, 60) : nombreAleatoire(50, 180);
   const debit = niveau === "difficile" ? nombreAleatoire(5, 10) : nombreAleatoire(3, 7);
   const volume = longueurTuyau * debit;
@@ -1626,6 +1817,47 @@ function afficherExercice(zoneEnonce, zoneFeedback, champReponse, exercice) {
   zoneFeedback.textContent = "";
   champReponse.value = "";
   champReponse.focus();
+  const sectionExercices = document.getElementById("section-exercices");
+  if (sectionExercices) sectionExercices.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function initialiserRaccourcisExercice(ui) {
+  if (!ui || !ui.reponseExercice) return;
+  document.addEventListener("keydown", function (event) {
+    const cible = event.target;
+    const dansChampReponse = cible && cible.id === "reponse-exercice";
+    if (event.altKey && event.key.toLowerCase() === "n" && ui.btnGenererExercice) {
+      event.preventDefault();
+      ui.btnGenererExercice.click();
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter" && ui.btnValiderExercice) {
+      event.preventDefault();
+      ui.btnValiderExercice.click();
+      return;
+    }
+    if (dansChampReponse && event.key === "Escape" && ui.btnJokerExercice) {
+      event.preventDefault();
+      ui.btnJokerExercice.click();
+    }
+  });
+}
+
+function afficherBarreParcours(zone, etapeActive) {
+  if (!zone) return;
+  const etapes = [
+    "1. Je lis",
+    "2. Je choisis la formule",
+    "3. Je calcule",
+    "4. Je vérifie",
+  ];
+  zone.innerHTML = etapes.map(function (etape, index) {
+    const numero = index + 1;
+    const classes = ["exercise-path__step"];
+    if (numero < etapeActive) classes.push("exercise-path__step--done");
+    if (numero === etapeActive) classes.push("exercise-path__step--active");
+    return "<div class=\"" + classes.join(" ") + "\">" + etape + "</div>";
+  }).join("");
 }
 
 function afficherFeedbackExercice(zone, exercice, reponseEleve, estCorrect, diagnostic) {
@@ -2105,7 +2337,14 @@ function compterErreursRecentes(erreurCode) {
 
 function mettreAJourUniteAttendue(zone, exercice) {
   if (!zone) return;
-  zone.textContent = exercice && exercice.unite ? "(unité attendue : " + exercice.unite + ")" : "(sans unité)";
+  const unite = exercice && exercice.unite ? exercice.unite : "";
+  zone.textContent = unite ? "(unité attendue : " + unite + ")" : "(sans unité)";
+  const champReponse = document.getElementById("reponse-exercice");
+  if (champReponse) {
+    champReponse.placeholder = unite
+      ? "Ex : " + (unite === "%" ? "42" : "24,50") + " " + unite
+      : "Ex : 24,50";
+  }
 }
 
 function appliquerModeEvaluation(toggle, btn1, btn2, btnMethode, zoneFeedback) {
