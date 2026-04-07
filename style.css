@@ -213,6 +213,28 @@ body.contrast-fort {
   pointer-events: auto;
 }
 
+.quote-day {
+  margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-left: 4px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-primary-light) 72%, transparent 28%);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+}
+
+.mental-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.mental-stat {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
 /* ---------- EN-TÊTE ---------- */
 .header {
   background:

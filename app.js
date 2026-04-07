@@ -12,6 +12,7 @@ const CLE_PROGRESS = "maths-paysager-progression";
 const CLE_REMEDIATION = "maths-paysager-remediation";
 const CLE_MODE_PARCOURS_SIMPLE = "maths-paysager-parcours-simple";
 const CLE_MOTIVATION = "maths-paysager-motivation";
+const CLE_ATELIER_MENTAL = "maths-paysager-atelier-mental";
 const MAX_HISTORIQUE = 20;
 const sessionStats = { essais: 0, reussites: 0 };
 let chronoInterval = null;
@@ -19,6 +20,7 @@ let chronoRestant = 0;
 let parcoursCibleActif = null;
 
 let exerciceActuel = null;
+let questionAtelierActuelle = null;
 
 // ============================================================
 // 1. INITIALISATION AU CHARGEMENT DE LA PAGE
@@ -93,6 +95,16 @@ document.addEventListener("DOMContentLoaded", function () {
   const cockpitSessionMeter = document.getElementById("cockpit-session-meter");
   const cockpitLastAction = document.getElementById("cockpit-last-action");
   const cockpitNextStep = document.getElementById("cockpit-next-step");
+  const atelierType = document.getElementById("atelier-type");
+  const btnAtelierNouvelle = document.getElementById("btn-atelier-nouvelle");
+  const btnAtelierVerifier = document.getElementById("btn-atelier-verifier");
+  const atelierEnonce = document.getElementById("atelier-enonce");
+  const atelierReponse = document.getElementById("atelier-reponse");
+  const atelierFeedback = document.getElementById("atelier-feedback");
+  const atelierScore = document.getElementById("atelier-score");
+  const atelierSerie = document.getElementById("atelier-serie");
+  const atelierConseil = document.getElementById("atelier-conseil");
+  const citationMathsPaysage = document.getElementById("citation-maths-paysage");
 
   // --- Afficher les champs dès le chargement ---
   afficherChampsFormes(selectForme.value, champsForme);
@@ -150,7 +162,19 @@ document.addEventListener("DOMContentLoaded", function () {
     lastAction: cockpitLastAction,
     nextStep: cockpitNextStep,
   });
+  initialiserCitationDuJour(citationMathsPaysage);
   initialiserCalculRapideClavier();
+  initialiserAtelierMental({
+    atelierType: atelierType,
+    btnAtelierNouvelle: btnAtelierNouvelle,
+    btnAtelierVerifier: btnAtelierVerifier,
+    atelierEnonce: atelierEnonce,
+    atelierReponse: atelierReponse,
+    atelierFeedback: atelierFeedback,
+    atelierScore: atelierScore,
+    atelierSerie: atelierSerie,
+    atelierConseil: atelierConseil,
+  });
   initialiserDemarrageRapide(btnDemarrageRapide, btnReviserNotion, messageDemarrage, {
     selectThemeExercice: selectThemeExercice,
     selectNiveauExercice: selectNiveauExercice,
@@ -497,6 +521,184 @@ function initialiserCalculRapideClavier() {
       }
     }
   });
+}
+
+function initialiserAtelierMental(ui) {
+  if (!ui || !ui.btnAtelierNouvelle || !ui.btnAtelierVerifier) return;
+  mettreAJourAtelierStats(ui);
+  mettreAJourConseilAtelier(ui.atelierConseil);
+
+  ui.btnAtelierNouvelle.addEventListener("click", function () {
+    questionAtelierActuelle = genererQuestionAtelier(ui.atelierType ? ui.atelierType.value : "calcul");
+    afficherQuestionAtelier(ui.atelierEnonce, ui.atelierFeedback, ui.atelierReponse, questionAtelierActuelle);
+  });
+
+  ui.btnAtelierVerifier.addEventListener("click", function () {
+    verifierQuestionAtelier(ui);
+  });
+
+  if (ui.atelierReponse) {
+    ui.atelierReponse.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") verifierQuestionAtelier(ui);
+    });
+  }
+
+  if (ui.atelierType) {
+    ui.atelierType.addEventListener("change", function () {
+      questionAtelierActuelle = genererQuestionAtelier(ui.atelierType.value);
+      afficherQuestionAtelier(ui.atelierEnonce, ui.atelierFeedback, ui.atelierReponse, questionAtelierActuelle);
+    });
+  }
+}
+
+function initialiserCitationDuJour(zoneCitation) {
+  if (!zoneCitation) return;
+  const citations = [
+    "« Mesurer une surface, c'est déjà imaginer le jardin qui va y prendre vie. »",
+    "« En aménagement paysager, chaque mètre carré bien calculé évite du gaspillage et crée de l'harmonie. »",
+    "« Les pourcentages guident les bons dosages, et les bons dosages protègent les plantations. »",
+    "« Une bordure réussie commence par un plan précis, et un plan précis commence par les maths. »",
+    "« Calculer avant de planter, c'est gagner du temps, de l'argent et de la confiance sur chantier. »",
+    "« Les maths transforment une idée de massif en projet réalisable et durable. »",
+    "« En paysage, la précision des mesures est une forme de respect du vivant et du terrain. »",
+  ];
+  const dateDuJour = new Date();
+  const debutAnnee = new Date(dateDuJour.getFullYear(), 0, 0);
+  const ecartTemps = dateDuJour - debutAnnee;
+  const numeroJour = Math.floor(ecartTemps / 86400000);
+  const indexCitation = numeroJour % citations.length;
+  zoneCitation.innerHTML =
+    "<strong>🌿 Citation du jour :</strong> " +
+    citations[indexCitation];
+}
+
+function genererQuestionAtelier(type) {
+  if (type === "pourcentage") {
+    const base = nombreAleatoire(20, 200);
+    const pourcentage = [5, 10, 15, 20, 25, 30][nombreAleatoire(0, 5)];
+    return {
+      type: type,
+      enonce: "Calcule " + pourcentage + "% de " + base + ".",
+      reponse: (pourcentage * base) / 100,
+      tolerance: 0.01,
+      explication: "Méthode : (" + pourcentage + " × " + base + ") ÷ 100.",
+    };
+  }
+
+  if (type === "conversion") {
+    const metres = nombreAleatoire(3, 35);
+    const facteur = [10, 100, 1000][nombreAleatoire(0, 2)];
+    const uniteCible = facteur === 10 ? "dm" : facteur === 100 ? "cm" : "mm";
+    return {
+      type: type,
+      enonce: "Convertis " + metres + " m en " + uniteCible + ".",
+      reponse: metres * facteur,
+      tolerance: 0.01,
+      explication: "1 m = " + facteur + " " + uniteCible + ", donc " + metres + " × " + facteur + ".",
+    };
+  }
+
+  const a = nombreAleatoire(8, 40);
+  const b = nombreAleatoire(2, 15);
+  const operation = nombreAleatoire(0, 1) === 0 ? "+" : "×";
+  return {
+    type: "calcul",
+    enonce: operation === "+"
+      ? "Calcule rapidement : " + a + " + " + b + "."
+      : "Calcule rapidement : " + a + " × " + b + ".",
+    reponse: operation === "+" ? a + b : a * b,
+    tolerance: 0.01,
+    explication: operation === "+"
+      ? "Additionne les dizaines puis les unités."
+      : "Pense à la distributivité pour aller plus vite.",
+  };
+}
+
+function afficherQuestionAtelier(zoneEnonce, zoneFeedback, champReponse, question) {
+  if (!zoneEnonce || !question) return;
+  zoneEnonce.innerHTML = "<strong>Question flash :</strong> " + question.enonce;
+  if (zoneFeedback) {
+    zoneFeedback.className = "resultat";
+    zoneFeedback.textContent = "";
+  }
+  if (champReponse) {
+    champReponse.value = "";
+    champReponse.focus();
+  }
+}
+
+function verifierQuestionAtelier(ui) {
+  if (!questionAtelierActuelle) {
+    if (ui.atelierFeedback) {
+      ui.atelierFeedback.className = "resultat resultat--visible resultat--erreur";
+      ui.atelierFeedback.textContent = "Commence par générer une question de l'atelier mental.";
+    }
+    return;
+  }
+  const valeur = lireValeur("atelier-reponse");
+  if (valeur === null) {
+    ui.atelierFeedback.className = "resultat resultat--visible resultat--erreur";
+    ui.atelierFeedback.textContent = "Entre une réponse numérique avant de vérifier.";
+    return;
+  }
+  const estCorrect = Math.abs(valeur - questionAtelierActuelle.reponse) <= questionAtelierActuelle.tolerance;
+  enregistrerResultatAtelier(estCorrect);
+  mettreAJourAtelierStats(ui);
+  mettreAJourConseilAtelier(ui.atelierConseil);
+
+  ui.atelierFeedback.className = "resultat resultat--visible" + (estCorrect ? "" : " resultat--erreur");
+  ui.atelierFeedback.innerHTML = estCorrect
+    ? "<strong>Excellent ✅</strong> " + questionAtelierActuelle.explication
+    : "<strong>Presque ❌</strong> Réponse attendue : " + arrondir(questionAtelierActuelle.reponse) + ". " + questionAtelierActuelle.explication;
+
+  notifierActionApprentissage({ type: estCorrect ? "exercice-correct" : "exercice-erreur" });
+}
+
+function lireAtelierStats() {
+  const statsParDefaut = { essais: 0, reussites: 0, serie: 0 };
+  try {
+    const brut = localStorage.getItem(CLE_ATELIER_MENTAL);
+    if (!brut) return statsParDefaut;
+    const stats = JSON.parse(brut);
+    return {
+      essais: Number(stats.essais) || 0,
+      reussites: Number(stats.reussites) || 0,
+      serie: Number(stats.serie) || 0,
+    };
+  } catch (e) {
+    return statsParDefaut;
+  }
+}
+
+function enregistrerResultatAtelier(estCorrect) {
+  const stats = lireAtelierStats();
+  stats.essais += 1;
+  stats.reussites += estCorrect ? 1 : 0;
+  stats.serie = estCorrect ? stats.serie + 1 : 0;
+  localStorage.setItem(CLE_ATELIER_MENTAL, JSON.stringify(stats));
+}
+
+function mettreAJourAtelierStats(ui) {
+  if (!ui || !ui.atelierScore || !ui.atelierSerie) return;
+  const stats = lireAtelierStats();
+  const taux = stats.essais > 0 ? Math.round((stats.reussites / stats.essais) * 100) : 0;
+  ui.atelierScore.textContent = stats.reussites + " / " + stats.essais + " (" + taux + "%)";
+  ui.atelierSerie.textContent = stats.serie + " bonne réponse" + (stats.serie > 1 ? "s" : "") + " d'affilée";
+}
+
+function mettreAJourConseilAtelier(zoneConseil) {
+  if (!zoneConseil) return;
+  const stats = lireAtelierStats();
+  if (stats.essais < 3) {
+    zoneConseil.innerHTML = "<strong>Conseil personnalisé :</strong> fais 3 questions rapides pour lancer ta séance.";
+    return;
+  }
+  const taux = (stats.reussites / stats.essais) * 100;
+  if (taux >= 80) {
+    zoneConseil.innerHTML = "<strong>Très bon rythme :</strong> passe sur « Pourcentages flash » ou monte le niveau des exercices.";
+    return;
+  }
+  zoneConseil.innerHTML = "<strong>Plan minute :</strong> 2 questions calcul mental, 2 conversions, puis un exercice CAPa guidé.";
 }
 
 /**

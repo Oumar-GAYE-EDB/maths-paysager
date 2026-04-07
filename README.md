@@ -48,8 +48,15 @@ Types de calcul :
 - Thème clair/sombre mémorisé dans le navigateur
 - Mode focus (interface simplifiée orientée exercice)
 - Interface responsive
+- Citation motivante du jour (lien maths ↔ aménagement paysager)
 
-### 4) Coach adaptatif et remédiation
+### 4) Atelier mental (nouveau)
+- Mini-questions rapides (calcul mental, pourcentages flash, conversions)
+- Vérification immédiate avec méthode courte de correction
+- Score, taux de réussite et série de bonnes réponses conservés en local
+- Conseil personnalisé selon les performances récentes
+
+### 5) Coach adaptatif et remédiation
 - Mode adaptatif : proposition automatique du thème et du niveau selon les performances
 - File de remédiation : exercices ciblés après une erreur fréquente
 - Aide graduée : **Indice 1**, **Indice 2**, puis **méthode guidée**
@@ -57,13 +64,13 @@ Types de calcul :
 - Diagnostic d'erreur probable (unité, division par 100, confusion rayon/diamètre)
 - Mode évaluation (indices désactivés) et rejouage d'erreurs récentes
 
-### 5) Parcours d'apprentissage
+### 6) Parcours d'apprentissage
 - Objectif de séance affiché avant chaque exercice
 - Micro-compétence ciblée + palier de maîtrise (Bronze / Argent / Or)
 - Barre de progression de session (réussites en cours)
 - Nouveau réglage de **niveau d'accompagnement** (Guidé / Autonome / Défi) pour ajuster la tolérance et le niveau d'exigence
 
-### 6) Situations métier enrichies
+### 7) Situations métier enrichies
 - Scénarios CAPa variés : semis, paillage (coût €/m²), arrosage (L/m)
 - Mise en contexte « utile sur chantier » + auto-contrôle rapide sur chaque exercice
 - Pont explicite « maths ↔ métier » pour chaque exercice (mesure, décision, impact terrain)
@@ -73,7 +80,7 @@ Types de calcul :
 - Feedback renforcé après validation : affichage de l'écart (valeur et %) pour guider la correction
 - Questions flash de métacognition (30 sec) après correction pour verbaliser la méthode et favoriser le transfert
 
-### 7) Fiabilité des calculs
+### 8) Fiabilité des calculs
 - Vérifications supplémentaires sur les contraintes géométriques
 - Bouton de vérification interne des formules (auto-tests rapides)
 - Script de tests Node.js pour valider les formules principales (`tests/formules.test.js`)

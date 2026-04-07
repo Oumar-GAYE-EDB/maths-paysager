@@ -65,6 +65,9 @@
       <p id="message-demarrage" class="welcome-card__message" aria-live="polite">
         Objectif du jour : réussir 3 exercices utiles sur chantier.
       </p>
+      <blockquote id="citation-maths-paysage" class="quote-day" aria-live="polite">
+        Citation du jour en préparation…
+      </blockquote>
       <div class="learning-pills" aria-label="Repères d'apprentissage">
         <span class="learning-pill">🎯 Objectif clair</span>
         <span class="learning-pill">🧠 Astuces visuelles</span>
@@ -134,6 +137,7 @@
     <nav class="quick-nav" aria-label="Navigation rapide">
       <a class="quick-nav__link" href="#section-formes">Surfaces</a>
       <a class="quick-nav__link" href="#section-pourcent">Pourcentages</a>
+      <a class="quick-nav__link" href="#section-atelier-mental">Atelier mental</a>
       <a class="quick-nav__link" href="#section-exercices">Exercices</a>
       <a class="quick-nav__link" href="#section-memo">Formules</a>
     </nav>
@@ -192,6 +196,51 @@
       </div>
 
       <div id="resultat-pourcent" class="resultat" aria-live="polite"></div>
+    </section>
+
+    <section class="card" id="section-atelier-mental">
+      <h2 class="card__title">Atelier mental (5 minutes)</h2>
+      <p class="card__desc">Un mini-entraînement rapide pour automatiser les réflexes utiles en maths.</p>
+
+      <div class="form-fields">
+        <div class="form-group">
+          <label for="atelier-type">Compétence à entraîner :</label>
+          <select id="atelier-type">
+            <option value="calcul">Calcul mental rapide</option>
+            <option value="pourcentage">Pourcentages flash</option>
+            <option value="conversion">Conversions d'unités</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn--primary" id="btn-atelier-nouvelle" type="button">Nouvelle question</button>
+        <button class="btn btn--secondary" id="btn-atelier-verifier" type="button">Vérifier ma réponse</button>
+      </div>
+
+      <div id="atelier-enonce" class="exercise-panel exercise-panel--priority" aria-live="polite">
+        Clique sur <strong>Nouvelle question</strong> pour démarrer l'atelier.
+      </div>
+
+      <div class="form-group">
+        <label for="atelier-reponse">Ta réponse :</label>
+        <input type="number" id="atelier-reponse" placeholder="Ex : 12.5" step="0.01" inputmode="decimal">
+      </div>
+
+      <div id="atelier-feedback" class="resultat" aria-live="polite"></div>
+      <div class="mental-grid">
+        <div class="exercise-panel">
+          <h3 class="panel-title">Score atelier</h3>
+          <p id="atelier-score" class="mental-stat">0 / 0</p>
+        </div>
+        <div class="exercise-panel">
+          <h3 class="panel-title">Série en cours</h3>
+          <p id="atelier-serie" class="mental-stat">0 bonne réponse d'affilée</p>
+        </div>
+      </div>
+      <div id="atelier-conseil" class="exercise-panel exercise-panel--hint">
+        Conseil personnalisé : commence avec « Calcul mental rapide » pour chauffer le cerveau.
+      </div>
     </section>
 
     <section class="card" id="section-exercices">
