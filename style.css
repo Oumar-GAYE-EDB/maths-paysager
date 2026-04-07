@@ -213,6 +213,18 @@ body.contrast-fort {
   pointer-events: auto;
 }
 
+.mental-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.mental-stat {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
 /* ---------- EN-TÊTE ---------- */
 .header {
   background:
