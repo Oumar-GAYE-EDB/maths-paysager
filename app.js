@@ -104,6 +104,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const atelierScore = document.getElementById("atelier-score");
   const atelierSerie = document.getElementById("atelier-serie");
   const atelierConseil = document.getElementById("atelier-conseil");
+  const citationJour = document.getElementById("citation-jour");
 
   // --- Afficher les champs dès le chargement ---
   afficherChampsFormes(selectForme.value, champsForme);
@@ -173,6 +174,7 @@ document.addEventListener("DOMContentLoaded", function () {
     atelierSerie: atelierSerie,
     atelierConseil: atelierConseil,
   });
+  initialiserCitationQuotidienne(citationJour);
   initialiserDemarrageRapide(btnDemarrageRapide, btnReviserNotion, messageDemarrage, {
     selectThemeExercice: selectThemeExercice,
     selectNiveauExercice: selectNiveauExercice,
@@ -267,6 +269,29 @@ function initialiserTheme() {
       localStorage.setItem(CLE_THEME, theme);
     });
   }
+}
+
+function initialiserCitationQuotidienne(zoneCitation) {
+  if (!zoneCitation) return;
+
+  const citations = [
+    "Mesurer un jardin, c'est déjà dessiner sa beauté avec les maths.",
+    "Chaque mètre bien calculé devient un espace bien aménagé.",
+    "Les maths donnent une forme précise aux idées du paysagiste.",
+    "Tracer, compter, planter : la réussite du chantier commence avec les maths.",
+    "Une bordure droite naît d'un bon calcul avant le premier coup de bêche.",
+    "Comprendre les surfaces, c'est mieux préparer les plantations.",
+    "Les pourcentages aident à doser juste : ni trop, ni trop peu.",
+    "En aménagement paysager, un calcul clair évite beaucoup d'erreurs.",
+    "Les maths transforment un plan sur papier en paysage réel.",
+    "Bien calculer aujourd'hui, c'est gagner du temps sur le chantier demain.",
+  ];
+
+  const maintenant = new Date();
+  const debutAnnee = new Date(maintenant.getFullYear(), 0, 1);
+  const numeroJour = Math.floor((maintenant - debutAnnee) / 86400000);
+  const indexCitation = numeroJour % citations.length;
+  zoneCitation.textContent = citations[indexCitation];
 }
 
 function initialiserModeFocus(caseFocus) {
