@@ -18,6 +18,7 @@ const sessionStats = { essais: 0, reussites: 0 };
 let chronoInterval = null;
 let chronoRestant = 0;
 let parcoursCibleActif = null;
+let exerciceDemarreLe = null;
 
 let exerciceActuel = null;
 let questionAtelierActuelle = null;
@@ -73,6 +74,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const chronometreExercice = document.getElementById("chronometre-exercice");
   const diagnosticExercice = document.getElementById("diagnostic-exercice");
   const planRevision = document.getElementById("plan-revision");
+  const tableauCompetences = document.getElementById("tableau-competences");
+  const planEntrainementPersonnalise = document.getElementById("plan-entrainement-personnalise");
+  const btnExportBilan = document.getElementById("btn-export-bilan");
+  const btnActionAires = document.getElementById("btn-action-aires");
+  const btnActionPourcentages = document.getElementById("btn-action-pourcentages");
+  const btnActionMetier = document.getElementById("btn-action-metier");
+  const btnResetSuivi = document.getElementById("btn-reset-suivi");
   const sessionProgression = document.getElementById("session-progression");
   const motivationEleve = document.getElementById("motivation-eleve");
   const defiJour = document.getElementById("defi-jour");
@@ -218,6 +226,8 @@ document.addEventListener("DOMContentLoaded", function () {
     chronometreExercice: chronometreExercice,
     diagnosticExercice: diagnosticExercice,
     planRevision: planRevision,
+    tableauCompetences: tableauCompetences,
+    planEntrainementPersonnalise: planEntrainementPersonnalise,
     sessionProgression: sessionProgression,
     motivationEleve: motivationEleve,
     defiJour: defiJour,
@@ -230,6 +240,11 @@ document.addEventListener("DOMContentLoaded", function () {
     historiqueExercice: historiqueExercice,
     btnRejouerErreur: btnRejouerErreur,
     btnTestsFormules: btnTestsFormules,
+    btnExportBilan: btnExportBilan,
+    btnActionAires: btnActionAires,
+    btnActionPourcentages: btnActionPourcentages,
+    btnActionMetier: btnActionMetier,
+    btnResetSuivi: btnResetSuivi,
   });
 });
 
@@ -763,6 +778,7 @@ function initialiserModeExercices(ui) {
   initialiserParcoursSimplifie(ui);
   mettreAJourProgressionSession(ui.sessionProgression);
   mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
+  mettreAJourTableauCompetences(ui.tableauCompetences, ui.planEntrainementPersonnalise);
   mettreAJourChronometre(ui);
   mettreAJourRubanSession(ui);
   if (ui.testsFormulesResultat) {
@@ -779,6 +795,7 @@ function initialiserModeExercices(ui) {
       : { theme: ui.selectThemeExercice.value, niveau: ui.selectNiveauExercice.value, source: "manuel", objectifSeance: objectifSeance, modeAccompagnement: modeAccompagnement };
     exerciceActuel = creerExercice(selection.theme, selection.niveau, selection);
     afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
+    exerciceDemarreLe = Date.now();
     afficherRecommandation(ui.recommandationExercice, selection);
     afficherBarreParcours(ui.parcoursVisual, 2);
     afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
@@ -852,6 +869,7 @@ function initialiserModeExercices(ui) {
       }
       exerciceActuel = creerExerciceRemediation(remediation);
       afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
+      exerciceDemarreLe = Date.now();
       afficherObjectifEtCompetences(ui.objectifSession, ui.competencesExercice, exerciceActuel, {
         source: "remediation",
         message: "Rejeu ciblé : on reprend une erreur récente.",
@@ -873,11 +891,37 @@ function initialiserModeExercices(ui) {
       afficherBilanTestsFormules(ui.testsFormulesResultat);
     });
   }
+  if (ui.btnExportBilan) {
+    ui.btnExportBilan.addEventListener("click", function () {
+      exporterBilanEleve(ui.feedbackExercice);
+    });
+  }
+  if (ui.btnActionAires) {
+    ui.btnActionAires.addEventListener("click", function () {
+      appliquerActionRapideEntrainement(ui, "aires");
+    });
+  }
+  if (ui.btnActionPourcentages) {
+    ui.btnActionPourcentages.addEventListener("click", function () {
+      appliquerActionRapideEntrainement(ui, "pourcentages");
+    });
+  }
+  if (ui.btnActionMetier) {
+    ui.btnActionMetier.addEventListener("click", function () {
+      appliquerActionRapideEntrainement(ui, "metier");
+    });
+  }
+  if (ui.btnResetSuivi) {
+    ui.btnResetSuivi.addEventListener("click", function () {
+      reinitialiserSuiviPedagogique(ui);
+    });
+  }
 
   mettreAJourProgressionEtBadges(ui.progressionExercice, ui.badgesExercice);
   afficherPlanMaitrise(ui.planMaitrise);
   afficherHistorique(ui.historiqueExercice);
   mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
+  mettreAJourTableauCompetences(ui.tableauCompetences, ui.planEntrainementPersonnalise);
   mettreAJourTableauMotivation(ui.motivationEleve, ui.defiJour);
 }
 
@@ -899,9 +943,10 @@ function corrigerExercice(ui, passerAuSuivant) {
   if (!passerAuSuivant) {
     const estCorrect = Math.abs(reponse - exerciceActuel.reponse) <= exerciceActuel.tolerance;
     const diagnostic = analyserErreur(exerciceActuel, reponse);
+    const dureeSec = calculerDureeExercice();
     sessionStats.essais += 1;
     sessionStats.reussites += estCorrect ? 1 : 0;
-    enregistrerTentativeExercice(exerciceActuel, reponse, estCorrect);
+    enregistrerTentativeExercice(exerciceActuel, reponse, estCorrect, dureeSec);
     enregistrerMotivation(exerciceActuel, estCorrect);
     if (!estCorrect) {
       ajouterRemediation(exerciceActuel);
@@ -918,6 +963,7 @@ function corrigerExercice(ui, passerAuSuivant) {
     if (parcoursCibleActif && !passerAuSuivant) parcoursCibleActif.restant = Math.max(0, parcoursCibleActif.restant - 1);
     afficherHistorique(ui.historiqueExercice);
     mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
+    mettreAJourTableauCompetences(ui.tableauCompetences, ui.planEntrainementPersonnalise);
     mettreAJourTableauMotivation(ui.motivationEleve, ui.defiJour);
     if (!estCorrect) debloquerAidesParcoursSimple(ui);
     mettreAJourRubanSession(ui);
@@ -941,6 +987,7 @@ function corrigerExercice(ui, passerAuSuivant) {
     };
   exerciceActuel = creerExercice(selection.theme, selection.niveau, selection);
   afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
+  exerciceDemarreLe = Date.now();
   afficherRecommandation(ui.recommandationExercice, selection);
   afficherBarreParcours(ui.parcoursVisual, 2);
   afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
@@ -955,6 +1002,43 @@ function corrigerExercice(ui, passerAuSuivant) {
   reinitialiserAidesParcoursSimple(ui);
   mettreAJourRubanSession(ui);
   notifierActionApprentissage({ type: "nouvel-exercice" });
+}
+
+function appliquerActionRapideEntrainement(ui, theme) {
+  if (!ui || !ui.selectThemeExercice || !ui.btnGenererExercice) return;
+  ui.selectThemeExercice.value = theme;
+  if (ui.selectNiveauExercice) ui.selectNiveauExercice.value = "facile";
+  if (ui.selectModeAccompagnement) ui.selectModeAccompagnement.value = "guide";
+  if (ui.selectObjectifSeance) {
+    ui.selectObjectifSeance.value = theme === "metier" ? "metier" : "precision";
+  }
+  ui.btnGenererExercice.click();
+}
+
+function reinitialiserSuiviPedagogique(ui) {
+  localStorage.removeItem(CLE_PROGRESS);
+  localStorage.removeItem(CLE_HISTORIQUE);
+  localStorage.removeItem(CLE_REMEDIATION);
+  localStorage.removeItem(CLE_MOTIVATION);
+  sessionStats.essais = 0;
+  sessionStats.reussites = 0;
+  exerciceDemarreLe = null;
+  mettreAJourProgressionSession(ui.sessionProgression);
+  mettreAJourProgressionEtBadges(ui.progressionExercice, ui.badgesExercice);
+  afficherHistorique(ui.historiqueExercice);
+  mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
+  mettreAJourTableauCompetences(ui.tableauCompetences, ui.planEntrainementPersonnalise);
+  mettreAJourTableauMotivation(ui.motivationEleve, ui.defiJour);
+  if (ui.feedbackExercice) {
+    ui.feedbackExercice.className = "resultat resultat--visible";
+    ui.feedbackExercice.innerHTML = "Suivi réinitialisé. Tu peux repartir sur une nouvelle progression.";
+  }
+}
+
+function calculerDureeExercice() {
+  if (!exerciceDemarreLe) return 0;
+  const ecartMs = Date.now() - exerciceDemarreLe;
+  return Math.max(0, Math.round(ecartMs / 1000));
 }
 
 function initialiserParcoursSimplifie(ui) {
@@ -2392,7 +2476,7 @@ function sauvegarderProgression(data) {
   localStorage.setItem(CLE_PROGRESS, JSON.stringify(data));
 }
 
-function enregistrerTentativeExercice(exercice, reponse, estCorrect) {
+function enregistrerTentativeExercice(exercice, reponse, estCorrect, dureeSec) {
   const progression = chargerProgression();
   progression.essais += 1;
   progression.reussites += estCorrect ? 1 : 0;
@@ -2412,6 +2496,7 @@ function enregistrerTentativeExercice(exercice, reponse, estCorrect) {
     details: exercice.enonce,
     resultat: (estCorrect ? "✅ " : "❌ ") + arrondir(reponse) + (exercice.unite ? " " + exercice.unite : ""),
     competence: exercice.competence || "",
+    dureeSec: typeof dureeSec === "number" ? dureeSec : 0,
     erreurCode: estCorrect ? "" : (exercice.erreurCode || ""),
     estCorrect: estCorrect,
   });
@@ -2733,6 +2818,7 @@ function enregistrerHistorique(entree) {
     details: entree.details,
     resultat: entree.resultat,
     competence: entree.competence || "",
+    dureeSec: typeof entree.dureeSec === "number" ? entree.dureeSec : 0,
     erreurCode: entree.erreurCode || "",
     estCorrect: typeof entree.estCorrect === "boolean" ? entree.estCorrect : null,
   });
@@ -2801,6 +2887,160 @@ function genererPlanRevision(topErreurs) {
     "4 min : fais 2 exercices ciblés avec indice 1 puis indice 2.",
     "3 min : valide 1 exercice similaire sans aide.",
   ];
+}
+
+function construireStatsCompetences() {
+  const progression = chargerProgression();
+  const historique = lireHistorique().filter(function (item) { return item.type === "exercice"; });
+  const definitions = [
+    { cle: "aires-perimetres", label: "Aires / périmètres", cible: 10 },
+    { cle: "pourcentages", label: "Pourcentages", cible: 10 },
+    { cle: "situations-metier", label: "Situations métier", cible: 8 },
+  ];
+
+  return definitions.map(function (definition) {
+    const stats = progression.competences[definition.cle] || { essais: 0, reussites: 0 };
+    const taux = stats.essais > 0 ? (stats.reussites / stats.essais) * 100 : 0;
+    const recentes = historique
+      .filter(function (item) { return item.competence === definition.cle; })
+      .slice(0, 5);
+    const tentativesCompetence = historique.filter(function (item) { return item.competence === definition.cle; });
+    const totalTemps = tentativesCompetence.reduce(function (acc, item) {
+      return acc + (typeof item.dureeSec === "number" ? item.dureeSec : 0);
+    }, 0);
+    const tempsMoyenSec = tentativesCompetence.length > 0 ? totalTemps / tentativesCompetence.length : 0;
+    const dynamique = recentes.length === 0
+      ? "aucune donnée récente"
+      : (recentes.filter(function (item) { return item.estCorrect; }).length >= Math.ceil(recentes.length / 2)
+        ? "en progression"
+        : "à consolider");
+    const restant = Math.max(0, definition.cible - stats.essais);
+    return {
+      cle: definition.cle,
+      label: definition.label,
+      essais: stats.essais,
+      reussites: stats.reussites,
+      taux: taux,
+      tempsMoyenSec: tempsMoyenSec,
+      dynamique: dynamique,
+      restant: restant,
+    };
+  });
+}
+
+function mettreAJourTableauCompetences(zoneTableau, zonePlan) {
+  const statsCompetences = construireStatsCompetences();
+  const moyenne = statsCompetences.reduce(function (acc, item) { return acc + item.taux; }, 0) / statsCompetences.length;
+  const pointFort = statsCompetences.reduce(function (meilleur, item) {
+    return !meilleur || item.taux > meilleur.taux ? item : meilleur;
+  }, null);
+  const priorite = statsCompetences.reduce(function (faible, item) {
+    return !faible || item.taux < faible.taux ? item : faible;
+  }, null);
+
+  if (zoneTableau) {
+    const lignes = statsCompetences.map(function (item) {
+      const statut = item.taux >= 75 ? "✅ maîtrisé" : (item.essais >= 3 ? "⚠️ en cours" : "🟡 à démarrer");
+      return (
+        "<li><strong>" + item.label + "</strong> — " +
+        arrondir(item.taux) + "% (" + item.reussites + "/" + item.essais + "), " +
+        statut + ", tendance : <em>" + item.dynamique + "</em>, " +
+        "temps moyen : <strong>" + formaterSecondes(item.tempsMoyenSec) + "</strong>.</li>"
+      );
+    }).join("");
+    zoneTableau.innerHTML =
+      "<p><strong>Vue globale :</strong> " + arrondir(moyenne) + "% de réussite moyenne.</p>" +
+      "<ul>" + lignes + "</ul>";
+  }
+
+  if (zonePlan) {
+    const plan = genererPlanEntrainementHebdo(priorite, pointFort, statsCompetences);
+    zonePlan.innerHTML =
+      "<p><strong>Mission principale :</strong> " + plan.mission + "</p>" +
+      "<ol class=\"resultat__etapes-liste\">" +
+      plan.etapes.map(function (etape) { return "<li>" + etape + "</li>"; }).join("") +
+      "</ol>" +
+      "<small>" + plan.rappel + "</small>";
+  }
+}
+
+function genererPlanEntrainementHebdo(priorite, pointFort, statsCompetences) {
+  if (!priorite || !pointFort) {
+    return {
+      mission: "Lance un premier exercice pour activer ton suivi personnalisé.",
+      etapes: [
+        "Jour 1 : 2 exercices faciles pour prendre tes repères.",
+        "Jour 2 : 1 exercice + vérification des unités.",
+        "Jour 3 : 1 exercice métier pour relier les maths au terrain.",
+      ],
+      rappel: "Astuce : note ta méthode en une phrase après chaque correction.",
+    };
+  }
+
+  const objectifTaux = Math.max(70, Math.round(priorite.taux + 15));
+  const exercicesPrioritaires = priorite.essais < 4 ? 4 : 3;
+  const rappelCible = statsCompetences
+    .map(function (item) { return item.label + " : " + item.restant + " exercice(s) conseillé(s)"; })
+    .join(" • ");
+
+  return {
+    mission: "Faire monter « " + priorite.label + " » vers " + objectifTaux + "% tout en gardant ton point fort « " + pointFort.label + " ».",
+    etapes: [
+      "Jour 1-2 : " + exercicesPrioritaires + " exercices ciblés en mode guidé sur " + priorite.label + ".",
+      "Jour 3-4 : 2 exercices en mode autonome + relecture des erreurs fréquentes.",
+      "Jour 5 : 1 exercice chrono pour tester la stabilité de la méthode.",
+      "Jour 6-7 : 1 exercice métier + 1 exercice sur ton point fort « " + pointFort.label + " ».",
+    ],
+    rappel: "Suivi conseillé cette semaine → " + rappelCible + ".",
+  };
+}
+
+function exporterBilanEleve(zoneFeedback) {
+  const statsCompetences = construireStatsCompetences();
+  const lignes = statsCompetences.map(function (item) {
+    return "- " + item.label + " : " + arrondir(item.taux) + "% (" + item.reussites + "/" + item.essais + "), temps moyen " + formaterSecondes(item.tempsMoyenSec);
+  }).join("\n");
+  const texte = [
+    "Bilan Maths Paysager",
+    "Date : " + new Date().toLocaleDateString("fr-FR"),
+    "Progression par compétence :",
+    lignes,
+    "Prochaine action : refaire 1 exercice dans la compétence la plus faible.",
+  ].join("\n");
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texte).then(function () {
+      if (zoneFeedback) {
+        zoneFeedback.className = "resultat resultat--visible";
+        zoneFeedback.innerHTML = "✅ Bilan copié dans le presse-papiers. Tu peux le coller dans ton carnet de suivi.";
+      }
+    }).catch(function () {
+      fallbackExportBilan(texte, zoneFeedback);
+    });
+    return;
+  }
+  fallbackExportBilan(texte, zoneFeedback);
+}
+
+function fallbackExportBilan(texte, zoneFeedback) {
+  if (!zoneFeedback) return;
+  zoneFeedback.className = "resultat resultat--visible";
+  viderElement(zoneFeedback);
+  const titre = document.createElement("strong");
+  titre.textContent = "Copie manuelle du bilan :";
+  const pre = document.createElement("pre");
+  pre.textContent = texte;
+  zoneFeedback.appendChild(titre);
+  zoneFeedback.appendChild(pre);
+}
+
+function formaterSecondes(secondes) {
+  if (!isFinite(secondes) || secondes <= 0) return "—";
+  const total = Math.round(secondes);
+  const minutes = Math.floor(total / 60);
+  const reste = total % 60;
+  if (minutes === 0) return reste + " s";
+  return minutes + " min " + String(reste).padStart(2, "0") + " s";
 }
 
 function afficherHistorique(zone) {
