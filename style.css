@@ -225,6 +225,74 @@ body.contrast-fort {
   color: var(--color-text);
 }
 
+.coach-columns {
+  margin-top: var(--space-4);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-4);
+}
+
+.coach-plan-list {
+  margin: var(--space-3) 0 var(--space-2);
+  padding-left: var(--space-5);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.simulateur-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: var(--space-3);
+}
+
+.flashcard {
+  margin-top: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(155deg, color-mix(in srgb, var(--color-primary-light) 45%, #fff 55%), var(--color-surface));
+  padding: var(--space-4);
+  min-height: 160px;
+  display: grid;
+  align-content: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+}
+
+.flashcard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.flashcard:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 38%, #fff 62%);
+  outline-offset: 2px;
+}
+
+.flashcard__label {
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+.flashcard__content {
+  font-size: var(--text-lg);
+  line-height: 1.35;
+  font-weight: 800;
+}
+
+.flashcard__hint {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.flashcard--answer {
+  border-color: color-mix(in srgb, var(--color-primary) 65%, #ffffff 35%);
+  background: linear-gradient(155deg, color-mix(in srgb, var(--color-primary-light) 70%, #fff 30%), var(--color-surface));
+}
+
 /* ---------- EN-TÊTE ---------- */
 .header {
   background:

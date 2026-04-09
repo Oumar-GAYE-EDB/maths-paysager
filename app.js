@@ -108,6 +108,26 @@ document.addEventListener("DOMContentLoaded", function () {
   const atelierSerie = document.getElementById("atelier-serie");
   const atelierConseil = document.getElementById("atelier-conseil");
   const citationJour = document.getElementById("citation-jour");
+  const coachTemps = document.getElementById("coach-temps");
+  const coachPriorite = document.getElementById("coach-priorite");
+  const btnCoachPlan = document.getElementById("btn-coach-plan");
+  const coachPlanSortie = document.getElementById("coach-plan-sortie");
+  const convertisseurValeur = document.getElementById("convertisseur-valeur");
+  const convertisseurType = document.getElementById("convertisseur-type");
+  const btnConvertir = document.getElementById("btn-convertir");
+  const convertisseurResultat = document.getElementById("convertisseur-resultat");
+  const flashcardFormule = document.getElementById("flashcard-formule");
+  const flashcardContenu = document.getElementById("flashcard-contenu");
+  const flashcardIndice = document.getElementById("flashcard-indice");
+  const btnFlashcardNext = document.getElementById("btn-flashcard-next");
+  const simuLongueur = document.getElementById("simu-longueur");
+  const simuLargeur = document.getElementById("simu-largeur");
+  const simuMarge = document.getElementById("simu-marge");
+  const simuPrix = document.getElementById("simu-prix");
+  const btnSimuCalculer = document.getElementById("btn-simu-calculer");
+  const btnSimuReset = document.getElementById("btn-simu-reset");
+  const simuResultat = document.getElementById("simu-resultat");
+  const simuFeedbackErreurs = document.getElementById("simu-feedback-erreurs");
 
   // --- Afficher les champs dès le chargement ---
   afficherChampsFormes(selectForme.value, champsForme);
@@ -178,6 +198,34 @@ document.addEventListener("DOMContentLoaded", function () {
     atelierConseil: atelierConseil,
   });
   initialiserCitationQuotidienne(citationJour);
+  initialiserCoachRevision({
+    coachTemps: coachTemps,
+    coachPriorite: coachPriorite,
+    btnCoachPlan: btnCoachPlan,
+    coachPlanSortie: coachPlanSortie,
+  });
+  initialiserConvertisseurUnites({
+    convertisseurValeur: convertisseurValeur,
+    convertisseurType: convertisseurType,
+    btnConvertir: btnConvertir,
+    convertisseurResultat: convertisseurResultat,
+  });
+  initialiserFlashcardsFormules({
+    flashcardFormule: flashcardFormule,
+    flashcardContenu: flashcardContenu,
+    flashcardIndice: flashcardIndice,
+    btnFlashcardNext: btnFlashcardNext,
+  });
+  initialiserSimulateurChantier({
+    simuLongueur: simuLongueur,
+    simuLargeur: simuLargeur,
+    simuMarge: simuMarge,
+    simuPrix: simuPrix,
+    btnSimuCalculer: btnSimuCalculer,
+    btnSimuReset: btnSimuReset,
+    simuResultat: simuResultat,
+    simuFeedbackErreurs: simuFeedbackErreurs,
+  });
   initialiserDemarrageRapide(btnDemarrageRapide, btnReviserNotion, messageDemarrage, {
     selectThemeExercice: selectThemeExercice,
     selectNiveauExercice: selectNiveauExercice,
@@ -298,6 +346,236 @@ function initialiserCitationQuotidienne(zoneCitation) {
   const numeroJour = Math.floor((maintenant - debutAnnee) / 86400000);
   const indexCitation = numeroJour % citations.length;
   zoneCitation.textContent = citations[indexCitation];
+}
+
+function initialiserCoachRevision(options) {
+  if (!options || !options.btnCoachPlan || !options.coachPlanSortie) return;
+
+  options.btnCoachPlan.addEventListener("click", function () {
+    const progression = chargerProgression();
+    const minutes = Math.max(10, Math.min(120, parserNombreLocale(options.coachTemps ? options.coachTemps.value : "30") || 30));
+    const prioriteChoisie = options.coachPriorite ? options.coachPriorite.value : "auto";
+    const priorite = prioriteChoisie === "auto" ? determinerPrioriteFaible(progression) : prioriteChoisie;
+    const blocs = genererBlocsRevision(minutes);
+    const libellePriorite = libelleCompetence(priorite);
+    const tauxGlobal = progression.essais > 0 ? (progression.reussites / progression.essais) * 100 : 0;
+
+    options.coachPlanSortie.innerHTML =
+      "<p><strong>Plan du jour (" + minutes + " min)</strong></p>" +
+      "<p>Priorité conseillée : <strong>" + libellePriorite + "</strong> — taux global actuel : <strong>" + arrondir(tauxGlobal) + "%</strong>.</p>" +
+      "<ol class=\"coach-plan-list\">" +
+      "<li><strong>" + blocs.echauffement + " min</strong> d'échauffement : atelier mental + 2 conversions rapides.</li>" +
+      "<li><strong>" + blocs.noyau + " min</strong> sur <strong>" + libellePriorite + "</strong> : 3 exercices guidés puis 1 exercice autonome.</li>" +
+      "<li><strong>" + blocs.transfert + " min</strong> de transfert métier : explique à voix haute la formule choisie et l'unité finale.</li>" +
+      "<li><strong>" + blocs.bilan + " min</strong> de bilan : note 1 erreur évitée et 1 astuce à réutiliser.</li>" +
+      "</ol>" +
+      "<p class=\"resultat__astuce\"><strong>Conseil coach :</strong> vise la régularité (20 à 30 min/jour) plutôt qu'une longue séance occasionnelle.</p>";
+
+    notifierActionApprentissage({ type: "plan-revision", competence: priorite });
+  });
+}
+
+function determinerPrioriteFaible(progression) {
+  const competences = ["aires-perimetres", "pourcentages", "situations-metier"];
+  let priorite = competences[0];
+  let pireTaux = 1;
+
+  competences.forEach(function (cle) {
+    const stats = progression.competences[cle] || { essais: 0, reussites: 0 };
+    const taux = stats.essais > 0 ? stats.reussites / stats.essais : 0;
+    if (taux < pireTaux) {
+      pireTaux = taux;
+      priorite = cle;
+    }
+  });
+
+  return priorite;
+}
+
+function genererBlocsRevision(minutes) {
+  const echauffement = Math.max(4, Math.round(minutes * 0.2));
+  const noyau = Math.max(8, Math.round(minutes * 0.5));
+  const transfert = Math.max(4, Math.round(minutes * 0.2));
+  const bilan = Math.max(2, minutes - echauffement - noyau - transfert);
+  return { echauffement: echauffement, noyau: noyau, transfert: transfert, bilan: bilan };
+}
+
+function libelleCompetence(competence) {
+  const labels = {
+    "aires-perimetres": "Aires et périmètres",
+    pourcentages: "Pourcentages",
+    "situations-metier": "Situations métier",
+  };
+  return labels[competence] || "Compétence transversale";
+}
+
+function initialiserConvertisseurUnites(options) {
+  if (!options || !options.btnConvertir || !options.convertisseurResultat) return;
+
+  options.btnConvertir.addEventListener("click", function () {
+    const valeur = parserNombreLocale(options.convertisseurValeur ? options.convertisseurValeur.value : "");
+    const type = options.convertisseurType ? options.convertisseurType.value : "m-cm";
+    if (isNaN(valeur)) {
+      afficherErreur(options.convertisseurResultat, "Renseigne une valeur numérique avant de convertir.");
+      return;
+    }
+
+    const conversion = convertirUnite(valeur, type);
+    options.convertisseurResultat.className = "resultat resultat--visible";
+    options.convertisseurResultat.innerHTML =
+      "<div class=\"resultat__ligne\"><span class=\"resultat__label\">Résultat :</span><span class=\"resultat__valeur\">" +
+      arrondir(conversion.valeur) + " " + conversion.unite +
+      "</span></div>" +
+      "<p class=\"resultat__astuce\"><strong>Méthode :</strong> " + conversion.explic + "</p>";
+  });
+}
+
+function convertirUnite(valeur, type) {
+  switch (type) {
+    case "m-cm":
+      return { valeur: valeur * 100, unite: "cm", explic: "1 m = 100 cm, donc on multiplie par 100." };
+    case "cm-m":
+      return { valeur: valeur / 100, unite: "m", explic: "1 cm = 0,01 m, donc on divise par 100." };
+    case "m2-ha":
+      return { valeur: valeur / 10000, unite: "ha", explic: "1 ha = 10 000 m², donc on divise par 10 000." };
+    case "ha-m2":
+      return { valeur: valeur * 10000, unite: "m²", explic: "1 ha = 10 000 m², donc on multiplie par 10 000." };
+    case "l-m3":
+      return { valeur: valeur / 1000, unite: "m³", explic: "1 m³ = 1 000 L, donc on divise par 1 000." };
+    case "m3-l":
+      return { valeur: valeur * 1000, unite: "L", explic: "1 m³ = 1 000 L, donc on multiplie par 1 000." };
+    default:
+      return { valeur: valeur, unite: "", explic: "Aucune conversion appliquée." };
+  }
+}
+
+function initialiserFlashcardsFormules(options) {
+  if (!options || !options.flashcardFormule || !options.flashcardContenu || !options.flashcardIndice || !options.btnFlashcardNext) return;
+
+  const cartes = [
+    { question: "Rectangle : aire ?", reponse: "A = longueur × largeur" },
+    { question: "Rectangle : périmètre ?", reponse: "P = 2 × (longueur + largeur)" },
+    { question: "Cercle : périmètre ?", reponse: "P = 2 × π × rayon" },
+    { question: "Triangle : aire ?", reponse: "A = (base × hauteur) ÷ 2" },
+    { question: "Trouver X% de N ?", reponse: "(X × N) ÷ 100" },
+    { question: "Part en pourcentage ?", reponse: "(partie ÷ total) × 100" },
+  ];
+  let index = 0;
+  let afficheReponse = false;
+
+  function afficherCarte() {
+    const carte = cartes[index];
+    options.flashcardContenu.textContent = afficheReponse ? carte.reponse : carte.question;
+    options.flashcardIndice.textContent = afficheReponse
+      ? "Explique à voix haute à quoi sert cette formule."
+      : "Clique pour révéler la réponse.";
+    options.flashcardFormule.classList.toggle("flashcard--answer", afficheReponse);
+  }
+
+  function carteSuivante() {
+    index = (index + 1) % cartes.length;
+    afficheReponse = false;
+    afficherCarte();
+  }
+
+  options.flashcardFormule.addEventListener("click", function () {
+    afficheReponse = !afficheReponse;
+    afficherCarte();
+  });
+  options.flashcardFormule.addEventListener("keydown", function (event) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      afficheReponse = !afficheReponse;
+      afficherCarte();
+    }
+  });
+  options.btnFlashcardNext.addEventListener("click", carteSuivante);
+  afficherCarte();
+}
+
+function initialiserSimulateurChantier(options) {
+  if (!options || !options.btnSimuCalculer || !options.simuResultat) return;
+
+  options.btnSimuCalculer.addEventListener("click", function () {
+    calculerSimulationChantier(options);
+  });
+
+  if (options.btnSimuReset) {
+    options.btnSimuReset.addEventListener("click", function () {
+      reinitialiserSimulationChantier(options);
+    });
+  }
+}
+
+function calculerSimulationChantier(options) {
+  const longueur = parserNombreLocale(options.simuLongueur ? options.simuLongueur.value : "");
+  const largeur = parserNombreLocale(options.simuLargeur ? options.simuLargeur.value : "");
+  const marge = parserNombreLocale(options.simuMarge ? options.simuMarge.value : "10");
+  const prix = parserNombreLocale(options.simuPrix ? options.simuPrix.value : "");
+
+  if (!valide(longueur, largeur, prix)) {
+    afficherErreur(options.simuResultat, "Renseigne longueur, largeur et coût unitaire avec des valeurs positives.");
+    afficherConseilErreursSimulation(options.simuFeedbackErreurs, "donnees-manquantes");
+    return;
+  }
+  if (isNaN(marge) || marge < 0 || marge > 60) {
+    afficherErreur(options.simuResultat, "La marge de sécurité doit être comprise entre 0% et 60%.");
+    afficherConseilErreursSimulation(options.simuFeedbackErreurs, "marge-invalide");
+    return;
+  }
+
+  const surface = longueur * largeur;
+  const surfaceAvecMarge = surface * (1 + marge / 100);
+  const coutTotal = surfaceAvecMarge * prix;
+
+  options.simuResultat.className = "resultat resultat--visible";
+  options.simuResultat.innerHTML =
+    "<div class=\"resultat__ligne\"><span class=\"resultat__label\">Surface utile :</span><span class=\"resultat__valeur\">" + arrondir(surface) + " m²</span></div>" +
+    "<div class=\"resultat__ligne\"><span class=\"resultat__label\">Surface avec marge :</span><span class=\"resultat__valeur\">" + arrondir(surfaceAvecMarge) + " m²</span></div>" +
+    "<div class=\"resultat__ligne\"><span class=\"resultat__label\">Budget estimé :</span><span class=\"resultat__valeur\">" + arrondir(coutTotal) + " €</span></div>" +
+    "<div class=\"resultat__formule\">" +
+    "1) Surface = longueur × largeur = " + arrondir(longueur) + " × " + arrondir(largeur) + "<br>" +
+    "2) Surface majorée = surface × (1 + marge/100)<br>" +
+    "3) Coût = surface majorée × prix/m²" +
+    "</div>" +
+    "<p class=\"resultat__astuce\"><strong>Contrôle terrain :</strong> arrondis au-dessus pour éviter le manque de matériaux.</p>";
+
+  afficherConseilErreursSimulation(options.simuFeedbackErreurs, "ok");
+  enregistrerHistorique({
+    type: "calcul",
+    label: "Simulation chantier",
+    details: "Zone " + arrondir(longueur) + " × " + arrondir(largeur) + " m",
+    resultat: "Surface majorée " + arrondir(surfaceAvecMarge) + " m² | Budget " + arrondir(coutTotal) + " €",
+  });
+  notifierActionApprentissage({ type: "simulation-chantier" });
+}
+
+function afficherConseilErreursSimulation(zone, code) {
+  if (!zone) return;
+  const erreurs = lireHistorique().filter(function (item) {
+    return item.type === "exercice" && item.estCorrect === false;
+  });
+  const topErreur = erreurs[0] && erreurs[0].erreurCode ? erreurs[0].erreurCode : "erreur_generique";
+  const conseils = {
+    ok: "Très bien. Dernière vigilance : annonce toujours l'unité finale (m² puis €).",
+    "donnees-manquantes": "Commence par vérifier les données connues : longueur, largeur, coût unitaire. Puis seulement la marge.",
+    "marge-invalide": "Une marge de sécurité reste réaliste entre 5% et 15% sur la plupart des exercices.",
+  };
+  zone.innerHTML =
+    "<strong>Conseil remédiation :</strong> " + (conseils[code] || conseils.ok) +
+    "<br><small>Erreur fréquente observée dans l'historique : " + libelleErreur(topErreur) + ".</small>";
+}
+
+function reinitialiserSimulationChantier(options) {
+  if (options.simuLongueur) options.simuLongueur.value = "";
+  if (options.simuLargeur) options.simuLargeur.value = "";
+  if (options.simuMarge) options.simuMarge.value = "10";
+  if (options.simuPrix) options.simuPrix.value = "";
+  if (options.simuResultat) {
+    options.simuResultat.className = "resultat";
+    options.simuResultat.innerHTML = "";
+  }
+  afficherConseilErreursSimulation(options.simuFeedbackErreurs, "ok");
 }
 
 function initialiserModeFocus(caseFocus) {

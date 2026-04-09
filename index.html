@@ -142,6 +142,8 @@
       <a class="quick-nav__link" href="#section-formes">Surfaces</a>
       <a class="quick-nav__link" href="#section-pourcent">Pourcentages</a>
       <a class="quick-nav__link" href="#section-atelier-mental">Atelier mental</a>
+      <a class="quick-nav__link" href="#section-coach-revision">Coach révision</a>
+      <a class="quick-nav__link" href="#section-simulateur">Simulateur</a>
       <a class="quick-nav__link" href="#section-exercices">Exercices</a>
       <a class="quick-nav__link" href="#section-memo">Formules</a>
     </nav>
@@ -244,6 +246,110 @@
       </div>
       <div id="atelier-conseil" class="exercise-panel exercise-panel--hint">
         Conseil personnalisé : commence avec « Calcul mental rapide » pour chauffer le cerveau.
+      </div>
+    </section>
+
+    <section class="card" id="section-coach-revision">
+      <h2 class="card__title">Coach de révision personnalisé</h2>
+      <p class="card__desc">Prépare un plan concret selon ton temps disponible, ton niveau et tes résultats récents.</p>
+
+      <div class="form-fields">
+        <div class="form-group">
+          <label for="coach-temps">Temps disponible aujourd'hui (minutes) :</label>
+          <input type="number" id="coach-temps" min="10" max="120" step="5" value="30" inputmode="numeric">
+        </div>
+        <div class="form-group">
+          <label for="coach-priorite">Priorité du jour :</label>
+          <select id="coach-priorite">
+            <option value="auto">Détection automatique (recommandé)</option>
+            <option value="aires-perimetres">Aires et périmètres</option>
+            <option value="pourcentages">Pourcentages</option>
+            <option value="situations-metier">Situations métier</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn--primary" id="btn-coach-plan" type="button">Créer mon plan du jour</button>
+      </div>
+
+      <div id="coach-plan-sortie" class="exercise-panel exercise-panel--priority" aria-live="polite">
+        Clique sur <strong>Créer mon plan du jour</strong> pour obtenir un parcours précis et motivant.
+      </div>
+
+      <div class="coach-columns">
+        <article class="exercise-panel exercise-panel--hint">
+          <h3 class="panel-title">Convertisseur intelligent</h3>
+          <p class="card__desc">Utile pour les chantiers : m ↔ cm, m² ↔ ha, L ↔ m³.</p>
+          <div class="form-fields">
+            <div class="form-group">
+              <label for="convertisseur-valeur">Valeur :</label>
+              <input type="number" id="convertisseur-valeur" step="0.01" placeholder="Ex : 1250" inputmode="decimal">
+            </div>
+            <div class="form-group">
+              <label for="convertisseur-type">Conversion :</label>
+              <select id="convertisseur-type">
+                <option value="m-cm">m → cm</option>
+                <option value="cm-m">cm → m</option>
+                <option value="m2-ha">m² → hectares</option>
+                <option value="ha-m2">hectares → m²</option>
+                <option value="l-m3">litres → m³</option>
+                <option value="m3-l">m³ → litres</option>
+              </select>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn--secondary" id="btn-convertir" type="button">Convertir</button>
+          </div>
+          <div id="convertisseur-resultat" class="resultat" aria-live="polite"></div>
+        </article>
+
+        <article class="exercise-panel exercise-panel--priority">
+          <h3 class="panel-title">Flashcards formules</h3>
+          <p class="card__desc">Retourne la carte, annonce la formule à voix haute, puis vérifie.</p>
+          <div id="flashcard-formule" class="flashcard" role="button" tabindex="0" aria-live="polite" aria-label="Carte formule à retourner">
+            <p class="flashcard__label">Carte</p>
+            <p id="flashcard-contenu" class="flashcard__content">Rectangle : aire ou périmètre ?</p>
+            <p id="flashcard-indice" class="flashcard__hint">Clique pour révéler la réponse.</p>
+          </div>
+          <div class="actions">
+            <button class="btn btn--secondary" id="btn-flashcard-next" type="button">Carte suivante</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="card" id="section-simulateur">
+      <h2 class="card__title">Simulateur chantier (surface + marge + budget)</h2>
+      <p class="card__desc">Un outil concret pour préparer une intervention réelle et vérifier les ordres de grandeur avant le chantier.</p>
+
+      <div class="simulateur-grid">
+        <div class="form-group">
+          <label for="simu-longueur">Longueur de la zone (m) :</label>
+          <input id="simu-longueur" type="number" min="0" step="0.01" placeholder="Ex : 12" inputmode="decimal">
+        </div>
+        <div class="form-group">
+          <label for="simu-largeur">Largeur de la zone (m) :</label>
+          <input id="simu-largeur" type="number" min="0" step="0.01" placeholder="Ex : 4,5" inputmode="decimal">
+        </div>
+        <div class="form-group">
+          <label for="simu-marge">Marge sécurité (%) :</label>
+          <input id="simu-marge" type="number" min="0" max="60" step="1" value="10" inputmode="numeric">
+        </div>
+        <div class="form-group">
+          <label for="simu-prix">Coût unitaire (€ / m²) :</label>
+          <input id="simu-prix" type="number" min="0" step="0.01" placeholder="Ex : 7,80" inputmode="decimal">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn--primary" id="btn-simu-calculer" type="button">Calculer le besoin chantier</button>
+        <button class="btn btn--secondary" id="btn-simu-reset" type="button">Réinitialiser</button>
+      </div>
+
+      <div id="simu-resultat" class="resultat" aria-live="polite"></div>
+      <div id="simu-feedback-erreurs" class="exercise-panel exercise-panel--hint" aria-live="polite">
+        Conseil remédiation : corrige d'abord les unités (m, m², € / m²) avant d'attaquer le calcul.
       </div>
     </section>
 
