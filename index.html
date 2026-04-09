@@ -138,7 +138,40 @@
       </article>
     </section>
 
+    <section class="card quest-card" id="section-jardin-quetes" aria-labelledby="titre-jardin-quetes">
+      <h2 class="card__title" id="titre-jardin-quetes">Jardin des progrès (mode jeu)</h2>
+      <p class="card__desc">
+        Transforme tes efforts en progression visible : gagne de l'XP, monte de niveau et relève une mini-mission du jour.
+      </p>
+      <div class="quest-grid">
+        <article class="quest-tile">
+          <p class="quest-tile__label">Niveau paysagiste</p>
+          <p class="quest-tile__value" id="quest-level">Niveau 1 · 0 XP</p>
+          <div class="quest-meter" aria-hidden="true"><span id="quest-xp-meter"></span></div>
+          <p class="quest-tile__hint" id="quest-xp-hint">Encore 120 XP pour passer au niveau 2.</p>
+        </article>
+        <article class="quest-tile quest-tile--accent">
+          <p class="quest-tile__label">Série de jours actifs</p>
+          <p class="quest-tile__value" id="quest-streak">0 jour</p>
+          <p class="quest-tile__hint">Fais au moins une action utile par jour pour conserver ta série.</p>
+        </article>
+      </div>
+
+      <div class="quest-daily">
+        <p class="quest-daily__title">Défi du jour</p>
+        <p class="quest-daily__desc" id="quest-daily-description">Charge en cours…</p>
+        <p class="quest-daily__progress" id="quest-daily-progress">0 / 1</p>
+        <div class="actions">
+          <button class="btn btn--primary" id="btn-quest-reroll" type="button">Nouveau défi (1/jour)</button>
+        </div>
+      </div>
+      <p id="quest-feedback" class="quest-feedback" aria-live="polite">
+        Astuce : alterne calcul de surface, pourcentage et atelier mental pour progresser plus vite.
+      </p>
+    </section>
+
     <nav class="quick-nav" aria-label="Navigation rapide">
+      <a class="quick-nav__link" href="#section-jardin-quetes">Défi du jour</a>
       <a class="quick-nav__link" href="#section-formes">Surfaces</a>
       <a class="quick-nav__link" href="#section-pourcent">Pourcentages</a>
       <a class="quick-nav__link" href="#section-atelier-mental">Atelier mental</a>
