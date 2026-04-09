@@ -13,6 +13,7 @@ const CLE_REMEDIATION = "maths-paysager-remediation";
 const CLE_MODE_PARCOURS_SIMPLE = "maths-paysager-parcours-simple";
 const CLE_MOTIVATION = "maths-paysager-motivation";
 const CLE_ATELIER_MENTAL = "maths-paysager-atelier-mental";
+const CLE_JARDIN_QUETES = "maths-paysager-jardin-quetes";
 const MAX_HISTORIQUE = 20;
 const sessionStats = { essais: 0, reussites: 0 };
 let chronoInterval = null;
@@ -98,6 +99,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const cockpitSessionMeter = document.getElementById("cockpit-session-meter");
   const cockpitLastAction = document.getElementById("cockpit-last-action");
   const cockpitNextStep = document.getElementById("cockpit-next-step");
+  const questLevel = document.getElementById("quest-level");
+  const questXpMeter = document.getElementById("quest-xp-meter");
+  const questXpHint = document.getElementById("quest-xp-hint");
+  const questStreak = document.getElementById("quest-streak");
+  const questDailyDescription = document.getElementById("quest-daily-description");
+  const questDailyProgress = document.getElementById("quest-daily-progress");
+  const questFeedback = document.getElementById("quest-feedback");
+  const btnQuestReroll = document.getElementById("btn-quest-reroll");
   const atelierType = document.getElementById("atelier-type");
   const btnAtelierNouvelle = document.getElementById("btn-atelier-nouvelle");
   const btnAtelierVerifier = document.getElementById("btn-atelier-verifier");
@@ -176,6 +185,16 @@ document.addEventListener("DOMContentLoaded", function () {
     sessionMeter: cockpitSessionMeter,
     lastAction: cockpitLastAction,
     nextStep: cockpitNextStep,
+  });
+  initialiserJardinQuetes({
+    level: questLevel,
+    xpMeter: questXpMeter,
+    xpHint: questXpHint,
+    streak: questStreak,
+    dailyDescription: questDailyDescription,
+    dailyProgress: questDailyProgress,
+    feedback: questFeedback,
+    btnReroll: btnQuestReroll,
   });
   initialiserCalculRapideClavier();
   initialiserAtelierMental({
@@ -613,6 +632,187 @@ function mettreAJourCockpitApprentissage(elements, action) {
   elements.nextStep.textContent = tauxGlobal >= 70
     ? "Tu progresses bien (" + tauxGlobal + "%) : teste le mode autonome."
     : "Objectif du jour : atteindre 70% de réussite en prenant ton temps.";
+}
+
+function initialiserJardinQuetes(ui) {
+  if (!ui || !ui.level || !ui.xpMeter || !ui.streak || !ui.dailyDescription || !ui.dailyProgress || !ui.feedback) return;
+  let etat = chargerJardinQuetes();
+  etat = assurerDefiJour(etat);
+  sauvegarderJardinQuetes(etat);
+  afficherJardinQuetes(ui, etat);
+
+  document.addEventListener("maths-paysager:action", function (event) {
+    const action = event && event.detail ? event.detail : { type: "maj" };
+    if (!action || !action.type) return;
+    if (!actionComptePourQuete(action.type)) return;
+
+    etat = appliquerActiviteJournaliere(etat);
+    etat = incrementerProgressionDefi(etat, action.type);
+    etat = attribuerRecompenseSiDefiValide(etat, ui.feedback);
+    sauvegarderJardinQuetes(etat);
+    afficherJardinQuetes(ui, etat);
+  });
+
+  if (ui.btnReroll) {
+    ui.btnReroll.addEventListener("click", function () {
+      const dateJour = obtenirDateJour();
+      if (etat.rerollDate === dateJour) {
+        ui.feedback.textContent = "Tu as déjà changé ton défi aujourd'hui. Reviens demain pour un nouveau tirage.";
+        return;
+      }
+      const indexSuivant = (Number(etat.defiIndex) + 1) % CATALOGUE_DEFIS_JOUR.length;
+      etat.defiIndex = indexSuivant;
+      etat.defi = CATALOGUE_DEFIS_JOUR[indexSuivant];
+      etat.defiDate = dateJour;
+      etat.defiProgress = 0;
+      etat.defiComplete = false;
+      etat.defiRewardClaimed = false;
+      etat.rerollDate = dateJour;
+      sauvegarderJardinQuetes(etat);
+      afficherJardinQuetes(ui, etat);
+      ui.feedback.textContent = "Nouveau défi prêt : montre ce que tu sais faire 💪";
+    });
+  }
+}
+
+const CATALOGUE_DEFIS_JOUR = [
+  { label: "Valide 2 calculs de surface ou pourcentage.", cible: 2, typeAction: "calcul", xp: 30 },
+  { label: "Réussis 2 exercices guidés (ou questions atelier).", cible: 2, typeAction: "validation", xp: 40 },
+  { label: "Enchaîne 3 actions utiles sans t'arrêter.", cible: 3, typeAction: "toutes", xp: 45 },
+];
+
+function chargerJardinQuetes() {
+  const valeurParDefaut = {
+    xpTotal: 0,
+    streak: 0,
+    lastActiveDate: "",
+    defiDate: "",
+    defiIndex: 0,
+    defi: null,
+    defiProgress: 0,
+    defiComplete: false,
+    defiRewardClaimed: false,
+    rerollDate: "",
+  };
+  try {
+    const brut = localStorage.getItem(CLE_JARDIN_QUETES);
+    if (!brut) return valeurParDefaut;
+    const data = JSON.parse(brut);
+    return {
+      xpTotal: Number(data.xpTotal) || 0,
+      streak: Number(data.streak) || 0,
+      lastActiveDate: typeof data.lastActiveDate === "string" ? data.lastActiveDate : "",
+      defiDate: typeof data.defiDate === "string" ? data.defiDate : "",
+      defiIndex: Number(data.defiIndex) || 0,
+      defi: data.defi || null,
+      defiProgress: Number(data.defiProgress) || 0,
+      defiComplete: Boolean(data.defiComplete),
+      defiRewardClaimed: Boolean(data.defiRewardClaimed),
+      rerollDate: typeof data.rerollDate === "string" ? data.rerollDate : "",
+    };
+  } catch (e) {
+    return valeurParDefaut;
+  }
+}
+
+function sauvegarderJardinQuetes(etat) {
+  localStorage.setItem(CLE_JARDIN_QUETES, JSON.stringify(etat));
+}
+
+function obtenirDateJour() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function obtenirDateHier(dateJour) {
+  const date = new Date(dateJour + "T00:00:00Z");
+  date.setUTCDate(date.getUTCDate() - 1);
+  return date.toISOString().slice(0, 10);
+}
+
+function assurerDefiJour(etat) {
+  const dateJour = obtenirDateJour();
+  if (etat.defiDate === dateJour && etat.defi) return etat;
+
+  const dateReference = new Date(dateJour + "T00:00:00Z");
+  const jourDeLAnnee = Math.floor((dateReference - new Date(Date.UTC(dateReference.getUTCFullYear(), 0, 0))) / 86400000);
+  const indexDefi = jourDeLAnnee % CATALOGUE_DEFIS_JOUR.length;
+  etat.defiDate = dateJour;
+  etat.defiIndex = indexDefi;
+  etat.defi = CATALOGUE_DEFIS_JOUR[indexDefi];
+  etat.defiProgress = 0;
+  etat.defiComplete = false;
+  etat.defiRewardClaimed = false;
+  return etat;
+}
+
+function actionComptePourQuete(typeAction) {
+  return ["calcul-forme", "calcul-pourcentage", "exercice-correct"].indexOf(typeAction) !== -1;
+}
+
+function appliquerActiviteJournaliere(etat) {
+  const dateJour = obtenirDateJour();
+  if (etat.lastActiveDate === dateJour) return etat;
+  etat.streak = etat.lastActiveDate === obtenirDateHier(dateJour) ? (etat.streak + 1) : 1;
+  etat.lastActiveDate = dateJour;
+  return etat;
+}
+
+function incrementerProgressionDefi(etat, typeAction) {
+  etat = assurerDefiJour(etat);
+  if (!etat.defi || etat.defiComplete) return etat;
+
+  const typeDefi = etat.defi.typeAction;
+  const progressionAutorisee =
+    typeDefi === "toutes" ||
+    (typeDefi === "calcul" && (typeAction === "calcul-forme" || typeAction === "calcul-pourcentage")) ||
+    (typeDefi === "validation" && typeAction === "exercice-correct");
+
+  if (!progressionAutorisee) return etat;
+
+  etat.defiProgress = Math.min(etat.defi.cible, etat.defiProgress + 1);
+  if (etat.defiProgress >= etat.defi.cible) {
+    etat.defiComplete = true;
+  }
+  return etat;
+}
+
+function attribuerRecompenseSiDefiValide(etat, zoneFeedback) {
+  if (!etat.defiComplete || etat.defiRewardClaimed || !etat.defi) return etat;
+  etat.xpTotal += etat.defi.xp;
+  etat.defiRewardClaimed = true;
+  if (zoneFeedback) {
+    zoneFeedback.textContent = "Défi réussi 🎉 +" + etat.defi.xp + " XP gagnés. Continue pour monter de niveau.";
+  }
+  return etat;
+}
+
+function calculerNiveauXP(xpTotal) {
+  let niveau = 1;
+  let xpReste = Math.max(0, Number(xpTotal) || 0);
+  let seuil = 120;
+  while (xpReste >= seuil) {
+    xpReste -= seuil;
+    niveau += 1;
+    seuil = 120 + (niveau - 1) * 40;
+  }
+  return { niveau: niveau, xpCourant: xpReste, xpProchainNiveau: seuil };
+}
+
+function afficherJardinQuetes(ui, etat) {
+  const progression = calculerNiveauXP(etat.xpTotal);
+  const pourcentageXp = Math.round((progression.xpCourant / progression.xpProchainNiveau) * 100);
+  ui.level.textContent = "Niveau " + progression.niveau + " · " + etat.xpTotal + " XP";
+  ui.xpMeter.style.width = Math.max(0, Math.min(100, pourcentageXp)) + "%";
+  if (ui.xpHint) {
+    const restant = progression.xpProchainNiveau - progression.xpCourant;
+    ui.xpHint.textContent = "Encore " + restant + " XP pour passer au niveau " + (progression.niveau + 1) + ".";
+  }
+  ui.streak.textContent = etat.streak + " jour" + (etat.streak > 1 ? "s" : "");
+
+  etat = assurerDefiJour(etat);
+  const defi = etat.defi || CATALOGUE_DEFIS_JOUR[0];
+  ui.dailyDescription.textContent = defi.label + " (récompense : +" + defi.xp + " XP)";
+  ui.dailyProgress.textContent = etat.defiProgress + " / " + defi.cible + (etat.defiComplete ? " ✅" : "");
 }
 
 

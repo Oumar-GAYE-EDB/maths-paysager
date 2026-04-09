@@ -89,6 +89,11 @@ Types de calcul :
 - **Convertisseur intelligent** : conversions fréquentes sur chantier (m/cm, m²/ha, L/m³) avec rappel de méthode
 - **Flashcards formules** : entraînement actif (question/réponse) pour mémoriser les formules essentielles
 
+### 10) Nouveau : Jardin des progrès (gamification douce)
+- **Défi du jour** renouvelé automatiquement pour encourager la régularité
+- **XP et niveaux** pour valoriser les efforts (calculs, exercices, atelier mental)
+- **Série de jours actifs** pour développer une routine courte et motivante
+
 ---
 
 ## Stack technique

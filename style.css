@@ -539,8 +539,95 @@ body.contrast-fort {
   transition: width var(--transition);
 }
 
+.quest-card {
+  background: linear-gradient(160deg, color-mix(in srgb, var(--color-primary-light) 48%, var(--color-surface) 52%), var(--color-surface));
+}
+
+.quest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3);
+}
+
+.quest-tile {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  background: var(--color-surface);
+}
+
+.quest-tile--accent {
+  background: color-mix(in srgb, var(--color-primary-light) 60%, var(--color-surface) 40%);
+  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+}
+
+.quest-tile__label {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 800;
+  color: var(--color-text-muted);
+}
+
+.quest-tile__value {
+  margin-top: var(--space-2);
+  font-size: var(--text-base);
+  font-weight: 800;
+}
+
+.quest-tile__hint {
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.quest-meter {
+  margin-top: var(--space-3);
+  height: 10px;
+  border-radius: 999px;
+  background: var(--color-border);
+  overflow: hidden;
+}
+
+.quest-meter span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #f7b267 0%, #f4845f 45%, #84cc84 100%);
+  transition: width var(--transition);
+}
+
+.quest-daily {
+  margin-top: var(--space-4);
+  border: 1px dashed color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  background: color-mix(in srgb, var(--color-surface) 72%, var(--color-primary-light) 28%);
+}
+
+.quest-daily__title {
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.quest-daily__desc {
+  margin-top: var(--space-2);
+}
+
+.quest-daily__progress {
+  margin-top: var(--space-2);
+  font-weight: 700;
+}
+
+.quest-feedback {
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
 /* ---------- MODE FOCUS (réduit les distractions) ---------- */
 body.mode-focus .quick-nav,
+body.mode-focus #section-jardin-quetes,
 body.mode-focus #section-formes,
 body.mode-focus #section-pourcent,
 body.mode-focus #section-memo {
@@ -1195,6 +1282,10 @@ button[aria-disabled="true"] {
   }
 
   .learning-cockpit {
+    grid-template-columns: 1fr;
+  }
+
+  .quest-grid {
     grid-template-columns: 1fr;
   }
 
