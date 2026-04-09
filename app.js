@@ -108,6 +108,18 @@ document.addEventListener("DOMContentLoaded", function () {
   const atelierSerie = document.getElementById("atelier-serie");
   const atelierConseil = document.getElementById("atelier-conseil");
   const citationJour = document.getElementById("citation-jour");
+  const coachTemps = document.getElementById("coach-temps");
+  const coachPriorite = document.getElementById("coach-priorite");
+  const btnCoachPlan = document.getElementById("btn-coach-plan");
+  const coachPlanSortie = document.getElementById("coach-plan-sortie");
+  const convertisseurValeur = document.getElementById("convertisseur-valeur");
+  const convertisseurType = document.getElementById("convertisseur-type");
+  const btnConvertir = document.getElementById("btn-convertir");
+  const convertisseurResultat = document.getElementById("convertisseur-resultat");
+  const flashcardFormule = document.getElementById("flashcard-formule");
+  const flashcardContenu = document.getElementById("flashcard-contenu");
+  const flashcardIndice = document.getElementById("flashcard-indice");
+  const btnFlashcardNext = document.getElementById("btn-flashcard-next");
 
   // --- Afficher les champs dès le chargement ---
   afficherChampsFormes(selectForme.value, champsForme);
@@ -178,6 +190,24 @@ document.addEventListener("DOMContentLoaded", function () {
     atelierConseil: atelierConseil,
   });
   initialiserCitationQuotidienne(citationJour);
+  initialiserCoachRevision({
+    coachTemps: coachTemps,
+    coachPriorite: coachPriorite,
+    btnCoachPlan: btnCoachPlan,
+    coachPlanSortie: coachPlanSortie,
+  });
+  initialiserConvertisseurUnites({
+    convertisseurValeur: convertisseurValeur,
+    convertisseurType: convertisseurType,
+    btnConvertir: btnConvertir,
+    convertisseurResultat: convertisseurResultat,
+  });
+  initialiserFlashcardsFormules({
+    flashcardFormule: flashcardFormule,
+    flashcardContenu: flashcardContenu,
+    flashcardIndice: flashcardIndice,
+    btnFlashcardNext: btnFlashcardNext,
+  });
   initialiserDemarrageRapide(btnDemarrageRapide, btnReviserNotion, messageDemarrage, {
     selectThemeExercice: selectThemeExercice,
     selectNiveauExercice: selectNiveauExercice,
@@ -298,6 +328,151 @@ function initialiserCitationQuotidienne(zoneCitation) {
   const numeroJour = Math.floor((maintenant - debutAnnee) / 86400000);
   const indexCitation = numeroJour % citations.length;
   zoneCitation.textContent = citations[indexCitation];
+}
+
+function initialiserCoachRevision(options) {
+  if (!options || !options.btnCoachPlan || !options.coachPlanSortie) return;
+
+  options.btnCoachPlan.addEventListener("click", function () {
+    const progression = chargerProgression();
+    const minutes = Math.max(10, Math.min(120, parserNombreLocale(options.coachTemps ? options.coachTemps.value : "30") || 30));
+    const prioriteChoisie = options.coachPriorite ? options.coachPriorite.value : "auto";
+    const priorite = prioriteChoisie === "auto" ? determinerPrioriteFaible(progression) : prioriteChoisie;
+    const blocs = genererBlocsRevision(minutes);
+    const libellePriorite = libelleCompetence(priorite);
+    const tauxGlobal = progression.essais > 0 ? (progression.reussites / progression.essais) * 100 : 0;
+
+    options.coachPlanSortie.innerHTML =
+      "<p><strong>Plan du jour (" + minutes + " min)</strong></p>" +
+      "<p>Priorité conseillée : <strong>" + libellePriorite + "</strong> — taux global actuel : <strong>" + arrondir(tauxGlobal) + "%</strong>.</p>" +
+      "<ol class=\"coach-plan-list\">" +
+      "<li><strong>" + blocs.echauffement + " min</strong> d'échauffement : atelier mental + 2 conversions rapides.</li>" +
+      "<li><strong>" + blocs.noyau + " min</strong> sur <strong>" + libellePriorite + "</strong> : 3 exercices guidés puis 1 exercice autonome.</li>" +
+      "<li><strong>" + blocs.transfert + " min</strong> de transfert métier : explique à voix haute la formule choisie et l'unité finale.</li>" +
+      "<li><strong>" + blocs.bilan + " min</strong> de bilan : note 1 erreur évitée et 1 astuce à réutiliser.</li>" +
+      "</ol>" +
+      "<p class=\"resultat__astuce\"><strong>Conseil coach :</strong> vise la régularité (20 à 30 min/jour) plutôt qu'une longue séance occasionnelle.</p>";
+
+    notifierActionApprentissage({ type: "plan-revision", competence: priorite });
+  });
+}
+
+function determinerPrioriteFaible(progression) {
+  const competences = ["aires-perimetres", "pourcentages", "situations-metier"];
+  let priorite = competences[0];
+  let pireTaux = 1;
+
+  competences.forEach(function (cle) {
+    const stats = progression.competences[cle] || { essais: 0, reussites: 0 };
+    const taux = stats.essais > 0 ? stats.reussites / stats.essais : 0;
+    if (taux < pireTaux) {
+      pireTaux = taux;
+      priorite = cle;
+    }
+  });
+
+  return priorite;
+}
+
+function genererBlocsRevision(minutes) {
+  const echauffement = Math.max(4, Math.round(minutes * 0.2));
+  const noyau = Math.max(8, Math.round(minutes * 0.5));
+  const transfert = Math.max(4, Math.round(minutes * 0.2));
+  const bilan = Math.max(2, minutes - echauffement - noyau - transfert);
+  return { echauffement: echauffement, noyau: noyau, transfert: transfert, bilan: bilan };
+}
+
+function libelleCompetence(competence) {
+  const labels = {
+    "aires-perimetres": "Aires et périmètres",
+    pourcentages: "Pourcentages",
+    "situations-metier": "Situations métier",
+  };
+  return labels[competence] || "Compétence transversale";
+}
+
+function initialiserConvertisseurUnites(options) {
+  if (!options || !options.btnConvertir || !options.convertisseurResultat) return;
+
+  options.btnConvertir.addEventListener("click", function () {
+    const valeur = parserNombreLocale(options.convertisseurValeur ? options.convertisseurValeur.value : "");
+    const type = options.convertisseurType ? options.convertisseurType.value : "m-cm";
+    if (isNaN(valeur)) {
+      afficherErreur(options.convertisseurResultat, "Renseigne une valeur numérique avant de convertir.");
+      return;
+    }
+
+    const conversion = convertirUnite(valeur, type);
+    options.convertisseurResultat.className = "resultat resultat--visible";
+    options.convertisseurResultat.innerHTML =
+      "<div class=\"resultat__ligne\"><span class=\"resultat__label\">Résultat :</span><span class=\"resultat__valeur\">" +
+      arrondir(conversion.valeur) + " " + conversion.unite +
+      "</span></div>" +
+      "<p class=\"resultat__astuce\"><strong>Méthode :</strong> " + conversion.explic + "</p>";
+  });
+}
+
+function convertirUnite(valeur, type) {
+  switch (type) {
+    case "m-cm":
+      return { valeur: valeur * 100, unite: "cm", explic: "1 m = 100 cm, donc on multiplie par 100." };
+    case "cm-m":
+      return { valeur: valeur / 100, unite: "m", explic: "1 cm = 0,01 m, donc on divise par 100." };
+    case "m2-ha":
+      return { valeur: valeur / 10000, unite: "ha", explic: "1 ha = 10 000 m², donc on divise par 10 000." };
+    case "ha-m2":
+      return { valeur: valeur * 10000, unite: "m²", explic: "1 ha = 10 000 m², donc on multiplie par 10 000." };
+    case "l-m3":
+      return { valeur: valeur / 1000, unite: "m³", explic: "1 m³ = 1 000 L, donc on divise par 1 000." };
+    case "m3-l":
+      return { valeur: valeur * 1000, unite: "L", explic: "1 m³ = 1 000 L, donc on multiplie par 1 000." };
+    default:
+      return { valeur: valeur, unite: "", explic: "Aucune conversion appliquée." };
+  }
+}
+
+function initialiserFlashcardsFormules(options) {
+  if (!options || !options.flashcardFormule || !options.flashcardContenu || !options.flashcardIndice || !options.btnFlashcardNext) return;
+
+  const cartes = [
+    { question: "Rectangle : aire ?", reponse: "A = longueur × largeur" },
+    { question: "Rectangle : périmètre ?", reponse: "P = 2 × (longueur + largeur)" },
+    { question: "Cercle : périmètre ?", reponse: "P = 2 × π × rayon" },
+    { question: "Triangle : aire ?", reponse: "A = (base × hauteur) ÷ 2" },
+    { question: "Trouver X% de N ?", reponse: "(X × N) ÷ 100" },
+    { question: "Part en pourcentage ?", reponse: "(partie ÷ total) × 100" },
+  ];
+  let index = 0;
+  let afficheReponse = false;
+
+  function afficherCarte() {
+    const carte = cartes[index];
+    options.flashcardContenu.textContent = afficheReponse ? carte.reponse : carte.question;
+    options.flashcardIndice.textContent = afficheReponse
+      ? "Explique à voix haute à quoi sert cette formule."
+      : "Clique pour révéler la réponse.";
+    options.flashcardFormule.classList.toggle("flashcard--answer", afficheReponse);
+  }
+
+  function carteSuivante() {
+    index = (index + 1) % cartes.length;
+    afficheReponse = false;
+    afficherCarte();
+  }
+
+  options.flashcardFormule.addEventListener("click", function () {
+    afficheReponse = !afficheReponse;
+    afficherCarte();
+  });
+  options.flashcardFormule.addEventListener("keydown", function (event) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      afficheReponse = !afficheReponse;
+      afficherCarte();
+    }
+  });
+  options.btnFlashcardNext.addEventListener("click", carteSuivante);
+  afficherCarte();
 }
 
 function initialiserModeFocus(caseFocus) {

@@ -84,6 +84,11 @@ Types de calcul :
 - Bouton de vérification interne des formules (auto-tests rapides)
 - Script de tests Node.js pour valider les formules principales (`tests/formules.test.js`)
 
+### 9) Nouveau : coach de révision + outils actifs
+- **Coach de révision personnalisé** : génération d'un plan quotidien en fonction du temps disponible et des compétences à renforcer
+- **Convertisseur intelligent** : conversions fréquentes sur chantier (m/cm, m²/ha, L/m³) avec rappel de méthode
+- **Flashcards formules** : entraînement actif (question/réponse) pour mémoriser les formules essentielles
+
 ---
 
 ## Stack technique
