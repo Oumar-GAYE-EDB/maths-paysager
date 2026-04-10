@@ -94,6 +94,11 @@ Types de calcul :
 - **XP et niveaux** pour valoriser les efforts (calculs, exercices, atelier mental)
 - **Série de jours actifs** pour développer une routine courte et motivante
 
+### 11) Nouveau : estimation et auto-contrôle rapide
+- Champ d'**estimation préalable** (optionnel) dans les calculs de formes et pourcentages
+- Feedback sur l'écart entre estimation et résultat exact pour travailler l'ordre de grandeur
+- Mini-checklist de **vérification en 20 secondes** après chaque résultat
+
 ---
 
 ## Stack technique
