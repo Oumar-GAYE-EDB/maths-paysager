@@ -3399,7 +3399,7 @@ function afficherChampsFormes(forme, conteneur) {
   const champs = champsParForme[forme] || [];
 
   // On génère le HTML de chaque champ
-  conteneur.innerHTML = champs
+  const champsHtml = champs
     .map(function (champ) {
       return (
         '<div class="form-group">' +
@@ -3414,6 +3414,15 @@ function afficherChampsFormes(forme, conteneur) {
       );
     })
     .join("");
+
+  const blocEstimation =
+    '<div class="form-group form-group--estimation">' +
+    '  <label for="estimation-forme">Estimation de l\'aire (optionnel)</label>' +
+    '  <input type="number" id="estimation-forme" placeholder="Ex : 20" step="0.01" min="0">' +
+    '  <p class="unit-note">Avant de calculer, fais une estimation rapide en m².</p>' +
+    "</div>";
+
+  conteneur.innerHTML = champsHtml + blocEstimation;
 }
 
 
@@ -3448,7 +3457,7 @@ function afficherChampsPourcent(type, conteneur) {
 
   const champs = champsParType[type] || [];
 
-  conteneur.innerHTML = champs
+  const champsHtml = champs
     .map(function (champ) {
       return (
         '<div class="form-group">' +
@@ -3463,6 +3472,15 @@ function afficherChampsPourcent(type, conteneur) {
       );
     })
     .join("");
+
+  const blocEstimation =
+    '<div class="form-group form-group--estimation">' +
+    '  <label for="estimation-pourcent">Estimation du résultat (optionnel)</label>' +
+    '  <input type="number" id="estimation-pourcent" placeholder="Ex : 30" step="0.01">' +
+    '  <p class="unit-note">Astuce : estime d\'abord, puis compare avec le résultat exact.</p>' +
+    "</div>";
+
+  conteneur.innerHTML = champsHtml + blocEstimation;
 }
 
 
@@ -3479,6 +3497,7 @@ function afficherChampsPourcent(type, conteneur) {
  */
 function calculerForme(forme, conteneur, resultat, schema) {
   effacerErreursChamps(conteneur);
+  const estimationAire = lireValeur("estimation-forme");
 
   // Variable pour stocker l'aire, le périmètre et la formule
   let aire, perimetre, formuleAire, formulePerimetre;
@@ -3735,7 +3754,23 @@ function calculerForme(forme, conteneur, resultat, schema) {
   }
 
   // --- Affichage du résultat ---
-  afficherResultat(resultat, aire, perimetre, formuleAire, formulePerimetre, etapesAire, etapesPerimetre, forme);
+  const feedbackEstimation = creerFeedbackEstimation(
+    estimationAire,
+    aire,
+    "m²",
+    "ton estimation d'aire"
+  );
+  afficherResultat(
+    resultat,
+    aire,
+    perimetre,
+    formuleAire,
+    formulePerimetre,
+    etapesAire,
+    etapesPerimetre,
+    forme,
+    feedbackEstimation
+  );
 }
 
 
@@ -3751,6 +3786,7 @@ function calculerForme(forme, conteneur, resultat, schema) {
  */
 function calculerPourcentage(type, conteneur, resultat) {
   effacerErreursChamps(conteneur);
+  const estimationResultat = lireValeur("estimation-pourcent");
 
   let valeurResultat, formule;
   let etapes = [];
@@ -3776,7 +3812,14 @@ function calculerPourcentage(type, conteneur, resultat) {
         "Je calcule " + pourcent + " × " + nombre + ".",
         "Je divise par 100 : résultat = " + arrondir(valeurResultat) + ".",
       ];
-      afficherResultatPourcent(resultat, arrondir(valeurResultat), formule, etapes, type);
+      afficherResultatPourcent(
+        resultat,
+        arrondir(valeurResultat),
+        formule,
+        etapes,
+        type,
+        creerFeedbackEstimation(estimationResultat, valeurResultat, "", "ton estimation")
+      );
       break;
     }
 
@@ -3805,7 +3848,14 @@ function calculerPourcentage(type, conteneur, resultat) {
         "Je multiplie le résultat par 100.",
         "Je trouve : " + arrondir(valeurResultat) + " %.",
       ];
-      afficherResultatPourcent(resultat, arrondir(valeurResultat) + " %", formule, etapes, type);
+      afficherResultatPourcent(
+        resultat,
+        arrondir(valeurResultat) + " %",
+        formule,
+        etapes,
+        type,
+        creerFeedbackEstimation(estimationResultat, valeurResultat, "%", "ton estimation")
+      );
       break;
     }
 
@@ -3836,7 +3886,14 @@ function calculerPourcentage(type, conteneur, resultat) {
         "J'obtiens " + arrondir(augmentation) + ".",
         "J'ajoute à la valeur de départ : " + depart + " + " + arrondir(augmentation) + ".",
       ];
-      afficherResultatPourcent(resultat, arrondir(valeurResultat), formule, etapes, type);
+      afficherResultatPourcent(
+        resultat,
+        arrondir(valeurResultat),
+        formule,
+        etapes,
+        type,
+        creerFeedbackEstimation(estimationResultat, valeurResultat, "", "ton estimation")
+      );
       break;
     }
 
@@ -3867,7 +3924,14 @@ function calculerPourcentage(type, conteneur, resultat) {
         "J'obtiens " + arrondir(reduction) + ".",
         "Je retire ce montant à la valeur de départ.",
       ];
-      afficherResultatPourcent(resultat, arrondir(valeurResultat), formule, etapes, type);
+      afficherResultatPourcent(
+        resultat,
+        arrondir(valeurResultat),
+        formule,
+        etapes,
+        type,
+        creerFeedbackEstimation(estimationResultat, valeurResultat, "", "ton estimation")
+      );
       break;
     }
   }
@@ -3979,7 +4043,7 @@ function afficherErreurChamp(idChamp, message) {
 /**
  * Affiche le résultat des calculs d'aire et de périmètre
  */
-function afficherResultat(zone, aire, perimetre, formuleAire, formulePerimetre, etapesAire, etapesPerimetre, forme) {
+function afficherResultat(zone, aire, perimetre, formuleAire, formulePerimetre, etapesAire, etapesPerimetre, forme, feedbackEstimation) {
   zone.className = "resultat resultat--visible";
   viderElement(zone);
   zone.appendChild(creerLigneResultat("Aire", arrondir(aire) + " m²"));
@@ -3998,6 +4062,13 @@ function afficherResultat(zone, aire, perimetre, formuleAire, formulePerimetre, 
   if (blocAire) zone.appendChild(blocAire);
   const blocPerimetre = creerBlocEtapesElement("Étapes pour le périmètre", etapesPerimetre);
   if (blocPerimetre) zone.appendChild(blocPerimetre);
+  const blocEstimation = creerBlocEstimation(feedbackEstimation);
+  if (blocEstimation) zone.appendChild(blocEstimation);
+  zone.appendChild(creerAutoControle([
+    "Ai-je bien écrit l'unité finale (m² pour l'aire, m pour le périmètre) ?",
+    "Le résultat est-il cohérent avec les dimensions données ?",
+    "Ai-je utilisé la bonne formule pour la forme choisie ?",
+  ]));
   zone.appendChild(creerAstuce("Astuce", genererAstuceForme(forme)));
 
   enregistrerHistorique({
@@ -4017,7 +4088,7 @@ function afficherResultat(zone, aire, perimetre, formuleAire, formulePerimetre, 
 /**
  * Affiche le résultat d'un calcul de pourcentage
  */
-function afficherResultatPourcent(zone, valeur, formule, etapes, type) {
+function afficherResultatPourcent(zone, valeur, formule, etapes, type, feedbackEstimation) {
   zone.className = "resultat resultat--visible";
   viderElement(zone);
   zone.appendChild(creerLigneResultat("Résultat", String(valeur)));
@@ -4029,6 +4100,13 @@ function afficherResultatPourcent(zone, valeur, formule, etapes, type) {
 
   const blocEtapes = creerBlocEtapesElement("Étapes du calcul", etapes);
   if (blocEtapes) zone.appendChild(blocEtapes);
+  const blocEstimation = creerBlocEstimation(feedbackEstimation);
+  if (blocEstimation) zone.appendChild(blocEstimation);
+  zone.appendChild(creerAutoControle([
+    "Le résultat est-il logique (ni trop grand, ni trop petit) ?",
+    "Ai-je pensé à \"%\" quand c'est un pourcentage ?",
+    "Suis-je capable d'expliquer chaque étape du calcul ?",
+  ]));
   zone.appendChild(creerAstuce("Astuce", genererAstucePourcentage(type)));
 
   enregistrerHistorique({
@@ -4055,6 +4133,49 @@ function creerBlocEtapesElement(titre, etapes) {
     const item = document.createElement("li");
     item.textContent = etape;
     liste.appendChild(item);
+  });
+  bloc.appendChild(liste);
+  return bloc;
+}
+
+function creerFeedbackEstimation(estimation, valeurExacte, unite, libelle) {
+  if (estimation === null || isNaN(estimation)) return null;
+  if (valeurExacte === null || isNaN(valeurExacte)) return null;
+  const reference = Math.max(Math.abs(valeurExacte), 1);
+  const ecartRelatif = Math.abs(estimation - valeurExacte) / reference;
+  const suffixeUnite = unite ? " " + unite : "";
+
+  if (ecartRelatif <= 0.1) {
+    return "Excellent : " + libelle + " (" + arrondir(estimation) + suffixeUnite + ") est très proche du résultat exact.";
+  }
+  if (ecartRelatif <= 0.25) {
+    return "Bonne estimation : tu es proche. Écart ≈ " + arrondir(ecartRelatif * 100) + " %.";
+  }
+  return "Estimation à améliorer : compare les ordres de grandeur avant de calculer. Écart ≈ " + arrondir(ecartRelatif * 100) + " %.";
+}
+
+function creerBlocEstimation(message) {
+  if (!message) return null;
+  const bloc = document.createElement("div");
+  bloc.className = "resultat__estimation";
+  bloc.textContent = "Auto-contrôle estimation : " + message;
+  return bloc;
+}
+
+function creerAutoControle(items) {
+  const bloc = document.createElement("div");
+  bloc.className = "resultat__autocontrole";
+  const titre = document.createElement("p");
+  titre.className = "resultat__autocontrole-titre";
+  titre.textContent = "Vérification rapide (20 secondes)";
+  bloc.appendChild(titre);
+
+  const liste = document.createElement("ul");
+  liste.className = "resultat__autocontrole-liste";
+  (items || []).forEach(function (item) {
+    const li = document.createElement("li");
+    li.textContent = item;
+    liste.appendChild(li);
   });
   bloc.appendChild(liste);
   return bloc;
