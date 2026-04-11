@@ -80,6 +80,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const sessionProgression = document.getElementById("session-progression");
   const motivationEleve = document.getElementById("motivation-eleve");
   const defiJour = document.getElementById("defi-jour");
+  const btnAnalyserSeance = document.getElementById("btn-analyser-seance");
+  const analyseApprentissage = document.getElementById("analyse-apprentissage");
   const uniteAttendue = document.getElementById("unite-attendue");
   const testsFormulesResultat = document.getElementById("tests-formules-resultat");
   const reponseExercice = document.getElementById("reponse-exercice");
@@ -275,6 +277,8 @@ document.addEventListener("DOMContentLoaded", function () {
     sessionProgression: sessionProgression,
     motivationEleve: motivationEleve,
     defiJour: defiJour,
+    btnAnalyserSeance: btnAnalyserSeance,
+    analyseApprentissage: analyseApprentissage,
     uniteAttendue: uniteAttendue,
     testsFormulesResultat: testsFormulesResultat,
     reponseExercice: reponseExercice,
@@ -1145,6 +1149,7 @@ function initialiserModeExercices(ui) {
   mettreAJourProgressionSession(ui.sessionProgression);
   mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
   mettreAJourTableauCompetences(ui.tableauCompetences, ui.planEntrainementPersonnalise);
+  afficherAnalyseApprentissage(ui.analyseApprentissage);
   mettreAJourChronometre(ui);
   mettreAJourRubanSession(ui);
   if (ui.testsFormulesResultat) {
@@ -1260,12 +1265,18 @@ function initialiserModeExercices(ui) {
       exporterBilanEleve(ui.feedbackExercice);
     });
   }
+  if (ui.btnAnalyserSeance) {
+    ui.btnAnalyserSeance.addEventListener("click", function () {
+      afficherAnalyseApprentissage(ui.analyseApprentissage);
+    });
+  }
 
   mettreAJourProgressionEtBadges(ui.progressionExercice, ui.badgesExercice);
   afficherPlanMaitrise(ui.planMaitrise);
   afficherHistorique(ui.historiqueExercice);
   mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
   mettreAJourTableauCompetences(ui.tableauCompetences, ui.planEntrainementPersonnalise);
+  afficherAnalyseApprentissage(ui.analyseApprentissage);
   mettreAJourTableauMotivation(ui.motivationEleve, ui.defiJour);
 }
 
@@ -1307,6 +1318,7 @@ function corrigerExercice(ui, passerAuSuivant) {
     afficherHistorique(ui.historiqueExercice);
     mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
     mettreAJourTableauCompetences(ui.tableauCompetences, ui.planEntrainementPersonnalise);
+    afficherAnalyseApprentissage(ui.analyseApprentissage);
     mettreAJourTableauMotivation(ui.motivationEleve, ui.defiJour);
     if (!estCorrect) debloquerAidesParcoursSimple(ui);
     mettreAJourRubanSession(ui);
@@ -1377,9 +1389,12 @@ function reinitialiserAidesParcoursSimple(ui) {
 
 function creerExercice(theme, niveau, meta) {
   let exercice = null;
+  const themeEffectif = theme === "mixte"
+    ? ["aires", "pourcentages", "metier"][nombreAleatoire(0, 2)]
+    : theme;
   if (meta && meta.remediation) exercice = creerExerciceRemediation(meta.remediation, niveau);
-  else if (theme === "pourcentages") exercice = creerExercicePourcentage(niveau);
-  else if (theme === "metier") exercice = creerExerciceMetier(niveau);
+  else if (themeEffectif === "pourcentages") exercice = creerExercicePourcentage(niveau);
+  else if (themeEffectif === "metier") exercice = creerExerciceMetier(niveau);
   else exercice = creerExerciceForme(niveau);
   return enrichirExercice(exercice, meta);
 }
@@ -1746,8 +1761,13 @@ function creerExerciceForme(niveau) {
 }
 
 function creerExercicePourcentage(niveau) {
-  const scenarioMax = niveau === "facile" ? 2 : 6;
-  const scenario = nombreAleatoire(1, scenarioMax);
+  const scenariosParNiveau = {
+    facile: [1, 2, 4],
+    moyen: [1, 2, 3, 4, 5, 6],
+    difficile: [2, 3, 4, 5, 6, 7],
+  };
+  const scenariosDisponibles = scenariosParNiveau[niveau] || scenariosParNiveau.facile;
+  const scenario = scenariosDisponibles[nombreAleatoire(0, scenariosDisponibles.length - 1)];
   if (scenario === 1) {
     const nombre = niveau === "difficile" ? nombreAleatoire(120, 800) : nombreAleatoire(50, 400);
     const pourcent = niveau === "facile" ? nombreAleatoire(5, 30) : nombreAleatoire(10, 75);
@@ -1970,6 +1990,43 @@ function creerExercicePourcentage(niveau) {
       ],
     };
   }
+  if (scenario === 7) {
+    const montantNet = nombreAleatoire(800, 2800);
+    const remise = nombreAleatoire(8, 22);
+    const coefficient = 1 - remise / 100;
+    const montantInitial = montantNet / coefficient;
+    return {
+      theme: "pourcentages",
+      competence: "pourcentages",
+      competenceLabel: "Pourcentages",
+      objectif: "Remonter d'un montant final vers le montant initial avant remise.",
+      titre: "Retrouver le prix initial avant remise",
+      enonce: "Contexte : après une remise de " + remise + "%, le montant payé est de " + arrondir(montantNet) + " €.\nQuestion : quel était le montant initial avant remise ?",
+      reponse: montantInitial,
+      tolerance: 0.1,
+      unite: "€",
+      explication: "Étape 1 : coefficient après remise = 1 - " + remise + "/100 = " + arrondir(coefficient) + ". Étape 2 : montant initial = montant payé ÷ coefficient = " + arrondir(montantNet) + " ÷ " + arrondir(coefficient) + " = " + arrondir(montantInitial) + " €.",
+      erreurProbable: "Pour retrouver la valeur initiale, il faut diviser par le coefficient (et non multiplier).",
+      erreurCode: "pourcent_div100",
+      palier: "Or",
+      etapes: [
+        "Je calcule le coefficient de conservation après remise.",
+        "Je pose l'équation montant final = montant initial × coefficient.",
+        "Je divise pour retrouver le montant initial.",
+      ],
+      utiliteMetier: "Utile pour vérifier un devis quand seul le montant remisé est communiqué.",
+      verification: "Le montant initial doit être supérieur au montant payé après remise.",
+      pontMathsMetier: {
+        mesure: "Le prix réel avant négociation commerciale.",
+        decision: "Comparer objectivement deux offres remisées.",
+        impact: "Améliore la lecture économique des achats chantier.",
+      },
+      indices: [
+        "Indice 1 : après remise, on garde (100 - remise)% du prix initial.",
+        "Indice 2 : montant initial = montant payé ÷ (1 - remise/100).",
+      ],
+    };
+  }
 
   const totalPlants = niveau === "difficile" ? nombreAleatoire(300, 900) : nombreAleatoire(120, 320);
   const partVivaces = niveau === "facile" ? nombreAleatoire(20, 45) : nombreAleatoire(30, 70);
@@ -2008,8 +2065,13 @@ function creerExercicePourcentage(niveau) {
 }
 
 function creerExerciceMetier(niveau) {
-  const scenarioMax = niveau === "facile" ? 4 : 7;
-  const scenario = nombreAleatoire(1, scenarioMax);
+  const scenariosParNiveau = {
+    facile: [1, 2, 3, 4],
+    moyen: [1, 2, 3, 4, 5, 6],
+    difficile: [2, 3, 4, 5, 6, 7, 8],
+  };
+  const scenariosDisponibles = scenariosParNiveau[niveau] || scenariosParNiveau.facile;
+  const scenario = scenariosDisponibles[nombreAleatoire(0, scenariosDisponibles.length - 1)];
   if (scenario === 1) {
     const longueur = niveau === "facile" ? nombreAleatoire(4, 12) : nombreAleatoire(8, 25);
     const largeur = niveau === "difficile" ? nombreAleatoire(5, 16) : nombreAleatoire(3, 10);
@@ -2276,6 +2338,48 @@ function creerExerciceMetier(niveau) {
       indices: [
         "Indice 1 : commence par multiplier nombre de bacs × litres par bac.",
         "Indice 2 : applique ensuite la marge avec (1 + x/100).",
+      ],
+    };
+  }
+  if (scenario === 8) {
+    const longueur = nombreAleatoire(16, 42);
+    const largeur = nombreAleatoire(6, 20);
+    const epaisseurCm = nombreAleatoire(4, 9);
+    const densiteKgM3 = nombreAleatoire(520, 760);
+    const surface = longueur * largeur;
+    const volume = surface * (epaisseurCm / 100);
+    const masse = volume * densiteKgM3;
+    return {
+      theme: "metier",
+      competence: "situations-metier",
+      competenceLabel: "Situations métier CAPa",
+      objectif: "Enchaîner surface, conversion cm→m et masse totale de paillage.",
+      titre: "Situation métier CAPa — masse de paillage à livrer",
+      enonce: "Contexte : paillage d'une zone de " + longueur + " m × " + largeur + " m.\nDonnées : épaisseur = " + epaisseurCm + " cm ; densité du paillage = " + densiteKgM3 + " kg/m³.\nQuestion : quelle masse totale de paillage faut-il livrer ?",
+      reponse: masse,
+      tolerance: 0.2,
+      unite: "kg",
+      explication: "Étape 1 : surface = " + longueur + " × " + largeur + " = " + arrondir(surface) + " m². Étape 2 : épaisseur = " + epaisseurCm + " cm = " + arrondir(epaisseurCm / 100) + " m. Étape 3 : volume = surface × épaisseur = " + arrondir(volume) + " m³. Étape 4 : masse = volume × densité = " + arrondir(masse) + " kg.",
+      erreurProbable: "Attention à convertir les centimètres en mètres avant de calculer le volume.",
+      erreurCode: "metier_surface_avant_conversion",
+      palier: "Or",
+      etapes: [
+        "Je calcule la surface à pailler.",
+        "Je convertis l'épaisseur de cm vers m.",
+        "Je calcule volume puis masse avec la densité.",
+      ],
+      utiliteMetier: "Permet d'organiser les livraisons sans surcharge ni rupture de matériau.",
+      verification: "Une épaisseur plus grande doit donner une masse plus grande.",
+      visuel: "🚛 Paillage en vrac",
+      decisionChantier: "Décision : planifier le tonnage et le nombre de rotations de livraison.",
+      pontMathsMetier: {
+        mesure: "Le tonnage réel de paillage nécessaire.",
+        decision: "Valider la logistique fournisseur et transport.",
+        impact: "Réduit les coûts de transport et les retards de pose.",
+      },
+      indices: [
+        "Indice 1 : convertis d'abord l'épaisseur en mètres.",
+        "Indice 2 : masse = (surface × épaisseur) × densité.",
       ],
     };
   }
@@ -3258,6 +3362,43 @@ function mettreAJourTableauCompetences(zoneTableau, zonePlan) {
       "</ol>" +
       "<small>" + plan.rappel + "</small>";
   }
+}
+
+function afficherAnalyseApprentissage(zone) {
+  if (!zone) return;
+  const statsCompetences = construireStatsCompetences();
+  const historique = lireHistorique().filter(function (item) { return item.type === "exercice"; });
+  if (historique.length === 0) {
+    zone.innerHTML =
+      "<p><strong>Diagnostic prêt :</strong> fais 3 exercices pour obtenir une analyse détaillée (forces, risques et plan d'action).</p>" +
+      "<ul><li>🎯 Commence en mode guidé.</li><li>🧪 Vérifie l'unité avant de valider.</li><li>🗣️ Explique ta méthode à voix haute.</li></ul>";
+    return;
+  }
+
+  const pointFort = statsCompetences.reduce(function (acc, item) {
+    return !acc || item.taux > acc.taux ? item : acc;
+  }, null);
+  const axePrioritaire = statsCompetences.reduce(function (acc, item) {
+    return !acc || item.taux < acc.taux ? item : acc;
+  }, null);
+  const recent = historique.slice(0, 6);
+  const reussitesRecentes = recent.filter(function (item) { return !!item.estCorrect; }).length;
+  const momentum = reussitesRecentes >= 4 ? "positive" : (reussitesRecentes >= 2 ? "stable" : "fragile");
+  const conseilMomentum = momentum === "positive"
+    ? "Tu peux augmenter la difficulté sur 1 exercice pour consolider."
+    : (momentum === "stable"
+      ? "Reste en mode autonome et travaille la vérification d'unité."
+      : "Reviens 10 minutes en mode guidé avec indices.");
+
+  zone.innerHTML =
+    "<p><strong>Forces actuelles :</strong> " + pointFort.label + " (" + arrondir(pointFort.taux) + "%).</p>" +
+    "<p><strong>Axe prioritaire :</strong> " + axePrioritaire.label + " (" + arrondir(axePrioritaire.taux) + "%).</p>" +
+    "<p><strong>Dynamique récente :</strong> " + reussitesRecentes + "/" + recent.length + " réussites (" + momentum + ").</p>" +
+    "<ul>" +
+    "<li>✅ Garde ton point fort avec 1 exercice de maintien par séance.</li>" +
+    "<li>🎯 Fais 2 exercices ciblés sur « " + axePrioritaire.label + " » aujourd'hui.</li>" +
+    "<li>🧭 " + conseilMomentum + "</li>" +
+    "</ul>";
 }
 
 function genererPlanEntrainementHebdo(priorite, pointFort, statsCompetences) {

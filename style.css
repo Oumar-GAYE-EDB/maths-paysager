@@ -894,6 +894,11 @@ body.mode-focus #section-exercices {
   gap: var(--space-3);
 }
 
+.actions--inline {
+  justify-content: space-between;
+  align-items: center;
+}
+
 .actions .btn--primary {
   box-shadow: var(--shadow-sm);
   min-width: 9rem;
