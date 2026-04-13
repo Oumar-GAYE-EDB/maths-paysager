@@ -1267,6 +1267,34 @@ button[aria-disabled="true"] {
   gap: var(--space-3);
 }
 
+.progress-grid--insights {
+  margin-top: var(--space-3);
+}
+
+#feedback-estimation {
+  border-left: 4px solid color-mix(in srgb, var(--color-primary) 50%, var(--color-border));
+}
+
+.radar-row {
+  display: grid;
+  grid-template-columns: 120px 1fr auto;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.radar-row__bar {
+  height: 0.6rem;
+  border-radius: 999px;
+  background: var(--color-border);
+  overflow: hidden;
+}
+
+.radar-row__bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 60%, #9ccc72 40%));
+}
+
 .progression-resume {
   display: grid;
   gap: var(--space-1);
