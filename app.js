@@ -84,8 +84,12 @@ document.addEventListener("DOMContentLoaded", function () {
   const analyseApprentissage = document.getElementById("analyse-apprentissage");
   const uniteAttendue = document.getElementById("unite-attendue");
   const testsFormulesResultat = document.getElementById("tests-formules-resultat");
+  const estimationExercice = document.getElementById("estimation-exercice");
   const reponseExercice = document.getElementById("reponse-exercice");
   const feedbackExercice = document.getElementById("feedback-exercice");
+  const feedbackEstimation = document.getElementById("feedback-estimation");
+  const radarCompetences = document.getElementById("radar-competences");
+  const laboratoireErreurs = document.getElementById("laboratoire-erreurs");
   const progressionExercice = document.getElementById("progression-exercice");
   const badgesExercice = document.getElementById("badges-exercice");
   const historiqueExercice = document.getElementById("historique-exercice");
@@ -281,8 +285,12 @@ document.addEventListener("DOMContentLoaded", function () {
     analyseApprentissage: analyseApprentissage,
     uniteAttendue: uniteAttendue,
     testsFormulesResultat: testsFormulesResultat,
+    estimationExercice: estimationExercice,
     reponseExercice: reponseExercice,
     feedbackExercice: feedbackExercice,
+    feedbackEstimation: feedbackEstimation,
+    radarCompetences: radarCompetences,
+    laboratoireErreurs: laboratoireErreurs,
     progressionExercice: progressionExercice,
     badgesExercice: badgesExercice,
     historiqueExercice: historiqueExercice,
@@ -1166,6 +1174,8 @@ function initialiserModeExercices(ui) {
       : { theme: ui.selectThemeExercice.value, niveau: ui.selectNiveauExercice.value, source: "manuel", objectifSeance: objectifSeance, modeAccompagnement: modeAccompagnement };
     exerciceActuel = creerExercice(selection.theme, selection.niveau, selection);
     afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
+    if (ui.estimationExercice) ui.estimationExercice.value = "";
+    afficherFeedbackEstimation(ui.feedbackEstimation, null);
     afficherRecommandation(ui.recommandationExercice, selection);
     afficherBarreParcours(ui.parcoursVisual, 2);
     afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
@@ -1239,6 +1249,8 @@ function initialiserModeExercices(ui) {
       }
       exerciceActuel = creerExerciceRemediation(remediation);
       afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
+      if (ui.estimationExercice) ui.estimationExercice.value = "";
+      afficherFeedbackEstimation(ui.feedbackEstimation, null);
       afficherObjectifEtCompetences(ui.objectifSession, ui.competencesExercice, exerciceActuel, {
         source: "remediation",
         message: "Rejeu ciblé : on reprend une erreur récente.",
@@ -1278,6 +1290,8 @@ function initialiserModeExercices(ui) {
   mettreAJourTableauCompetences(ui.tableauCompetences, ui.planEntrainementPersonnalise);
   afficherAnalyseApprentissage(ui.analyseApprentissage);
   mettreAJourTableauMotivation(ui.motivationEleve, ui.defiJour);
+  mettreAJourRadarCompetences(ui.radarCompetences);
+  mettreAJourLaboratoireErreurs(ui.laboratoireErreurs);
 }
 
 function corrigerExercice(ui, passerAuSuivant) {
@@ -1298,6 +1312,7 @@ function corrigerExercice(ui, passerAuSuivant) {
   if (!passerAuSuivant) {
     const estCorrect = Math.abs(reponse - exerciceActuel.reponse) <= exerciceActuel.tolerance;
     const diagnostic = analyserErreur(exerciceActuel, reponse);
+    const estimation = ui.estimationExercice ? parserNombreLocale(ui.estimationExercice.value) : null;
     sessionStats.essais += 1;
     sessionStats.reussites += estCorrect ? 1 : 0;
     enregistrerTentativeExercice(exerciceActuel, reponse, estCorrect);
@@ -1306,6 +1321,7 @@ function corrigerExercice(ui, passerAuSuivant) {
       ajouterRemediation(exerciceActuel);
     }
     afficherFeedbackExercice(ui.feedbackExercice, exerciceActuel, reponse, estCorrect, diagnostic);
+    afficherFeedbackEstimation(ui.feedbackEstimation, estimation, exerciceActuel.reponse, exerciceActuel.unite);
     afficherMissionSuivante(ui.missionSuivante, exerciceActuel, estCorrect);
     afficherCoachEtapes(ui.coachEtapes, exerciceActuel, estCorrect ? "corrige-ok" : "corrige-ko");
     afficherBarreParcours(ui.parcoursVisual, estCorrect ? 4 : 3);
@@ -1319,6 +1335,8 @@ function corrigerExercice(ui, passerAuSuivant) {
     mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
     mettreAJourTableauCompetences(ui.tableauCompetences, ui.planEntrainementPersonnalise);
     afficherAnalyseApprentissage(ui.analyseApprentissage);
+    mettreAJourRadarCompetences(ui.radarCompetences);
+    mettreAJourLaboratoireErreurs(ui.laboratoireErreurs);
     mettreAJourTableauMotivation(ui.motivationEleve, ui.defiJour);
     if (!estCorrect) debloquerAidesParcoursSimple(ui);
     mettreAJourRubanSession(ui);
@@ -1342,6 +1360,8 @@ function corrigerExercice(ui, passerAuSuivant) {
     };
   exerciceActuel = creerExercice(selection.theme, selection.niveau, selection);
   afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
+  if (ui.estimationExercice) ui.estimationExercice.value = "";
+  afficherFeedbackEstimation(ui.feedbackEstimation, null);
   afficherRecommandation(ui.recommandationExercice, selection);
   afficherBarreParcours(ui.parcoursVisual, 2);
   afficherCoachEtapes(ui.coachEtapes, exerciceActuel, "avant-reponse");
@@ -1569,7 +1589,7 @@ function creerExerciceForme(niveau) {
   const plage = difficultes[niveau] || difficultes.facile;
   const typesDisponibles = niveau === "facile"
     ? ["rectangle", "cercle", "triangle"]
-    : ["rectangle", "cercle", "triangle", "zone-mixte", "zone-composite"];
+    : ["rectangle", "cercle", "triangle", "zone-mixte", "zone-composite", "trapeze-allee"];
   const type = typesDisponibles[nombreAleatoire(0, typesDisponibles.length - 1)];
 
   if (type === "rectangle") {
@@ -1641,6 +1661,48 @@ function creerExerciceForme(niveau) {
       indices: [
         "Indice 1 : on cherche une longueur autour du cercle : c'est un périmètre.",
         "Indice 2 : applique 2 × π × rayon, sans transformer le rayon en diamètre.",
+      ],
+    };
+  }
+
+  if (type === "trapeze-allee") {
+    const base1 = nombreAleatoire(plage.min + 4, plage.max + 8);
+    const base2 = nombreAleatoire(plage.min + 2, base1 - 1);
+    const hauteur = nombreAleatoire(plage.min, plage.max);
+    const largeurAllee = nombreAleatoire(1, 3);
+    const longueurAllee = nombreAleatoire(Math.max(6, plage.min + 2), plage.max + 6);
+    const aireTrapeze = ((base1 + base2) * hauteur) / 2;
+    const aireAllee = largeurAllee * longueurAllee;
+    const airePlantable = aireTrapeze - aireAllee;
+    return {
+      theme: "aires",
+      competence: "aires-perimetres",
+      competenceLabel: "Aires et périmètres",
+      objectif: "Calculer une aire de trapèze puis retirer une allée non plantable.",
+      titre: "Surface utile d'une plate-bande trapézoïdale",
+      enonce: "Contexte : une plate-bande en trapèze contient une allée technique.\nDonnées : grande base = " + base1 + " m, petite base = " + base2 + " m, hauteur = " + hauteur + " m ; allée = " + longueurAllee + " m × " + largeurAllee + " m.\nQuestion : quelle surface reste plantable (en m²) ?",
+      reponse: airePlantable,
+      tolerance: 0.1,
+      unite: "m²",
+      explication: "Étape 1 : aire trapèze = ((" + base1 + " + " + base2 + ") × " + hauteur + ") ÷ 2 = " + arrondir(aireTrapeze) + " m². Étape 2 : aire allée = " + longueurAllee + " × " + largeurAllee + " = " + arrondir(aireAllee) + " m². Étape 3 : surface plantable = " + arrondir(aireTrapeze) + " - " + arrondir(aireAllee) + " = " + arrondir(airePlantable) + " m².",
+      erreurProbable: "N'oublie pas de diviser par 2 dans la formule du trapèze avant de retirer l'allée.",
+      erreurCode: "triangle_div2",
+      palier: "Or",
+      etapes: [
+        "Je calcule l'aire du trapèze complet.",
+        "Je calcule l'aire de l'allée non plantée.",
+        "Je soustrais pour obtenir la surface réellement plantable.",
+      ],
+      utiliteMetier: "Permet d'ajuster finement les quantités de plants pour des formes non rectangulaires.",
+      verification: "La surface finale doit rester positive et inférieure à l'aire totale du trapèze.",
+      pontMathsMetier: {
+        mesure: "Surface plantable réelle d'une plate-bande irrégulière.",
+        decision: "Déterminer la quantité de plantes et de paillage à commander.",
+        impact: "Évite le sur-stock sur des zones à géométrie complexe.",
+      },
+      indices: [
+        "Indice 1 : commence par la formule d'aire du trapèze ((B+b)×h)/2.",
+        "Indice 2 : enlève ensuite l'aire de l'allée.",
       ],
     };
   }
@@ -2799,6 +2861,85 @@ function mettreAJourTableauMotivation(zoneMotivation, zoneDefi) {
       (data.defi.termine ? "✅ Défi validé !" : "• Encore " + restant + " réussite(s).") +
       "</p>";
   }
+}
+
+function afficherFeedbackEstimation(zone, estimation, valeurExacte, unite) {
+  if (!zone) return;
+  if (typeof estimation !== "number" || !isFinite(estimation) || typeof valeurExacte !== "number") {
+    zone.innerHTML = "Active ton intuition : écris une estimation, puis compare avec ton résultat exact.";
+    return;
+  }
+  const ecart = estimation - valeurExacte;
+  const ecartAbs = Math.abs(ecart);
+  const ecartPct = valeurExacte !== 0 ? (ecartAbs / Math.abs(valeurExacte)) * 100 : 0;
+  const precision = ecartPct <= 10
+    ? "🎯 Excellente estimation"
+    : (ecartPct <= 25 ? "👍 Bonne intuition" : "🧭 À ajuster");
+  zone.innerHTML =
+    "<strong>" + precision + "</strong>" +
+    "<p>Estimation : <strong>" + arrondir(estimation) + " " + (unite || "") + "</strong> • " +
+    "Valeur attendue : <strong>" + arrondir(valeurExacte) + " " + (unite || "") + "</strong></p>" +
+    "<p>Écart : <strong>" + arrondir(ecartAbs) + " " + (unite || "") + "</strong> (" + arrondir(ecartPct) + "%). " +
+    "Astuce : visualise l'ordre de grandeur avant de calculer précisément.</p>";
+}
+
+function mettreAJourRadarCompetences(zone) {
+  if (!zone) return;
+  const progression = chargerProgression();
+  const cartes = [
+    { cle: "aires-perimetres", label: "Aires / périmètres" },
+    { cle: "pourcentages", label: "Pourcentages" },
+    { cle: "situations-metier", label: "Situations métier" },
+  ];
+  const lignes = cartes.map(function (item) {
+    const stats = progression.competences[item.cle] || { essais: 0, reussites: 0 };
+    const taux = stats.essais > 0 ? (stats.reussites / stats.essais) * 100 : 0;
+    return (
+      "<div class=\"radar-row\">" +
+      "<span>" + item.label + "</span>" +
+      "<span class=\"radar-row__bar\"><span style=\"width:" + Math.max(8, Math.min(100, taux)) + "%\"></span></span>" +
+      "<strong>" + arrondir(taux) + "%</strong>" +
+      "</div>"
+    );
+  });
+  zone.innerHTML =
+    "<p>Lis ton radar pour choisir la prochaine compétence à entraîner en priorité.</p>" +
+    lignes.join("");
+}
+
+function mettreAJourLaboratoireErreurs(zone) {
+  if (!zone) return;
+  const file = lireRemediation();
+  if (!file.length) {
+    zone.innerHTML = "Aucune erreur récurrente détectée. Continue pour alimenter le diagnostic intelligent.";
+    return;
+  }
+  const resume = {};
+  file.forEach(function (item) {
+    if (!item || !item.erreurCode) return;
+    resume[item.erreurCode] = (resume[item.erreurCode] || 0) + 1;
+  });
+  const pireCode = Object.keys(resume).sort(function (a, b) { return resume[b] - resume[a]; })[0];
+  const strategie = {
+    rayon_diametre: "Dessine rapidement le cercle et note r puis 2r avant la formule.",
+    triangle_div2: "Ajoute un repère visuel « ÷2 » à la fin de ton brouillon.",
+    pourcent_div100: "Écris systématiquement « /100 » avant toute multiplication en pourcentage.",
+    aire_unite: "Entoure l'unité attendue (m²) avant de calculer.",
+    metier_cout_unitaire: "Pose une ligne d'unités : quantité × prix unitaire = coût total.",
+    metier_volume_unitaire: "Vérifie que L/min × min donne bien des litres.",
+  };
+  const conseils = {
+    rayon_diametre: "Confusion rayon/diamètre",
+    triangle_div2: "Oubli du ÷2 (triangle)",
+    pourcent_div100: "Division par 100 oubliée",
+    aire_unite: "Unité d'aire non maîtrisée",
+    metier_cout_unitaire: "Conversion coût unitaire",
+    metier_volume_unitaire: "Conversion de volume",
+  };
+  zone.innerHTML =
+    "<p><strong>Erreur dominante :</strong> " + (conseils[pireCode] || pireCode) + " (" + resume[pireCode] + " occurrence(s)).</p>" +
+    "<p><strong>Micro-stratégie :</strong> " + (strategie[pireCode] || "Refais l'exercice en verbalisant chaque unité.") + "</p>" +
+    "<p class=\"resultat__astuce\">Objectif : corrige cette erreur 3 fois d'affilée pour la faire disparaître du laboratoire.</p>";
 }
 
 function messageEncouragement(progression, motivationData) {

@@ -453,6 +453,11 @@
       </div>
 
       <div class="form-group">
+        <label for="estimation-exercice">Mon estimation avant calcul (optionnel) :</label>
+        <input type="number" id="estimation-exercice" placeholder="Ex : 150" step="0.01" inputmode="decimal">
+      </div>
+
+      <div class="form-group">
         <label for="reponse-exercice">Ta réponse <span id="unite-attendue" class="unit-hint"></span> :</label>
         <input type="number" id="reponse-exercice" placeholder="Ex : 24,50" step="0.01" inputmode="decimal">
         <p class="input-helper">Astuce clavier : <kbd>Entrée</kbd> pour valider, <kbd>Alt</kbd> + <kbd>N</kbd> pour un nouvel exercice.</p>
@@ -468,6 +473,24 @@
       </div>
 
       <div id="feedback-exercice" class="resultat" aria-live="polite"></div>
+      <div id="feedback-estimation" class="exercise-panel exercise-panel--hint" aria-live="polite">
+        Active ton intuition : écris une estimation, puis compare avec ton résultat exact.
+      </div>
+
+      <div class="progress-grid progress-grid--insights">
+        <div class="exercise-panel exercise-panel--priority">
+          <h3 class="panel-title">Radar de compétences (séance)</h3>
+          <div id="radar-competences" class="progression-resume">
+            Commence une série d'exercices pour afficher ton radar.
+          </div>
+        </div>
+        <div class="exercise-panel exercise-panel--hint">
+          <h3 class="panel-title">Laboratoire d'erreurs fréquentes</h3>
+          <div id="laboratoire-erreurs" class="progression-resume">
+            Tes erreurs utiles apparaîtront ici avec une stratégie de correction ciblée.
+          </div>
+        </div>
+      </div>
 
       <details class="exercise-more exercise-advanced-control">
         <summary>Afficher les outils avancés (diagnostic, remédiation, historique)</summary>
