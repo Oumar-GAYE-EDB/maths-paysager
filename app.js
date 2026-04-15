@@ -44,6 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const resultatPourcent = document.getElementById("resultat-pourcent");
   const selectThemeExercice = document.getElementById("theme-exercice");
   const selectNiveauExercice = document.getElementById("niveau-exercice");
+  const selectFormatExercice = document.getElementById("format-exercice");
   const selectObjectifSeance = document.getElementById("objectif-seance");
   const selectModeAccompagnement = document.getElementById("mode-accompagnement");
   const btnGenererExercice = document.getElementById("btn-generer-exercice");
@@ -236,6 +237,7 @@ document.addEventListener("DOMContentLoaded", function () {
   initialiserDemarrageRapide(btnDemarrageRapide, btnReviserNotion, messageDemarrage, {
     selectThemeExercice: selectThemeExercice,
     selectNiveauExercice: selectNiveauExercice,
+    selectFormatExercice: selectFormatExercice,
     selectObjectifSeance: selectObjectifSeance,
     selectModeAccompagnement: selectModeAccompagnement,
     modeFocus: modeFocus,
@@ -1169,9 +1171,10 @@ function initialiserModeExercices(ui) {
   ui.btnGenererExercice.addEventListener("click", function () {
     const objectifSeance = ui.selectObjectifSeance ? ui.selectObjectifSeance.value : "precision";
     const modeAccompagnement = ui.selectModeAccompagnement ? ui.selectModeAccompagnement.value : "autonome";
+    const formatExercice = ui.selectFormatExercice ? ui.selectFormatExercice.value : "direct";
     const selection = ui.modeAdaptatif && ui.modeAdaptatif.checked
-      ? choisirParcoursAdaptatif(ui.selectThemeExercice.value, ui.selectNiveauExercice.value, objectifSeance, modeAccompagnement)
-      : { theme: ui.selectThemeExercice.value, niveau: ui.selectNiveauExercice.value, source: "manuel", objectifSeance: objectifSeance, modeAccompagnement: modeAccompagnement };
+      ? choisirParcoursAdaptatif(ui.selectThemeExercice.value, ui.selectNiveauExercice.value, objectifSeance, modeAccompagnement, formatExercice)
+      : { theme: ui.selectThemeExercice.value, niveau: ui.selectNiveauExercice.value, source: "manuel", objectifSeance: objectifSeance, modeAccompagnement: modeAccompagnement, formatExercice: formatExercice };
     exerciceActuel = creerExercice(selection.theme, selection.niveau, selection);
     afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
     if (ui.estimationExercice) ui.estimationExercice.value = "";
@@ -1310,9 +1313,15 @@ function corrigerExercice(ui, passerAuSuivant) {
   }
 
   if (!passerAuSuivant) {
+    const estimation = ui.estimationExercice ? parserNombreLocale(ui.estimationExercice.value) : null;
+    if (exerciceActuel.estimationObligatoire && estimation === null) {
+      ui.feedbackExercice.className = "resultat resultat--visible resultat--erreur";
+      ui.feedbackExercice.innerHTML = "Commence par donner une estimation rapide avant de valider.";
+      if (ui.estimationExercice) ui.estimationExercice.focus();
+      return;
+    }
     const estCorrect = Math.abs(reponse - exerciceActuel.reponse) <= exerciceActuel.tolerance;
     const diagnostic = analyserErreur(exerciceActuel, reponse);
-    const estimation = ui.estimationExercice ? parserNombreLocale(ui.estimationExercice.value) : null;
     sessionStats.essais += 1;
     sessionStats.reussites += estCorrect ? 1 : 0;
     enregistrerTentativeExercice(exerciceActuel, reponse, estCorrect);
@@ -1349,7 +1358,8 @@ function corrigerExercice(ui, passerAuSuivant) {
       ui.selectThemeExercice.value,
       ui.selectNiveauExercice.value,
       ui.selectObjectifSeance ? ui.selectObjectifSeance.value : "precision",
-      ui.selectModeAccompagnement ? ui.selectModeAccompagnement.value : "autonome"
+      ui.selectModeAccompagnement ? ui.selectModeAccompagnement.value : "autonome",
+      ui.selectFormatExercice ? ui.selectFormatExercice.value : "direct"
     )
     : {
       theme: ui.selectThemeExercice.value,
@@ -1357,6 +1367,7 @@ function corrigerExercice(ui, passerAuSuivant) {
       source: "manuel",
       objectifSeance: ui.selectObjectifSeance ? ui.selectObjectifSeance.value : "precision",
       modeAccompagnement: ui.selectModeAccompagnement ? ui.selectModeAccompagnement.value : "autonome",
+      formatExercice: ui.selectFormatExercice ? ui.selectFormatExercice.value : "direct",
     };
   exerciceActuel = creerExercice(selection.theme, selection.niveau, selection);
   afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
@@ -1422,12 +1433,48 @@ function creerExercice(theme, niveau, meta) {
 function enrichirExercice(exercice, meta) {
   if (!exercice) return exercice;
   const modeAccompagnement = meta && meta.modeAccompagnement ? meta.modeAccompagnement : "autonome";
+  const formatExercice = meta && meta.formatExercice ? meta.formatExercice : "direct";
   const baseTolerance = typeof exercice.tolerance === "number" ? exercice.tolerance : 0.05;
   if (modeAccompagnement === "guide") exercice.tolerance = baseTolerance * 1.5;
   if (modeAccompagnement === "defi") exercice.tolerance = baseTolerance * 0.6;
   exercice.modeAccompagnement = modeAccompagnement;
+  exercice.formatExercice = formatExercice;
+  appliquerFormatExercice(exercice, formatExercice);
   exercice.questionsFlash = construireQuestionsFlash(exercice);
   return exercice;
+}
+
+function appliquerFormatExercice(exercice, formatExercice) {
+  if (!exercice) return;
+  if (formatExercice === "guide") {
+    exercice.niveauCognitif = "N2 · Appliquer";
+    exercice.enonce = "[Format guidé] Complète chaque étape avant de calculer le résultat final.\n" + exercice.enonce;
+    return;
+  }
+  if (formatExercice === "estimation") {
+    exercice.niveauCognitif = "N3 · Estimer puis vérifier";
+    exercice.estimationObligatoire = true;
+    exercice.enonce = "[Format estimation] Donne d'abord un ordre de grandeur, puis calcule précisément.\n" + exercice.enonce;
+    return;
+  }
+  if (formatExercice === "erreur") {
+    const enonceOriginal = exercice.enonce;
+    const reponseCorrecte = exercice.reponse;
+    const propositionIncorrecte = arrondirNombre(reponseCorrecte * 2);
+    exercice.modeCorrection = "erreur";
+    exercice.reponseDetail = reponseCorrecte;
+    exercice.reponse = 0;
+    exercice.tolerance = 0.001;
+    exercice.unite = "(0 ou 1)";
+    exercice.niveauCognitif = "N4 · Détecter et corriger";
+    exercice.explication = "La proposition est fausse : " + arrondir(reponseCorrecte) + " était attendu. " + exercice.explication;
+    exercice.enonce =
+      "[Format détection d'erreur] Lis la proposition puis réponds 1 si elle est correcte, 0 sinon.\n" +
+      enonceOriginal +
+      "\nProposition d'un élève : « résultat = " + arrondir(propositionIncorrecte) + " ».";
+    return;
+  }
+  exercice.niveauCognitif = "N1 · Reconnaître et appliquer";
 }
 
 function construireQuestionsFlash(exercice) {
@@ -1452,7 +1499,7 @@ function construireQuestionsFlash(exercice) {
   return questionsCommunes;
 }
 
-function choisirParcoursAdaptatif(themeDefaut, niveauDefaut, objectifSeance, modeAccompagnement) {
+function choisirParcoursAdaptatif(themeDefaut, niveauDefaut, objectifSeance, modeAccompagnement, formatExercice) {
   const remediation = consommerRemediation();
   if (remediation) {
     return {
@@ -1462,6 +1509,7 @@ function choisirParcoursAdaptatif(themeDefaut, niveauDefaut, objectifSeance, mod
       remediation: remediation,
       objectifSeance: objectifSeance || "precision",
       modeAccompagnement: modeAccompagnement || "autonome",
+      formatExercice: formatExercice || "direct",
       message:
         "Coach : on te propose une remédiation ciblée sur « " +
         remediation.competenceLibelle +
@@ -1488,6 +1536,7 @@ function choisirParcoursAdaptatif(themeDefaut, niveauDefaut, objectifSeance, mod
     source: "adaptatif",
     objectifSeance: objectifSeance || "precision",
     modeAccompagnement: modeAccompagnement || "autonome",
+    formatExercice: formatExercice || "direct",
     parcoursCible: parcoursCibleActif,
     message:
       "Coach : priorité sur « " +
@@ -1518,8 +1567,9 @@ function trouverCompetencePrioritaire(progression) {
 
 function afficherRecommandation(zone, selection) {
   if (!zone) return;
-  const messageParDefaut = "Mode manuel : tu choisis toi-même ton thème et ton niveau.";
-  zone.innerHTML = selection && selection.message ? selection.message : messageParDefaut;
+  const format = selection && selection.formatExercice ? libelleFormatExercice(selection.formatExercice) : "Calcul direct";
+  const messageParDefaut = "Mode manuel : tu choisis toi-même ton thème, ton niveau et le format (" + format + ").";
+  zone.innerHTML = (selection && selection.message ? selection.message : messageParDefaut) + "<br><small>Format actif : " + format + ".</small>";
 }
 
 function afficherCoachEtapes(zone, exercice, etat) {
@@ -2623,6 +2673,8 @@ function afficherExercice(zoneEnonce, zoneFeedback, champReponse, exercice) {
   meta.className = "exercise-meta";
   const chips = [
     "🎯 " + (exercice.competenceLabel || "Compétence"),
+    "🧩 " + libelleFormatExercice(exercice.formatExercice),
+    "🧠 " + (exercice.niveauCognitif || "N1 · Reconnaître"),
     "🪜 Palier " + (exercice.palier || "Bronze"),
     "📌 " + (exercice.objectif || "Raisonner étape par étape"),
   ];
@@ -2664,6 +2716,16 @@ function afficherExercice(zoneEnonce, zoneFeedback, champReponse, exercice) {
   champReponse.focus();
   const sectionExercices = document.getElementById("section-exercices");
   if (sectionExercices) sectionExercices.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function libelleFormatExercice(formatExercice) {
+  const mapping = {
+    direct: "Calcul direct",
+    guide: "Guidé pas à pas",
+    estimation: "Estimation + exact",
+    erreur: "Détection d'erreur",
+  };
+  return mapping[formatExercice] || mapping.direct;
 }
 
 function initialiserRaccourcisExercice(ui) {
@@ -2719,9 +2781,16 @@ function afficherFeedbackExercice(zone, exercice, reponseEleve, estCorrect, diag
   message.appendChild(document.createTextNode(estCorrect ? " Tu avances bien." : " On corrige ça ensemble."));
 
   const bilan = document.createElement("p");
+  const uniteAffichee = exercice.modeCorrection === "erreur" ? "" : (exercice.unite ? " " + exercice.unite : "");
+  const attenduAffiche = exercice.modeCorrection === "erreur"
+    ? (exercice.reponse === 1 ? "1 (proposition correcte)" : "0 (proposition incorrecte)")
+    : arrondir(exercice.reponse) + uniteAffichee;
+  const reponseAffichee = exercice.modeCorrection === "erreur"
+    ? String(arrondir(reponseEleve))
+    : arrondir(reponseEleve) + uniteAffichee;
   bilan.textContent = estCorrect
-    ? "✅ Correct : " + arrondir(exercice.reponse) + (exercice.unite ? " " + exercice.unite : "")
-    : "❌ Attendu : " + arrondir(exercice.reponse) + (exercice.unite ? " " + exercice.unite : "") + " (toi : " + arrondir(reponseEleve) + (exercice.unite ? " " + exercice.unite : "") + ")";
+    ? "✅ Correct : " + attenduAffiche
+    : "❌ Attendu : " + attenduAffiche + " (toi : " + reponseAffichee + ")";
 
   const ecartTexte = document.createElement("p");
   const ecartAbsolu = Math.abs((reponseEleve || 0) - exercice.reponse);
@@ -2729,8 +2798,8 @@ function afficherFeedbackExercice(zone, exercice, reponseEleve, estCorrect, diag
   const ecartRelatif = (ecartAbsolu / base) * 100;
   ecartTexte.className = "resultat__formule";
   ecartTexte.textContent = estCorrect
-    ? "Précision : écart de " + arrondir(ecartAbsolu) + (exercice.unite ? " " + exercice.unite : "") + "."
-    : "Écart actuel : " + arrondir(ecartAbsolu) + (exercice.unite ? " " + exercice.unite : "") + " (≈ " + arrondir(ecartRelatif) + "%).";
+    ? "Précision : écart de " + arrondir(ecartAbsolu) + uniteAffichee + "."
+    : "Écart actuel : " + arrondir(ecartAbsolu) + uniteAffichee + " (≈ " + arrondir(ecartRelatif) + "%).";
 
   const explication = document.createElement("div");
   explication.className = "resultat__formule";
@@ -2738,9 +2807,13 @@ function afficherFeedbackExercice(zone, exercice, reponseEleve, estCorrect, diag
 
   const action = document.createElement("p");
   action.className = "resultat__formule";
-  action.textContent = estCorrect
-    ? "Action : continue sans indice pour consolider."
-    : "Action : reprends l'étape 2 de la méthode puis retente avec l'unité finale.";
+  action.textContent = exercice.modeCorrection === "erreur"
+    ? (estCorrect
+      ? "Action : explique maintenant l'erreur détectée pour ancrer le raisonnement."
+      : "Action : compare la proposition avec la méthode attendue puis décide si elle est juste (1) ou fausse (0).")
+    : (estCorrect
+      ? "Action : continue sans indice pour consolider."
+      : "Action : reprends l'étape 2 de la méthode puis retente avec l'unité finale.");
 
   const motivation = document.createElement("p");
   motivation.className = "resultat__formule";
@@ -2957,6 +3030,11 @@ function messageEncouragement(progression, motivationData) {
 
 function analyserErreur(exercice, reponseEleve) {
   if (!exercice || typeof reponseEleve !== "number") return "";
+  if (exercice.modeCorrection === "erreur") {
+    return reponseEleve === 1
+      ? "Ici la proposition était volontairement fausse : repère l'écart numérique puis corrige la formule."
+      : "Bonne logique : la proposition était fausse. Prochaine étape : expliquer l'erreur en une phrase.";
+  }
   if (reponseEleve < 0) return "Le résultat ne peut pas être négatif dans ce contexte.";
   const attendu = exercice.reponse;
   if (!isFinite(attendu) || attendu === 0) return exercice.erreurProbable || "";
@@ -3150,24 +3228,31 @@ function afficherObjectifEtCompetences(zoneObjectif, zoneCompetences, exercice, 
     zoneObjectif.innerHTML =
       "<strong>Objectif de séance :</strong> " +
       objectif +
-      '<br><small>Parcours : ' + source + " • Accompagnement : " + libelleMode + "</small>";
+      '<br><small>Parcours : ' + source + " • Accompagnement : " + libelleMode + " • Format : " + libelleFormatExercice(exercice && exercice.formatExercice) + "</small>";
   }
   if (zoneCompetences) {
     const competence = exercice && exercice.competenceLabel ? exercice.competenceLabel : "Compétence transversale";
     const palier = determinerPalierCompetence(exercice ? exercice.competence : "");
+    const critere = exercice && exercice.modeCorrection === "erreur"
+      ? "Identifier correctement si une solution proposée est valide (1) ou fausse (0)."
+      : "Donner une réponse juste avec l'unité correcte.";
     zoneCompetences.innerHTML =
       "<strong>Micro-compétence :</strong> " +
       competence +
-      '<br><strong>Palier actuel :</strong> ' + palier;
+      '<br><strong>Palier actuel :</strong> ' + palier +
+      '<br><strong>Critère de réussite :</strong> ' + critere;
   }
 }
 
 function afficherFicheApprentissage(zone, exercice) {
   if (!zone || !exercice) return;
+  const critere = exercice.modeCorrection === "erreur"
+    ? "repérer si la proposition est correcte (1) ou incorrecte (0), puis justifier."
+    : "résultat juste avec l'unité correcte.";
   zone.innerHTML =
     "<strong>Fiche d'apprentissage</strong>" +
     "<p><strong>Compétence visée :</strong> " + (exercice.competenceLabel || "Compétence transversale") + "</p>" +
-    "<p><strong>Critère de réussite :</strong> résultat juste avec l'unité correcte.</p>" +
+    "<p><strong>Critère de réussite :</strong> " + critere + "</p>" +
     "<p><strong>Erreur à éviter :</strong> " + (exercice.erreurProbable || "Relis l'énoncé.") + "</p>" +
     "<p><strong>Question flash :</strong> " + ((exercice.questionsFlash && exercice.questionsFlash[0]) || "Explique ton raisonnement à voix haute.") + "</p>";
 }
