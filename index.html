@@ -389,6 +389,15 @@
           </select>
         </div>
         <div class="form-group">
+          <label for="format-exercice">Format pédagogique :</label>
+          <select id="format-exercice">
+            <option value="direct">Calcul direct</option>
+            <option value="guide">Calcul guidé pas à pas</option>
+            <option value="estimation">Estimation + calcul exact</option>
+            <option value="erreur">Détection d'erreur</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label for="objectif-seance">Objectif de séance :</label>
           <select id="objectif-seance">
             <option value="precision">Précision des formules</option>
@@ -476,6 +485,9 @@
       <div id="feedback-estimation" class="exercise-panel exercise-panel--hint" aria-live="polite">
         Active ton intuition : écris une estimation, puis compare avec ton résultat exact.
       </div>
+      <p class="input-helper">
+        En format <strong>détection d'erreur</strong>, réponds <strong>1</strong> si la proposition est correcte, <strong>0</strong> si elle est fausse.
+      </p>
 
       <div class="progress-grid progress-grid--insights">
         <div class="exercise-panel exercise-panel--priority">
