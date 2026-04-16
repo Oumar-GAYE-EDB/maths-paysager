@@ -136,6 +136,15 @@ document.addEventListener("DOMContentLoaded", function () {
   const flashcardContenu = document.getElementById("flashcard-contenu");
   const flashcardIndice = document.getElementById("flashcard-indice");
   const btnFlashcardNext = document.getElementById("btn-flashcard-next");
+  const studioFormat = document.getElementById("studio-format");
+  const btnStudioGenerer = document.getElementById("btn-studio-generer");
+  const btnStudioValider = document.getElementById("btn-studio-valider");
+  const studioEnonce = document.getElementById("studio-enonce");
+  const studioReponse = document.getElementById("studio-reponse");
+  const studioFeedback = document.getElementById("studio-feedback");
+  const studioScore = document.getElementById("studio-score");
+  const studioCodeErreur = document.getElementById("studio-code-erreur");
+  const studioMetacognition = document.getElementById("studio-metacognition");
 
   // --- Afficher les champs dès le chargement ---
   afficherChampsFormes(selectForme.value, champsForme);
@@ -243,6 +252,17 @@ document.addEventListener("DOMContentLoaded", function () {
     modeFocus: modeFocus,
     modeAdaptatif: modeAdaptatif,
     btnGenererExercice: btnGenererExercice,
+  });
+  initialiserStudioMissions({
+    studioFormat: studioFormat,
+    btnStudioGenerer: btnStudioGenerer,
+    btnStudioValider: btnStudioValider,
+    studioEnonce: studioEnonce,
+    studioReponse: studioReponse,
+    studioFeedback: studioFeedback,
+    studioScore: studioScore,
+    studioCodeErreur: studioCodeErreur,
+    studioMetacognition: studioMetacognition,
   });
 
   // --- Mode exercices / progression ---
@@ -4768,4 +4788,152 @@ function dessinerSchema(conteneur, forme, mesures) {
   }
 
   conteneur.innerHTML = svg;
+}
+
+function initialiserStudioMissions(options) {
+  if (!options || !options.btnStudioGenerer || !options.btnStudioValider || !options.studioEnonce || !options.studioReponse) return;
+
+  const etatStudio = { essais: 0, reussites: 0, mission: null };
+
+  function afficherCompteur() {
+    if (options.studioScore) {
+      options.studioScore.textContent = etatStudio.reussites + " / " + etatStudio.essais;
+    }
+  }
+
+  function afficherMission(mission) {
+    options.studioEnonce.innerHTML =
+      "<p><strong>Mission :</strong> " + mission.enonce + "</p>" +
+      "<p class=\"resultat__astuce\"><strong>Critère :</strong> " + mission.critere + "</p>";
+    if (options.studioCodeErreur) {
+      options.studioCodeErreur.textContent = mission.codeErreur || "—";
+    }
+    if (options.studioMetacognition) {
+      options.studioMetacognition.textContent = "Question réflexive : " + mission.questionReflexive;
+    }
+    if (options.studioFeedback) {
+      options.studioFeedback.className = "resultat";
+      options.studioFeedback.innerHTML = "";
+    }
+    options.studioReponse.value = "";
+    options.studioReponse.focus();
+  }
+
+  options.btnStudioGenerer.addEventListener("click", function () {
+    const format = options.studioFormat ? options.studioFormat.value : "guide";
+    etatStudio.mission = genererMissionStudio(format);
+    afficherMission(etatStudio.mission);
+    notifierActionApprentissage({ type: "studio-mission", competence: etatStudio.mission.competence || "situations-metier" });
+  });
+
+  options.btnStudioValider.addEventListener("click", function () {
+    if (!etatStudio.mission) {
+      afficherErreur(options.studioFeedback, "Commence par générer une mission.");
+      return;
+    }
+
+    const proposition = (options.studioReponse.value || "").trim();
+    if (!proposition) {
+      afficherErreur(options.studioFeedback, "Écris une réponse avant de valider.");
+      return;
+    }
+
+    etatStudio.essais += 1;
+    const correction = evaluerMissionStudio(etatStudio.mission, proposition);
+    if (correction.estCorrect) etatStudio.reussites += 1;
+    afficherCompteur();
+
+    options.studioFeedback.className = "resultat resultat--visible" + (correction.estCorrect ? "" : " resultat--erreur");
+    options.studioFeedback.innerHTML =
+      "<p><strong>" + (correction.estCorrect ? "Bravo !" : "Presque.") + "</strong> " + correction.message + "</p>" +
+      "<p class=\"resultat__astuce\"><strong>Méthode :</strong> " + etatStudio.mission.methode + "</p>";
+
+    notifierActionApprentissage({
+      type: correction.estCorrect ? "studio-reussite" : "studio-erreur",
+      competence: etatStudio.mission.competence || "situations-metier",
+    });
+  });
+
+  afficherCompteur();
+}
+
+function genererMissionStudio(format) {
+  const banque = {
+    guide: [
+      {
+        enonce: "Massif rectangulaire de 9 m × 5 m. Donne uniquement l'aire en m².",
+        reponseNumerique: 45,
+        tolerance: 0.15,
+        critere: "Réponse numérique en m².",
+        methode: "Aire rectangle = longueur × largeur, donc 9 × 5.",
+        questionReflexive: "Comment verifies-tu rapidement si le résultat est plausible ?",
+        codeErreur: "E02 (aire/périmètre)",
+        competence: "aires-perimetres",
+      },
+    ],
+    estimation: [
+      {
+        enonce: "Sans calcul exact : une zone fait environ 8,2 m × 5,1 m. Choisis la valeur la plus plausible : 12 / 42 / 120.",
+        reponseTexte: "42",
+        critere: "Choisir l'ordre de grandeur correct.",
+        methode: "8 × 5 ≈ 40, donc 42 est la meilleure estimation.",
+        questionReflexive: "Quelle estimation mentale as-tu faite avant de choisir ?",
+        codeErreur: "E05 (ordre de grandeur)",
+        competence: "aires-perimetres",
+      },
+    ],
+    erreur: [
+      {
+        enonce: "Un élève calcule le périmètre d'un cercle de rayon 4 m avec πr². Écris le code d'erreur attendu.",
+        reponseTexte: "E02",
+        critere: "Répondre avec le code d'erreur (ex: E02).",
+        methode: "πr² calcule l'aire. Pour le périmètre, c'est 2πr.",
+        questionReflexive: "Comment distinguer visuellement une formule d'aire d'une formule de périmètre ?",
+        codeErreur: "E02 (aire/périmètre)",
+        competence: "aires-perimetres",
+      },
+    ],
+    chantier: [
+      {
+        enonce: "Massif 12 m × 3 m, allée de 6 m² à retirer, paillage à 8 €/m². Donne le coût final avant remise.",
+        reponseNumerique: 240,
+        tolerance: 0.2,
+        critere: "Surface utile puis coût total.",
+        methode: "Surface utile = 12×3 - 6 = 30 m², coût = 30 × 8 = 240 €.",
+        questionReflexive: "À quelle étape un oubli est-il le plus fréquent ?",
+        codeErreur: "E01 (donnée oubliée)",
+        competence: "situations-metier",
+      },
+    ],
+  };
+
+  const liste = banque[format] || banque.guide;
+  return liste[Math.floor(Math.random() * liste.length)];
+}
+
+function evaluerMissionStudio(mission, proposition) {
+  if (mission.reponseNumerique !== undefined) {
+    const valeur = parserNombreLocale(proposition);
+    if (isNaN(valeur)) {
+      return { estCorrect: false, message: "Réponse attendue en nombre." };
+    }
+    const tolerance = mission.tolerance || 0.1;
+    const estCorrect = Math.abs(valeur - mission.reponseNumerique) <= tolerance;
+    return {
+      estCorrect: estCorrect,
+      message: estCorrect
+        ? "Résultat valide : " + arrondir(valeur) + "."
+        : "Attendu : " + arrondir(mission.reponseNumerique) + ". Vérifie les étapes intermédiaires.",
+    };
+  }
+
+  const attendu = String(mission.reponseTexte || "").trim().toLowerCase();
+  const recu = String(proposition || "").trim().toLowerCase();
+  const estCorrect = recu === attendu;
+  return {
+    estCorrect: estCorrect,
+    message: estCorrect
+      ? "Bonne analyse, le code d'erreur est correct."
+      : "Réponse attendue : " + mission.reponseTexte + ".",
+  };
 }
