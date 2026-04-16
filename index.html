@@ -172,6 +172,7 @@
 
     <nav class="quick-nav" aria-label="Navigation rapide">
       <a class="quick-nav__link" href="#section-jardin-quetes">Défi du jour</a>
+      <a class="quick-nav__link" href="#section-studio-missions">Studio missions</a>
       <a class="quick-nav__link" href="#section-formes">Surfaces</a>
       <a class="quick-nav__link" href="#section-pourcent">Pourcentages</a>
       <a class="quick-nav__link" href="#section-atelier-mental">Atelier mental</a>
@@ -179,6 +180,57 @@
       <a class="quick-nav__link" href="#section-exercices">Exercices</a>
       <a class="quick-nav__link" href="#section-memo">Formules</a>
     </nav>
+
+    <section class="card studio-card" id="section-studio-missions" aria-labelledby="titre-studio-missions">
+      <h2 class="card__title" id="titre-studio-missions">Studio missions terrain</h2>
+      <p class="card__desc">
+        Un nouvel espace plus guidé pour progresser : alterne <strong>4 formats d'exercices</strong> (guidé, estimation, détection d'erreur, multi-étapes).
+      </p>
+
+      <div class="studio-layout">
+        <article class="studio-panel studio-panel--accent">
+          <h3 class="panel-title">Choix de mission</h3>
+          <div class="form-group">
+            <label for="studio-format">Format d'entraînement :</label>
+            <select id="studio-format">
+              <option value="guide">Calcul guidé pas à pas</option>
+              <option value="estimation">Estimation / ordre de grandeur</option>
+              <option value="erreur">Détection d'erreur</option>
+              <option value="chantier">Mission chantier multi-étapes</option>
+            </select>
+          </div>
+          <div class="actions">
+            <button class="btn btn--primary" id="btn-studio-generer" type="button">Nouvelle mission</button>
+            <button class="btn btn--secondary" id="btn-studio-valider" type="button">Valider</button>
+          </div>
+        </article>
+
+        <article class="studio-panel">
+          <h3 class="panel-title">Mission en cours</h3>
+          <div id="studio-enonce" class="exercise-panel exercise-panel--priority" aria-live="polite">
+            Clique sur <strong>Nouvelle mission</strong> pour lancer un entraînement ciblé.
+          </div>
+          <div class="form-group">
+            <label for="studio-reponse">Ta réponse :</label>
+            <input id="studio-reponse" type="text" placeholder="Ex : 45 ou E02" autocomplete="off">
+          </div>
+          <div id="studio-feedback" class="resultat" aria-live="polite"></div>
+          <div class="studio-kpi-grid">
+            <div class="exercise-panel">
+              <h3 class="panel-title">Mission validées</h3>
+              <p id="studio-score" class="mental-stat">0 / 0</p>
+            </div>
+            <div class="exercise-panel">
+              <h3 class="panel-title">Code d'erreur travaillé</h3>
+              <p id="studio-code-erreur" class="mental-stat">—</p>
+            </div>
+          </div>
+          <div id="studio-metacognition" class="exercise-panel exercise-panel--hint">
+            Question réflexive : quel contrôle rapide peux-tu faire après ton calcul ?
+          </div>
+        </article>
+      </div>
+    </section>
 
     <section class="card" id="section-formes">
       <h2 class="card__title">

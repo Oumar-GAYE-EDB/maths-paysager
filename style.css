@@ -1457,3 +1457,39 @@ body.js-enhanced .is-visible {
   background: rgba(58, 125, 68, 0.2);
   color: var(--color-text);
 }
+
+/* ---------- STUDIO MISSIONS ---------- */
+.studio-card {
+  border: 1px solid color-mix(in srgb, var(--color-primary) 28%, var(--color-border) 72%);
+  background: linear-gradient(155deg, color-mix(in srgb, var(--color-primary-light) 38%, #fff 62%), var(--color-surface));
+}
+
+.studio-layout {
+  margin-top: var(--space-4);
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.studio-panel {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+
+.studio-panel--accent {
+  background: linear-gradient(170deg, color-mix(in srgb, var(--color-primary-light) 40%, #fff 60%), var(--color-surface));
+}
+
+.studio-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+#studio-reponse {
+  text-transform: none;
+}
