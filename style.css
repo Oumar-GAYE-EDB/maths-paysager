@@ -1143,6 +1143,29 @@ body.mode-focus #section-exercices {
   gap: var(--space-3);
 }
 
+.experience-banner {
+  margin: var(--space-3) 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+  border-radius: var(--radius-lg);
+  background: linear-gradient(125deg, color-mix(in srgb, var(--color-primary-light) 62%, #fff 38%), var(--color-surface));
+  box-shadow: var(--shadow-sm);
+}
+
+.experience-banner__title {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.experience-banner__text {
+  margin-top: var(--space-1);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
 .exercise-meta {
   margin-bottom: var(--space-2);
   display: flex;
