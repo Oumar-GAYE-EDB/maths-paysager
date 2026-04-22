@@ -182,3 +182,34 @@ Conserver la richesse actuelle, mais l'orchestrer avec une logique "moins d'écr
 - progression explicitement visualisée.
 
 Cette direction améliorera à la fois le plaisir d'usage et l'efficacité pédagogique.
+
+---
+
+## 10) Mise en œuvre réalisée (22 avril 2026)
+
+### A. Fluidité et attractivité de l'interface
+- Ajout d'une **bannière dynamique “Mode fluide activé”** dans la section exercices.
+- Rotation automatique de conseils pédagogiques courts (toutes les 9 secondes) pour maintenir l'engagement sans surcharger l'écran.
+- Habillage visuel renforcé (fond dégradé léger, contraste, hiérarchie typographique) pour une lecture plus confortable.
+
+### B. Exercices plus longs (études de cas)
+- Nouveau format d'exercice : **“Étude de cas longue (4–5 étapes)”** dans le mode exercices.
+- Ce format impose :
+  1. estimation préalable,
+  2. découpage en sous-calculs,
+  3. contrôle de cohérence terrain,
+  4. rendu final avec unité.
+- Niveau cognitif explicite : **N4 · Étude de cas longue**.
+
+### C. Studio missions enrichi
+- Nouveau format studio : **“Étude de cas longue (4 étapes)”**.
+- Ajout de missions complexes mêlant :
+  - calcul de surfaces composées,
+  - coûts unitaires,
+  - coefficients successifs en pourcentage,
+  - vérification des arrondis.
+
+### D. Effet attendu pour les élèves CAPa
+- Plus de **variété pédagogique** (du format rapide au format long scénarisé).
+- Meilleur **transfert métier** grâce aux enchaînements réalistes.
+- Progression plus lisible entre automatisation et résolution complexe.

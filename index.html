@@ -197,6 +197,7 @@
               <option value="estimation">Estimation / ordre de grandeur</option>
               <option value="erreur">Détection d'erreur</option>
               <option value="chantier">Mission chantier multi-étapes</option>
+              <option value="immersion">Étude de cas longue (4 étapes)</option>
             </select>
           </div>
           <div class="actions">
@@ -409,6 +410,10 @@
         Mode exercices (CAPa)
       </h2>
       <p class="card__desc">Tu t'entraînes, tu reçois un feedback clair, tu vois ta progression.</p>
+      <div class="experience-banner" id="experience-banner" aria-live="polite">
+        <p class="experience-banner__title">Mode fluide activé</p>
+        <p id="experience-banner-text" class="experience-banner__text">Conseil : commence par une estimation pour mieux contrôler l'ordre de grandeur.</p>
+      </div>
       <div id="ruban-session-exercice" class="exercise-session-ribbon" aria-live="polite"></div>
       <div class="exercise-dashboard">
         <div id="motivation-eleve" class="exercise-panel exercise-panel--priority"></div>
@@ -448,6 +453,7 @@
             <option value="estimation">Estimation + calcul exact</option>
             <option value="erreur">Détection d'erreur</option>
             <option value="chantier">Mission chantier multi-étapes</option>
+            <option value="long">Étude de cas longue (4-5 étapes)</option>
           </select>
         </div>
         <div class="form-group">

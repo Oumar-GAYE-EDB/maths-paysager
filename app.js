@@ -148,6 +148,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const studioScore = document.getElementById("studio-score");
   const studioCodeErreur = document.getElementById("studio-code-erreur");
   const studioMetacognition = document.getElementById("studio-metacognition");
+  const experienceBannerText = document.getElementById("experience-banner-text");
 
   // --- Afficher les champs dès le chargement ---
   afficherChampsFormes(selectForme.value, champsForme);
@@ -267,6 +268,7 @@ document.addEventListener("DOMContentLoaded", function () {
     studioCodeErreur: studioCodeErreur,
     studioMetacognition: studioMetacognition,
   });
+  initialiserBanniereExperienceFluide(experienceBannerText);
 
   // --- Mode exercices / progression ---
   initialiserModeExercices({
@@ -1591,7 +1593,38 @@ function appliquerFormatExercice(exercice, formatExercice) {
       "\nContrôle final conseillé : " + verification;
     return;
   }
+  if (formatExercice === "long") {
+    transformerEnEtudeDeCasLongue(exercice);
+    return;
+  }
   exercice.niveauCognitif = "N1 · Reconnaître et appliquer";
+}
+
+function transformerEnEtudeDeCasLongue(exercice) {
+  if (!exercice) return;
+  const enonceOriginal = exercice.enonce;
+  const unite = exercice.unite || "unité attendue";
+  const verification = exercice.verification || "Vérifie l'unité et l'ordre de grandeur.";
+  exercice.niveauCognitif = "N4 · Étude de cas longue";
+  exercice.estimationObligatoire = true;
+  exercice.tolerance = Math.max(exercice.tolerance || 0.05, 0.15);
+  exercice.etapes = [
+    "Je lis toutes les données et je surligne les unités utiles.",
+    "Je réalise une estimation rapide pour cadrer mon résultat.",
+    "Je découpe le problème en sous-calculs (2 à 4 étapes).",
+    "Je vérifie la cohérence métier (quantité, coût ou volume plausible).",
+    "Je rédige le résultat final avec l'unité : " + unite + ".",
+  ];
+  exercice.enonce =
+    "[Format étude de cas longue] Résous ce dossier comme en situation réelle : estimation, calcul détaillé, vérification finale.\n" +
+    enonceOriginal +
+    "\nContraintes : note au moins deux étapes intermédiaires sur brouillon et valide la cohérence terrain.\nContrôle final : " +
+    verification;
+  exercice.questionsFlash = [
+    "Quelle donnée était prioritaire pour démarrer ta résolution ?",
+    "Quel sous-calcul t'a semblé le plus risqué (unité, pourcentage, conversion) ?",
+    "Si tu devais expliquer ta méthode à un camarade, quelles 3 étapes garderais-tu ?",
+  ];
 }
 
 function construireQuestionsFlash(exercice) {
@@ -2845,6 +2878,7 @@ function libelleFormatExercice(formatExercice) {
     estimation: "Estimation + exact",
     erreur: "Détection d'erreur",
     chantier: "Mission chantier",
+    long: "Étude de cas longue",
   };
   return mapping[formatExercice] || mapping.direct;
 }
@@ -4958,6 +4992,21 @@ function initialiserStudioMissions(options) {
   afficherCompteur();
 }
 
+function initialiserBanniereExperienceFluide(zone) {
+  if (!zone) return;
+  const messages = [
+    "Conseil : commence par une estimation pour mieux contrôler l'ordre de grandeur.",
+    "Astuce fluidité : vise 1 exercice court + 1 exercice long pour progresser sans te fatiguer.",
+    "Réflexe terrain : vérifie toujours l'unité finale avant d'annoncer ta réponse.",
+    "Méthode CAPa : découpe les situations complexes en mini-calculs successifs.",
+  ];
+  let index = 0;
+  window.setInterval(function () {
+    index = (index + 1) % messages.length;
+    zone.textContent = messages[index];
+  }, 9000);
+}
+
 function genererMissionStudio(format) {
   const banque = {
     guide: [
@@ -5003,6 +5052,28 @@ function genererMissionStudio(format) {
         methode: "Surface utile = 12×3 - 6 = 30 m², coût = 30 × 8 = 240 €.",
         questionReflexive: "À quelle étape un oubli est-il le plus fréquent ?",
         codeErreur: "E01 (donnée oubliée)",
+        competence: "situations-metier",
+      },
+    ],
+    immersion: [
+      {
+        enonce: "Étude de cas : zone de 18 m × 9 m avec bassin circulaire de rayon 3 m. La surface plantable est paillée à 11 €/m² puis une marge logistique de 8% est ajoutée. Donne le budget final.",
+        reponseNumerique: 1588.69,
+        tolerance: 0.4,
+        critere: "Combiner aire rectangle, retrait du bassin, coût puis marge.",
+        methode: "Surface utile = (18×9) - (π×3²) = 133.73 m². Coût brut = 133.73×11 = 1471.01 €. Budget final = 1471.01×1.08 = 1588.69 € (selon arrondis intermédiaires).",
+        questionReflexive: "Où as-tu placé ton arrondi pour limiter les écarts ?",
+        codeErreur: "E04 (enchaînement incomplet)",
+        competence: "situations-metier",
+      },
+      {
+        enonce: "Étude de cas : 24 bacs de 65 L doivent être remplis. Prévoir 12% de pertes, puis ajouter 7% de réserve sécurité. Quel volume total préparer ?",
+        reponseNumerique: 1869.5,
+        tolerance: 0.4,
+        critere: "Enchaîner volume de base, pertes puis réserve.",
+        methode: "Base = 24×65 = 1560 L. Avec pertes = 1560×1.12 = 1747.2 L. Avec réserve = 1747.2×1.07 = 1869.50 L (selon arrondis).",
+        questionReflexive: "Pourquoi les pourcentages successifs ne s'additionnent-ils pas directement ?",
+        codeErreur: "E04 (coefficients successifs)",
         competence: "situations-metier",
       },
     ],
