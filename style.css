@@ -1070,6 +1070,19 @@ body.mode-focus #section-exercices {
   border-style: dashed;
 }
 
+#insight-confiance {
+  background: color-mix(in srgb, var(--color-primary-light) 38%, var(--color-surface) 62%);
+}
+
+#exercice-enonce.is-loading {
+  animation: pulseExercise 260ms ease;
+}
+
+@keyframes pulseExercise {
+  0% { opacity: 0.55; transform: translateY(4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
 .exercise-path {
   margin-top: var(--space-3);
   display: grid;

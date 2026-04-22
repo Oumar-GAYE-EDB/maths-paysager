@@ -14,6 +14,7 @@ const CLE_MODE_PARCOURS_SIMPLE = "maths-paysager-parcours-simple";
 const CLE_MOTIVATION = "maths-paysager-motivation";
 const CLE_ATELIER_MENTAL = "maths-paysager-atelier-mental";
 const CLE_JARDIN_QUETES = "maths-paysager-jardin-quetes";
+const CLE_CONFIANCE_EXERCICE = "maths-paysager-confiance-exercice";
 const MAX_HISTORIQUE = 20;
 const sessionStats = { essais: 0, reussites: 0 };
 let chronoInterval = null;
@@ -86,8 +87,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const uniteAttendue = document.getElementById("unite-attendue");
   const testsFormulesResultat = document.getElementById("tests-formules-resultat");
   const estimationExercice = document.getElementById("estimation-exercice");
+  const confianceExercice = document.getElementById("confiance-exercice");
   const reponseExercice = document.getElementById("reponse-exercice");
   const feedbackExercice = document.getElementById("feedback-exercice");
+  const insightConfiance = document.getElementById("insight-confiance");
   const feedbackEstimation = document.getElementById("feedback-estimation");
   const radarCompetences = document.getElementById("radar-competences");
   const laboratoireErreurs = document.getElementById("laboratoire-erreurs");
@@ -308,8 +311,10 @@ document.addEventListener("DOMContentLoaded", function () {
     uniteAttendue: uniteAttendue,
     testsFormulesResultat: testsFormulesResultat,
     estimationExercice: estimationExercice,
+    confianceExercice: confianceExercice,
     reponseExercice: reponseExercice,
     feedbackExercice: feedbackExercice,
+    insightConfiance: insightConfiance,
     feedbackEstimation: feedbackEstimation,
     radarCompetences: radarCompetences,
     laboratoireErreurs: laboratoireErreurs,
@@ -1168,6 +1173,75 @@ function mettreAJourIconeTheme(bouton, theme) {
   }
 }
 
+function initialiserConfianceExercice(selectConfiance, zoneInsight) {
+  if (!selectConfiance) return;
+  const confianceMemoire = localStorage.getItem(CLE_CONFIANCE_EXERCICE);
+  if (confianceMemoire && ["basse", "moyenne", "haute"].indexOf(confianceMemoire) !== -1) {
+    selectConfiance.value = confianceMemoire;
+  }
+  selectConfiance.addEventListener("change", function () {
+    localStorage.setItem(CLE_CONFIANCE_EXERCICE, selectConfiance.value);
+    afficherInsightConfiance(zoneInsight, selectConfiance.value, null);
+  });
+  afficherInsightConfiance(zoneInsight, selectConfiance.value, null);
+}
+
+function enregistrerConfianceExercice(confiance, estCorrect) {
+  const stats = chargerConfianceExercice();
+  const cle = confiance || "moyenne";
+  if (!stats[cle]) stats[cle] = { essais: 0, reussites: 0 };
+  stats[cle].essais += 1;
+  stats[cle].reussites += estCorrect ? 1 : 0;
+  localStorage.setItem(CLE_CONFIANCE_EXERCICE + "-stats", JSON.stringify(stats));
+}
+
+function chargerConfianceExercice() {
+  try {
+    const brut = localStorage.getItem(CLE_CONFIANCE_EXERCICE + "-stats");
+    const base = { basse: { essais: 0, reussites: 0 }, moyenne: { essais: 0, reussites: 0 }, haute: { essais: 0, reussites: 0 } };
+    if (!brut) return base;
+    const lu = JSON.parse(brut);
+    return {
+      basse: lu.basse || base.basse,
+      moyenne: lu.moyenne || base.moyenne,
+      haute: lu.haute || base.haute,
+    };
+  } catch (e) {
+    return { basse: { essais: 0, reussites: 0 }, moyenne: { essais: 0, reussites: 0 }, haute: { essais: 0, reussites: 0 } };
+  }
+}
+
+function afficherInsightConfiance(zoneInsight, confiance, estCorrect) {
+  if (!zoneInsight) return;
+  const labels = {
+    basse: "J'ai besoin d'aide",
+    moyenne: "Je suis plutôt sûr(e)",
+    haute: "Je suis très confiant(e)",
+  };
+  const stats = chargerConfianceExercice();
+  const bloc = stats[confiance] || { essais: 0, reussites: 0 };
+  const taux = bloc.essais > 0 ? Math.round((bloc.reussites / bloc.essais) * 100) : null;
+  let conseil = "Choisis un niveau de confiance réaliste : cela entraîne ton auto-évaluation.";
+  if (estCorrect === true && confiance === "basse") conseil = "Excellente surprise : tu peux viser « plutôt sûr(e) » au prochain exercice.";
+  if (estCorrect === false && confiance === "haute") conseil = "Bonne ambition. Vérifie l'unité et l'ordre de grandeur avant de valider.";
+  if (estCorrect === true && confiance === "haute") conseil = "Confiance bien calibrée ✅ Continue en mode défi si tu veux progresser plus vite.";
+  zoneInsight.innerHTML =
+    "<strong>Coach confiance</strong><br>" +
+    "Niveau choisi : <em>" + (labels[confiance] || labels.moyenne) + "</em>." +
+    (taux === null ? "" : " Réussite à ce niveau : " + taux + "% (" + bloc.reussites + "/" + bloc.essais + ").") +
+    "<br><small>" + conseil + "</small>";
+}
+
+function transitionGenerationExercice(zone) {
+  if (!zone) return;
+  zone.classList.remove("is-loading");
+  void zone.offsetWidth;
+  zone.classList.add("is-loading");
+  window.setTimeout(function () {
+    zone.classList.remove("is-loading");
+  }, 260);
+}
+
 // ============================================================
 // 2B. MODE EXERCICES, PROGRESSION, BADGES, HISTORIQUE
 // ============================================================
@@ -1176,6 +1250,7 @@ function initialiserModeExercices(ui) {
   if (!ui || !ui.btnGenererExercice) return;
 
   initialiserParcoursSimplifie(ui);
+  initialiserConfianceExercice(ui.confianceExercice, ui.insightConfiance);
   mettreAJourProgressionSession(ui.sessionProgression);
   mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
   mettreAJourTableauCompetences(ui.tableauCompetences, ui.planEntrainementPersonnalise);
@@ -1196,6 +1271,7 @@ function initialiserModeExercices(ui) {
       ? choisirParcoursAdaptatif(ui.selectThemeExercice.value, ui.selectNiveauExercice.value, objectifSeance, modeAccompagnement, formatExercice)
       : { theme: ui.selectThemeExercice.value, niveau: ui.selectNiveauExercice.value, source: "manuel", objectifSeance: objectifSeance, modeAccompagnement: modeAccompagnement, formatExercice: formatExercice };
     exerciceActuel = creerExercice(selection.theme, selection.niveau, selection);
+    transitionGenerationExercice(ui.enonceExercice);
     afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
     if (ui.estimationExercice) ui.estimationExercice.value = "";
     afficherFeedbackEstimation(ui.feedbackEstimation, null);
@@ -1333,6 +1409,7 @@ function corrigerExercice(ui, passerAuSuivant) {
   }
 
   if (!passerAuSuivant) {
+    const niveauConfiance = ui.confianceExercice ? ui.confianceExercice.value : "moyenne";
     const estimation = ui.estimationExercice ? parserNombreLocale(ui.estimationExercice.value) : null;
     if (exerciceActuel.estimationObligatoire && estimation === null) {
       ui.feedbackExercice.className = "resultat resultat--visible resultat--erreur";
@@ -1344,12 +1421,14 @@ function corrigerExercice(ui, passerAuSuivant) {
     const diagnostic = analyserErreur(exerciceActuel, reponse);
     sessionStats.essais += 1;
     sessionStats.reussites += estCorrect ? 1 : 0;
+    enregistrerConfianceExercice(niveauConfiance, estCorrect);
     enregistrerTentativeExercice(exerciceActuel, reponse, estCorrect);
     enregistrerMotivation(exerciceActuel, estCorrect);
     if (!estCorrect) {
       ajouterRemediation(exerciceActuel);
     }
     afficherFeedbackExercice(ui.feedbackExercice, exerciceActuel, reponse, estCorrect, diagnostic);
+    afficherInsightConfiance(ui.insightConfiance, niveauConfiance, estCorrect);
     afficherFeedbackEstimation(ui.feedbackEstimation, estimation, exerciceActuel.reponse, exerciceActuel.unite);
     afficherMissionSuivante(ui.missionSuivante, exerciceActuel, estCorrect);
     afficherCoachEtapes(ui.coachEtapes, exerciceActuel, estCorrect ? "corrige-ok" : "corrige-ko");
@@ -1390,6 +1469,7 @@ function corrigerExercice(ui, passerAuSuivant) {
       formatExercice: ui.selectFormatExercice ? ui.selectFormatExercice.value : "direct",
     };
   exerciceActuel = creerExercice(selection.theme, selection.niveau, selection);
+  transitionGenerationExercice(ui.enonceExercice);
   afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
   if (ui.estimationExercice) ui.estimationExercice.value = "";
   afficherFeedbackEstimation(ui.feedbackEstimation, null);
@@ -1494,6 +1574,23 @@ function appliquerFormatExercice(exercice, formatExercice) {
       "\nProposition d'un élève : « résultat = " + arrondir(propositionIncorrecte) + " ».";
     return;
   }
+  if (formatExercice === "chantier") {
+    const enonceOriginal = exercice.enonce;
+    const verification = exercice.verification || "Vérifie l'unité, puis l'ordre de grandeur avant de confirmer.";
+    exercice.niveauCognitif = "N4 · Mission multi-étapes";
+    exercice.estimationObligatoire = true;
+    exercice.tolerance = Math.max(exercice.tolerance || 0.05, 0.1);
+    exercice.etapes = [
+      "Je reformule la mission avec mes mots (quoi calculer ?).",
+      "Je découpe en 2 ou 3 mini-calculs avant le résultat final.",
+      "Je contrôle l'unité finale et l'impact chantier."
+    ];
+    exercice.enonce =
+      "[Format mission chantier] Fais une estimation, puis résous le problème étape par étape comme sur le terrain.\n" +
+      enonceOriginal +
+      "\nContrôle final conseillé : " + verification;
+    return;
+  }
   exercice.niveauCognitif = "N1 · Reconnaître et appliquer";
 }
 
@@ -1520,6 +1617,9 @@ function construireQuestionsFlash(exercice) {
 }
 
 function choisirParcoursAdaptatif(themeDefaut, niveauDefaut, objectifSeance, modeAccompagnement, formatExercice) {
+  const formatAdapte = objectifSeance === "metier" && (!formatExercice || formatExercice === "direct")
+    ? "chantier"
+    : (formatExercice || "direct");
   const remediation = consommerRemediation();
   if (remediation) {
     return {
@@ -1529,7 +1629,7 @@ function choisirParcoursAdaptatif(themeDefaut, niveauDefaut, objectifSeance, mod
       remediation: remediation,
       objectifSeance: objectifSeance || "precision",
       modeAccompagnement: modeAccompagnement || "autonome",
-      formatExercice: formatExercice || "direct",
+      formatExercice: formatAdapte,
       message:
         "Coach : on te propose une remédiation ciblée sur « " +
         remediation.competenceLibelle +
@@ -1556,7 +1656,7 @@ function choisirParcoursAdaptatif(themeDefaut, niveauDefaut, objectifSeance, mod
     source: "adaptatif",
     objectifSeance: objectifSeance || "precision",
     modeAccompagnement: modeAccompagnement || "autonome",
-    formatExercice: formatExercice || "direct",
+    formatExercice: formatAdapte,
     parcoursCible: parcoursCibleActif,
     message:
       "Coach : priorité sur « " +
@@ -2744,6 +2844,7 @@ function libelleFormatExercice(formatExercice) {
     guide: "Guidé pas à pas",
     estimation: "Estimation + exact",
     erreur: "Détection d'erreur",
+    chantier: "Mission chantier",
   };
   return mapping[formatExercice] || mapping.direct;
 }
