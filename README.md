@@ -68,6 +68,8 @@ Types de calcul :
 - Micro-compétence ciblée + palier de maîtrise (Bronze / Argent / Or)
 - Barre de progression de session (réussites en cours)
 - Nouveau réglage de **niveau d'accompagnement** (Guidé / Autonome / Défi) pour ajuster la tolérance et le niveau d'exigence
+- Nouveau format **Mission chantier multi-étapes** dans le mode exercices (estimation + résolution + contrôle final)
+- Auto-évaluation de confiance avant validation pour entraîner la métacognition
 
 ### 7) Situations métier enrichies
 - Scénarios CAPa variés : semis, paillage (coût €/m²), arrosage (L/m)
