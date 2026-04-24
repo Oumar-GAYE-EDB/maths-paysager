@@ -213,3 +213,23 @@ Cette direction améliorera à la fois le plaisir d'usage et l'efficacité péda
 - Plus de **variété pédagogique** (du format rapide au format long scénarisé).
 - Meilleur **transfert métier** grâce aux enchaînements réalistes.
 - Progression plus lisible entre automatisation et résolution complexe.
+
+## 11) Améliorations concrètes implémentées (24 avril 2026)
+
+### Interface : apprentissage plus guidé et moins anxiogène
+- Ajout d'une **roadmap visuelle** pour les exercices longs (lecture des données, estimation, sous-calculs, vérification terrain).
+- Ajout d'un **mode “étude accompagnée”** activable pour afficher/masquer l'accompagnement méthodologique selon le profil élève.
+- Ajout d'un **journal de résolution** directement dans l'interface pour obliger la verbalisation des étapes (données, formule, unité), surtout sur les cas longs.
+
+### Pédagogie : meilleure qualité de raisonnement
+- En format **étude de cas longue**, la validation exige désormais un journal suffisamment détaillé (minimum de contenu + plusieurs étapes).
+- La consigne des études longues a été renforcée : livrables attendus explicités (estimation, calculs intermédiaires, résultat argumenté).
+
+### Exercices : complexité utile sur chantier
+- Nouveau scénario pourcentages : **enchaînement de coefficients successifs** (hausse, pertes, puis répartition finale) pour travailler les erreurs fréquentes d'ordre d'application.
+- Nouveau scénario métier CAPa : **dossier chantier complet** (surface utile, dosage, marge de sécurité, coût final) avec 5 étapes de calcul.
+
+### Effets attendus
+- Moins de réponses “au hasard” grâce à l'écriture guidée.
+- Plus de transfert métier, car l'élève suit la logique d'un vrai chiffrage terrain.
+- Meilleure mémorisation procédurale avec le passage systématique “donnée → formule → unité”.

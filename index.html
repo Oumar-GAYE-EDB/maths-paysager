@@ -414,6 +414,15 @@
         <p class="experience-banner__title">Mode fluide activé</p>
         <p id="experience-banner-text" class="experience-banner__text">Conseil : commence par une estimation pour mieux contrôler l'ordre de grandeur.</p>
       </div>
+      <div id="roadmap-exercice-long" class="exercise-roadmap" aria-live="polite">
+        <p class="exercise-roadmap__title">Parcours conseillé pour un exercice long</p>
+        <ol class="exercise-roadmap__list">
+          <li>Lire le contexte et surligner les données utiles.</li>
+          <li>Faire une estimation rapide (ordre de grandeur).</li>
+          <li>Découper en sous-calculs et noter les unités.</li>
+          <li>Contrôler la cohérence terrain avant validation.</li>
+        </ol>
+      </div>
       <div id="ruban-session-exercice" class="exercise-session-ribbon" aria-live="polite"></div>
       <div class="exercise-dashboard">
         <div id="motivation-eleve" class="exercise-panel exercise-panel--priority"></div>
@@ -479,6 +488,10 @@
           <input type="checkbox" id="mode-focus">
           <span>Mode focus (moins de distractions)</span>
         </label>
+        <label class="coach-toggle" for="mode-etude-accompagnee">
+          <input type="checkbox" id="mode-etude-accompagnee" checked>
+          <span>Mode étude accompagnée (recommandé)</span>
+        </label>
         <label class="coach-toggle" for="mode-adaptatif">
           <input type="checkbox" id="mode-adaptatif">
           <span>Mode adaptatif (coach automatique)</span>
@@ -538,6 +551,13 @@
         <label for="reponse-exercice">Ta réponse <span id="unite-attendue" class="unit-hint"></span> :</label>
         <input type="number" id="reponse-exercice" placeholder="Ex : 24,50" step="0.01" inputmode="decimal">
         <p class="input-helper">Astuce clavier : <kbd>Entrée</kbd> pour valider, <kbd>Alt</kbd> + <kbd>N</kbd> pour un nouvel exercice.</p>
+      </div>
+      <div class="form-group">
+        <label for="journal-resolution">Journal de résolution (obligatoire en mode long) :</label>
+        <textarea id="journal-resolution" class="journal-resolution" rows="4" placeholder="Exemple : 1) Surface totale... 2) retrait de l'allée... 3) contrôle de l'unité..."></textarea>
+      </div>
+      <div id="feedback-journal-resolution" class="exercise-panel exercise-panel--hint" aria-live="polite">
+        Conseil : note au moins 2 étapes pour mémoriser la méthode.
       </div>
 
       <div class="actions">
