@@ -57,6 +57,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const btnMethode = document.getElementById("btn-methode");
   const modeAdaptatif = document.getElementById("mode-adaptatif");
   const modeFocus = document.getElementById("mode-focus");
+  const modeEtudeAccompagnee = document.getElementById("mode-etude-accompagnee");
   const modeEvaluation = document.getElementById("mode-evaluation");
   const modeChrono = document.getElementById("mode-chrono");
   const modeParcoursSimple = document.getElementById("mode-parcours-simple");
@@ -92,6 +93,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const feedbackExercice = document.getElementById("feedback-exercice");
   const insightConfiance = document.getElementById("insight-confiance");
   const feedbackEstimation = document.getElementById("feedback-estimation");
+  const journalResolution = document.getElementById("journal-resolution");
+  const feedbackJournalResolution = document.getElementById("feedback-journal-resolution");
+  const roadmapExerciceLong = document.getElementById("roadmap-exercice-long");
   const radarCompetences = document.getElementById("radar-competences");
   const laboratoireErreurs = document.getElementById("laboratoire-erreurs");
   const progressionExercice = document.getElementById("progression-exercice");
@@ -284,6 +288,7 @@ document.addEventListener("DOMContentLoaded", function () {
     btnIndice2: btnIndice2,
     btnMethode: btnMethode,
     modeAdaptatif: modeAdaptatif,
+    modeEtudeAccompagnee: modeEtudeAccompagnee,
     modeEvaluation: modeEvaluation,
     modeChrono: modeChrono,
     modeParcoursSimple: modeParcoursSimple,
@@ -318,6 +323,9 @@ document.addEventListener("DOMContentLoaded", function () {
     feedbackExercice: feedbackExercice,
     insightConfiance: insightConfiance,
     feedbackEstimation: feedbackEstimation,
+    journalResolution: journalResolution,
+    feedbackJournalResolution: feedbackJournalResolution,
+    roadmapExerciceLong: roadmapExerciceLong,
     radarCompetences: radarCompetences,
     laboratoireErreurs: laboratoireErreurs,
     progressionExercice: progressionExercice,
@@ -1252,6 +1260,7 @@ function initialiserModeExercices(ui) {
   if (!ui || !ui.btnGenererExercice) return;
 
   initialiserParcoursSimplifie(ui);
+  initialiserEtudeAccompagnee(ui);
   initialiserConfianceExercice(ui.confianceExercice, ui.insightConfiance);
   mettreAJourProgressionSession(ui.sessionProgression);
   mettreAJourDiagnosticPedagogique(ui.diagnosticExercice, ui.planRevision);
@@ -1272,6 +1281,7 @@ function initialiserModeExercices(ui) {
     const selection = ui.modeAdaptatif && ui.modeAdaptatif.checked
       ? choisirParcoursAdaptatif(ui.selectThemeExercice.value, ui.selectNiveauExercice.value, objectifSeance, modeAccompagnement, formatExercice)
       : { theme: ui.selectThemeExercice.value, niveau: ui.selectNiveauExercice.value, source: "manuel", objectifSeance: objectifSeance, modeAccompagnement: modeAccompagnement, formatExercice: formatExercice };
+    selection.etudeAccompagnee = !!(ui.modeEtudeAccompagnee && ui.modeEtudeAccompagnee.checked);
     exerciceActuel = creerExercice(selection.theme, selection.niveau, selection);
     transitionGenerationExercice(ui.enonceExercice);
     afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
@@ -1286,6 +1296,8 @@ function initialiserModeExercices(ui) {
     afficherMissionSuivante(ui.missionSuivante, exerciceActuel, null);
     afficherChecklistVerification(ui.checklistVerification, exerciceActuel, false);
     afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
+    reinitialiserJournalResolution(ui.journalResolution, ui.feedbackJournalResolution);
+    mettreAJourRoadmapExercice(ui.roadmapExerciceLong, exerciceActuel, selection.etudeAccompagnee);
     mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
     appliquerModeEvaluation(ui.modeEvaluation, ui.btnIndice1, ui.btnIndice2, ui.btnMethode, ui.feedbackExercice);
     demarrerChronoSiActif(ui, exerciceActuel);
@@ -1365,6 +1377,8 @@ function initialiserModeExercices(ui) {
       afficherChecklistVerification(ui.checklistVerification, exerciceActuel, false);
       mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
       afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
+      reinitialiserJournalResolution(ui.journalResolution, ui.feedbackJournalResolution);
+      mettreAJourRoadmapExercice(ui.roadmapExerciceLong, exerciceActuel, !!(ui.modeEtudeAccompagnee && ui.modeEtudeAccompagnee.checked));
       demarrerChronoSiActif(ui, exerciceActuel);
     });
   }
@@ -1413,6 +1427,9 @@ function corrigerExercice(ui, passerAuSuivant) {
   if (!passerAuSuivant) {
     const niveauConfiance = ui.confianceExercice ? ui.confianceExercice.value : "moyenne";
     const estimation = ui.estimationExercice ? parserNombreLocale(ui.estimationExercice.value) : null;
+    if (exerciceActuel.formatExercice === "long" && !validerJournalResolution(ui.journalResolution, ui.feedbackJournalResolution)) {
+      return;
+    }
     if (exerciceActuel.estimationObligatoire && estimation === null) {
       ui.feedbackExercice.className = "resultat resultat--visible resultat--erreur";
       ui.feedbackExercice.innerHTML = "Commence par donner une estimation rapide avant de valider.";
@@ -1470,6 +1487,7 @@ function corrigerExercice(ui, passerAuSuivant) {
       modeAccompagnement: ui.selectModeAccompagnement ? ui.selectModeAccompagnement.value : "autonome",
       formatExercice: ui.selectFormatExercice ? ui.selectFormatExercice.value : "direct",
     };
+  selection.etudeAccompagnee = !!(ui.modeEtudeAccompagnee && ui.modeEtudeAccompagnee.checked);
   exerciceActuel = creerExercice(selection.theme, selection.niveau, selection);
   transitionGenerationExercice(ui.enonceExercice);
   afficherExercice(ui.enonceExercice, ui.feedbackExercice, ui.reponseExercice, exerciceActuel);
@@ -1485,6 +1503,8 @@ function corrigerExercice(ui, passerAuSuivant) {
   afficherChecklistVerification(ui.checklistVerification, exerciceActuel, false);
   mettreAJourUniteAttendue(ui.uniteAttendue, exerciceActuel);
   afficherPlanRemediation(ui.planRemediation, exerciceActuel, "");
+  reinitialiserJournalResolution(ui.journalResolution, ui.feedbackJournalResolution);
+  mettreAJourRoadmapExercice(ui.roadmapExerciceLong, exerciceActuel, selection.etudeAccompagnee);
   demarrerChronoSiActif(ui, exerciceActuel);
   reinitialiserAidesParcoursSimple(ui);
   mettreAJourRubanSession(ui);
@@ -1503,6 +1523,74 @@ function initialiserParcoursSimplifie(ui) {
     if (actifSelection) reinitialiserAidesParcoursSimple(ui);
     localStorage.setItem(CLE_MODE_PARCOURS_SIMPLE, actifSelection ? "1" : "0");
   });
+}
+
+function initialiserEtudeAccompagnee(ui) {
+  if (!ui || !ui.modeEtudeAccompagnee) return;
+  const cle = "maths-paysager-etude-accompagnee";
+  const valeur = localStorage.getItem(cle);
+  const actif = valeur === null ? true : valeur === "1";
+  ui.modeEtudeAccompagnee.checked = actif;
+  if (ui.modeEtudeAccompagnee) {
+    ui.modeEtudeAccompagnee.addEventListener("change", function () {
+      localStorage.setItem(cle, ui.modeEtudeAccompagnee.checked ? "1" : "0");
+      mettreAJourRoadmapExercice(ui.roadmapExerciceLong, exerciceActuel, ui.modeEtudeAccompagnee.checked);
+    });
+  }
+  if (ui.journalResolution) {
+    ui.journalResolution.addEventListener("input", function () {
+      const texte = (ui.journalResolution.value || "").trim();
+      if (!ui.feedbackJournalResolution) return;
+      if (texte.length < 20) {
+        ui.feedbackJournalResolution.innerHTML = "Conseil : précise au moins 2 étapes avec les unités (ex : m² puis €).";
+        return;
+      }
+      ui.feedbackJournalResolution.innerHTML = "Très bien : ta méthode est notée. Continue avec le calcul final.";
+    });
+  }
+}
+
+function reinitialiserJournalResolution(zoneJournal, zoneFeedback) {
+  if (zoneJournal) zoneJournal.value = "";
+  if (zoneFeedback) zoneFeedback.innerHTML = "Conseil : note au moins 2 étapes pour mémoriser la méthode.";
+}
+
+function validerJournalResolution(zoneJournal, zoneFeedback) {
+  const texte = zoneJournal ? String(zoneJournal.value || "").trim() : "";
+  const nbEtapes = texte.split(/\n+/).filter(function (ligne) { return ligne.trim().length >= 8; }).length;
+  if (texte.length < 40 || nbEtapes < 2) {
+    if (zoneFeedback) {
+      zoneFeedback.innerHTML = "En format long, note au moins 2 étapes détaillées avant validation (données, formule, unité).";
+    }
+    if (zoneJournal) zoneJournal.focus();
+    return false;
+  }
+  if (zoneFeedback) {
+    zoneFeedback.innerHTML = "Journal validé ✅ : tu peux comparer ta méthode avec la correction.";
+  }
+  return true;
+}
+
+function mettreAJourRoadmapExercice(zone, exercice, etudeAccompagnee) {
+  if (!zone) return;
+  const formatLong = exercice && (exercice.formatExercice === "long" || exercice.formatExercice === "chantier");
+  if (!etudeAccompagnee) {
+    zone.innerHTML = "<p class=\"exercise-roadmap__title\">Mode autonome actif</p><p>Roadmap masquée. Active « étude accompagnée » pour revoir les étapes-guides.</p>";
+    return;
+  }
+  if (!formatLong) {
+    zone.innerHTML = "<p class=\"exercise-roadmap__title\">Prépare-toi pour les exercices longs</p><p>Astuce : passe en format « Étude de cas longue » pour travailler la méthode complète en plusieurs étapes.</p>";
+    return;
+  }
+  zone.innerHTML =
+    "<p class=\"exercise-roadmap__title\">Feuille de route active (format long)</p>" +
+    "<ol class=\"exercise-roadmap__list\">" +
+      "<li>Repère la question finale et l'unité attendue.</li>" +
+      "<li>Écris une estimation réaliste (ordre de grandeur).</li>" +
+      "<li>Détaille 2 à 4 sous-calculs dans le journal de résolution.</li>" +
+      "<li>Contrôle la cohérence terrain : coût, quantité ou volume plausible.</li>" +
+      "<li>Valide puis compare ton raisonnement avec l'explication.</li>" +
+    "</ol>";
 }
 
 function appliquerParcoursSimplifie(actif) {
@@ -1536,12 +1624,20 @@ function enrichirExercice(exercice, meta) {
   if (!exercice) return exercice;
   const modeAccompagnement = meta && meta.modeAccompagnement ? meta.modeAccompagnement : "autonome";
   const formatExercice = meta && meta.formatExercice ? meta.formatExercice : "direct";
+  const etudeAccompagnee = !!(meta && meta.etudeAccompagnee);
   const baseTolerance = typeof exercice.tolerance === "number" ? exercice.tolerance : 0.05;
   if (modeAccompagnement === "guide") exercice.tolerance = baseTolerance * 1.5;
   if (modeAccompagnement === "defi") exercice.tolerance = baseTolerance * 0.6;
   exercice.modeAccompagnement = modeAccompagnement;
   exercice.formatExercice = formatExercice;
+  exercice.etudeAccompagnee = etudeAccompagnee;
   appliquerFormatExercice(exercice, formatExercice);
+  if (etudeAccompagnee) {
+    exercice.etapes = (exercice.etapes || []).concat([
+      "J'écris au moins deux étapes dans le journal de résolution.",
+      "Je termine par une phrase de conclusion avec l'unité finale."
+    ]);
+  }
   exercice.questionsFlash = construireQuestionsFlash(exercice);
   return exercice;
 }
@@ -1612,13 +1708,14 @@ function transformerEnEtudeDeCasLongue(exercice) {
     "Je lis toutes les données et je surligne les unités utiles.",
     "Je réalise une estimation rapide pour cadrer mon résultat.",
     "Je découpe le problème en sous-calculs (2 à 4 étapes).",
+    "Je note les résultats intermédiaires avec leurs unités.",
     "Je vérifie la cohérence métier (quantité, coût ou volume plausible).",
     "Je rédige le résultat final avec l'unité : " + unite + ".",
   ];
   exercice.enonce =
     "[Format étude de cas longue] Résous ce dossier comme en situation réelle : estimation, calcul détaillé, vérification finale.\n" +
     enonceOriginal +
-    "\nContraintes : note au moins deux étapes intermédiaires sur brouillon et valide la cohérence terrain.\nContrôle final : " +
+    "\nLivrables attendus : (1) estimation chiffrée, (2) au moins 2 calculs intermédiaires, (3) résultat final argumenté.\nContraintes : note les conversions d'unités et valide la cohérence terrain.\nContrôle final : " +
     verification;
   exercice.questionsFlash = [
     "Quelle donnée était prioritaire pour démarrer ta résolution ?",
@@ -2028,8 +2125,8 @@ function creerExerciceForme(niveau) {
 function creerExercicePourcentage(niveau) {
   const scenariosParNiveau = {
     facile: [1, 2, 4],
-    moyen: [1, 2, 3, 4, 5, 6],
-    difficile: [2, 3, 4, 5, 6, 7],
+    moyen: [1, 2, 3, 4, 5, 6, 8],
+    difficile: [2, 3, 4, 5, 6, 7, 8],
   };
   const scenariosDisponibles = scenariosParNiveau[niveau] || scenariosParNiveau.facile;
   const scenario = scenariosDisponibles[nombreAleatoire(0, scenariosDisponibles.length - 1)];
@@ -2292,6 +2389,46 @@ function creerExercicePourcentage(niveau) {
       ],
     };
   }
+  if (scenario === 8) {
+    const surfaceInitiale = niveau === "difficile" ? nombreAleatoire(180, 420) : nombreAleatoire(90, 260);
+    const hausseZone = niveau === "difficile" ? nombreAleatoire(12, 28) : nombreAleatoire(8, 18);
+    const pertePlantules = niveau === "difficile" ? nombreAleatoire(6, 14) : nombreAleatoire(4, 10);
+    const partAromatiques = niveau === "difficile" ? nombreAleatoire(30, 55) : nombreAleatoire(20, 40);
+    const surfaceApresHausse = surfaceInitiale * (1 + hausseZone / 100);
+    const surfaceApresPerte = surfaceApresHausse * (1 - pertePlantules / 100);
+    const surfaceAromatiques = surfaceApresPerte * (partAromatiques / 100);
+    return {
+      theme: "pourcentages",
+      competence: "pourcentages",
+      competenceLabel: "Pourcentages",
+      objectif: "Enchaîner 3 pourcentages successifs (hausse, baisse, part finale).",
+      titre: "Plan de culture — enchaînement de pourcentages",
+      enonce: "Contexte : un plan de culture évolue sur la saison.\nDonnées : surface initiale = " + surfaceInitiale + " m² ; extension de " + hausseZone + "% ; pertes de " + pertePlantules + "% après reprise ; puis " + partAromatiques + "% de la surface restante est réservée aux aromatiques.\nQuestion : quelle surface finale est allouée aux aromatiques ?",
+      reponse: surfaceAromatiques,
+      tolerance: 0.15,
+      unite: "m²",
+      explication: "Étape 1 : surface après extension = " + arrondir(surfaceInitiale) + " × (1 + " + hausseZone + "/100) = " + arrondir(surfaceApresHausse) + " m². Étape 2 : surface après pertes = " + arrondir(surfaceApresHausse) + " × (1 - " + pertePlantules + "/100) = " + arrondir(surfaceApresPerte) + " m². Étape 3 : aromatiques = " + arrondir(surfaceApresPerte) + " × (" + partAromatiques + "/100) = " + arrondir(surfaceAromatiques) + " m².",
+      erreurProbable: "Enchaîne les coefficients dans l'ordre : hausse, puis perte, puis part finale.",
+      erreurCode: "pourcent_div100",
+      palier: "Or",
+      etapes: [
+        "Je transforme chaque pourcentage en coefficient multiplicateur.",
+        "J'applique les évolutions dans l'ordre chronologique.",
+        "Je calcule ensuite la part finale sur la surface restante.",
+      ],
+      utiliteMetier: "Cette méthode aide à ajuster un plan de plantation quand les surfaces et pertes évoluent.",
+      verification: "Après une hausse puis une perte, la surface finale doit rester positive et cohérente avec l'ordre de grandeur initial.",
+      pontMathsMetier: {
+        mesure: "La surface réellement exploitable pour une catégorie de culture.",
+        decision: "Répartir les plants selon la surface réellement disponible.",
+        impact: "Réduit les erreurs de commande en fin de planification.",
+      },
+      indices: [
+        "Indice 1 : hausse de x% = × (1 + x/100), perte de y% = × (1 - y/100).",
+        "Indice 2 : applique le pourcentage d'aromatiques à la toute dernière surface obtenue.",
+      ],
+    };
+  }
 
   const totalPlants = niveau === "difficile" ? nombreAleatoire(300, 900) : nombreAleatoire(120, 320);
   const partVivaces = niveau === "facile" ? nombreAleatoire(20, 45) : nombreAleatoire(30, 70);
@@ -2332,8 +2469,8 @@ function creerExercicePourcentage(niveau) {
 function creerExerciceMetier(niveau) {
   const scenariosParNiveau = {
     facile: [1, 2, 3, 4],
-    moyen: [1, 2, 3, 4, 5, 6],
-    difficile: [2, 3, 4, 5, 6, 7, 8],
+    moyen: [1, 2, 3, 4, 5, 6, 9],
+    difficile: [2, 3, 4, 5, 6, 7, 8, 9],
   };
   const scenariosDisponibles = scenariosParNiveau[niveau] || scenariosParNiveau.facile;
   const scenario = scenariosDisponibles[nombreAleatoire(0, scenariosDisponibles.length - 1)];
@@ -2645,6 +2782,53 @@ function creerExerciceMetier(niveau) {
       indices: [
         "Indice 1 : convertis d'abord l'épaisseur en mètres.",
         "Indice 2 : masse = (surface × épaisseur) × densité.",
+      ],
+    };
+  }
+  if (scenario === 9) {
+    const longueur = niveau === "difficile" ? nombreAleatoire(22, 46) : nombreAleatoire(14, 32);
+    const largeur = niveau === "difficile" ? nombreAleatoire(12, 28) : nombreAleatoire(8, 18);
+    const aireAllee = niveau === "difficile" ? nombreAleatoire(25, 70) : nombreAleatoire(12, 36);
+    const doseKgM2 = niveau === "difficile" ? nombreAleatoire(3, 6) : nombreAleatoire(2, 4);
+    const prixKg = niveau === "difficile" ? nombreAleatoire(2, 5) : nombreAleatoire(1, 3);
+    const margeSecurite = niveau === "difficile" ? nombreAleatoire(8, 16) : nombreAleatoire(5, 10);
+    const surfaceBrute = longueur * largeur;
+    const surfaceUtile = surfaceBrute - aireAllee;
+    const masseTheorique = surfaceUtile * doseKgM2;
+    const masseFinale = masseTheorique * (1 + margeSecurite / 100);
+    const budget = masseFinale * prixKg;
+    return {
+      theme: "metier",
+      competence: "situations-metier",
+      competenceLabel: "Situations métier CAPa",
+      objectif: "Résoudre une étude de cas complète : surface utile, dosage, marge puis coût total.",
+      titre: "Situation métier CAPa — étude de chantier complète",
+      enonce: "Contexte : préparation d'un semis sur une zone rectangulaire avec allée technique.\nDonnées : zone = " + longueur + " m × " + largeur + " m ; allée non semée = " + aireAllee + " m² ; dosage = " + doseKgM2 + " kg/m² ; prix = " + prixKg + " €/kg ; marge sécurité = " + margeSecurite + "%.\nQuestion : quel budget total faut-il prévoir pour les semences ?",
+      reponse: budget,
+      tolerance: 0.2,
+      unite: "€",
+      explication: "Étape 1 : surface brute = " + longueur + " × " + largeur + " = " + arrondir(surfaceBrute) + " m². Étape 2 : surface utile = " + arrondir(surfaceBrute) + " - " + aireAllee + " = " + arrondir(surfaceUtile) + " m². Étape 3 : masse théorique = " + arrondir(surfaceUtile) + " × " + doseKgM2 + " = " + arrondir(masseTheorique) + " kg. Étape 4 : masse avec marge = " + arrondir(masseTheorique) + " × (1 + " + margeSecurite + "/100) = " + arrondir(masseFinale) + " kg. Étape 5 : budget total = " + arrondir(masseFinale) + " × " + prixKg + " = " + arrondir(budget) + " €.",
+      erreurProbable: "Respecte l'ordre des étapes : surface utile → masse → marge → coût.",
+      erreurCode: "metier_surface_avant_conversion",
+      palier: "Or",
+      etapes: [
+        "Je retire l'allée pour obtenir la surface utile.",
+        "Je calcule la masse de semences selon le dosage kg/m².",
+        "J'ajoute la marge de sécurité en pourcentage.",
+        "Je convertis la masse finale en coût total (€).",
+      ],
+      utiliteMetier: "C'est un chiffrage réaliste avant commande : quantité + sécurité + coût final.",
+      verification: "Le budget final doit être supérieur au budget sans marge et rester cohérent avec la surface utile.",
+      visuel: "🗂️ Dossier chantier complet",
+      decisionChantier: "Décision : valider la commande de semences et le budget associé.",
+      pontMathsMetier: {
+        mesure: "La quantité réelle de semences nécessaire pour la zone utile.",
+        decision: "Préparer un bon de commande fiable.",
+        impact: "Limite les erreurs de stock et les écarts financiers.",
+      },
+      indices: [
+        "Indice 1 : commence toujours par la surface utile (on retire l'allée).",
+        "Indice 2 : applique la marge sur la masse avant de calculer le coût total.",
       ],
     };
   }

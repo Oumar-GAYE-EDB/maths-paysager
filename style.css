@@ -792,6 +792,19 @@ body.mode-focus #section-exercices {
   -webkit-appearance: none;
 }
 
+.form-group textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-base);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  transition: border-color var(--transition), box-shadow var(--transition);
+  resize: vertical;
+}
+
 .form-group select {
   /* Flèche personnalisée pour le menu déroulant */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b6860' viewBox='0 0 16 16'%3E%3Cpath d='M1.5 5.5L8 12l6.5-6.5'/%3E%3C/svg%3E");
@@ -801,7 +814,8 @@ body.mode-focus #section-exercices {
 }
 
 .form-group select:focus,
-.form-group input:focus {
+.form-group input:focus,
+.form-group textarea:focus {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-light);
@@ -809,6 +823,7 @@ body.mode-focus #section-exercices {
 
 .form-group select:focus-visible,
 .form-group input:focus-visible,
+.form-group textarea:focus-visible,
 .btn:focus-visible,
 .theme-toggle:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--color-primary) 55%, #ffffff);
@@ -1164,6 +1179,29 @@ body.mode-focus #section-exercices {
   margin-top: var(--space-1);
   font-weight: 700;
   color: var(--color-text);
+}
+
+.exercise-roadmap {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px dashed color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-primary-light) 55%, var(--color-surface) 45%);
+}
+
+.exercise-roadmap__title {
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.exercise-roadmap__list {
+  margin: var(--space-2) 0 0 1.2rem;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.journal-resolution {
+  background: color-mix(in srgb, var(--color-surface) 82%, var(--color-primary-light) 18%);
 }
 
 .exercise-meta {
