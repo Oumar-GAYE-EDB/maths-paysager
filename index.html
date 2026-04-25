@@ -79,6 +79,40 @@
       </div>
     </section>
 
+    <section class="card comfort-coach" id="section-cap-apprentissage" aria-labelledby="titre-cap-apprentissage">
+      <h2 class="card__title" id="titre-cap-apprentissage">Cap d'apprentissage du jour</h2>
+      <p class="card__desc">Règle ton ambiance de travail et lance un mini-parcours adapté à ton énergie.</p>
+      <div class="comfort-coach__layout">
+        <article class="comfort-coach__panel comfort-coach__panel--accent">
+          <p class="comfort-coach__label">Comment tu te sens maintenant ?</p>
+          <div class="mood-grid" role="group" aria-label="Choix d'humeur d'apprentissage">
+            <button type="button" class="mood-chip mood-chip--active" data-mood="focus">🎯 Prêt à me concentrer</button>
+            <button type="button" class="mood-chip" data-mood="stress">😵 Un peu stressé</button>
+            <button type="button" class="mood-chip" data-mood="fatigue">😴 Fatigué</button>
+            <button type="button" class="mood-chip" data-mood="motivation">🚀 Très motivé</button>
+          </div>
+          <p id="mood-coach-feedback" class="comfort-coach__feedback" aria-live="polite">
+            Super ! Commence par un exercice guidé pour prendre un bon rythme.
+          </p>
+        </article>
+        <article class="comfort-coach__panel">
+          <p class="comfort-coach__label">Parcours conseillé (8 minutes)</p>
+          <ol class="micro-plan" id="micro-plan-list">
+            <li>1 min : lis l'énoncé et souligne les données.</li>
+            <li>4 min : réalise un exercice guidé.</li>
+            <li>2 min : compare avec la correction.</li>
+            <li>1 min : note une astuce que tu veux retenir.</li>
+          </ol>
+          <div class="actions">
+            <button class="btn btn--primary" id="btn-start-micro-plan" type="button">Lancer ce parcours</button>
+          </div>
+          <p id="micro-plan-result" class="comfort-coach__feedback" aria-live="polite">
+            Clique sur “Lancer ce parcours” pour appliquer automatiquement les réglages recommandés.
+          </p>
+        </article>
+      </div>
+    </section>
+
     <section class="study-routine" aria-label="Routine conseillée">
       <article class="study-routine__card">
         <p class="study-routine__eyebrow">Routine conseillée</p>
