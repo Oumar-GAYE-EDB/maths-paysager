@@ -258,6 +258,95 @@ body.contrast-fort {
   box-shadow: var(--shadow-md);
 }
 
+.comfort-coach {
+  position: relative;
+  overflow: hidden;
+}
+
+.comfort-coach::after {
+  content: "";
+  position: absolute;
+  inset: auto -80px -120px auto;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-primary-light) 65%, transparent 35%);
+  pointer-events: none;
+}
+
+.comfort-coach__layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+
+.comfort-coach__panel {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  gap: var(--space-3);
+}
+
+.comfort-coach__panel--accent {
+  background: linear-gradient(155deg, color-mix(in srgb, var(--color-primary-light) 58%, #fff 42%), var(--color-surface));
+}
+
+.comfort-coach__label {
+  font-weight: 800;
+  font-family: var(--font-display);
+}
+
+.mood-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: var(--space-2);
+}
+
+.mood-chip {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  padding: 0.58rem 0.85rem;
+  font-weight: 700;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: transform var(--transition), border-color var(--transition), background var(--transition), box-shadow var(--transition);
+}
+
+.mood-chip:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--color-primary) 55%, var(--color-border) 45%);
+}
+
+.mood-chip:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 26%, #fff 74%);
+  outline-offset: 2px;
+}
+
+.mood-chip--active {
+  border-color: color-mix(in srgb, var(--color-primary) 70%, var(--color-border) 30%);
+  background: color-mix(in srgb, var(--color-primary-light) 65%, var(--color-surface) 35%);
+  box-shadow: var(--shadow-sm);
+}
+
+.micro-plan {
+  margin: 0;
+  padding-left: var(--space-5);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.comfort-coach__feedback {
+  border-left: 4px solid color-mix(in srgb, var(--color-primary) 42%, transparent 58%);
+  padding-left: var(--space-3);
+  color: var(--color-text-muted);
+}
+
 .flashcard:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--color-primary) 38%, #fff 62%);
   outline-offset: 2px;

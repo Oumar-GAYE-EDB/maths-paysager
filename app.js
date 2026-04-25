@@ -106,6 +106,11 @@ document.addEventListener("DOMContentLoaded", function () {
   const btnDemarrageRapide = document.getElementById("btn-demarrage-rapide");
   const btnReviserNotion = document.getElementById("btn-reviser-notion");
   const messageDemarrage = document.getElementById("message-demarrage");
+  const moodCoachFeedback = document.getElementById("mood-coach-feedback");
+  const microPlanList = document.getElementById("micro-plan-list");
+  const microPlanResult = document.getElementById("micro-plan-result");
+  const btnStartMicroPlan = document.getElementById("btn-start-micro-plan");
+  const moodChips = document.querySelectorAll(".mood-chip");
   const btnFontMinus = document.getElementById("btn-font-minus");
   const btnFontPlus = document.getElementById("btn-font-plus");
   const modeContrasteFort = document.getElementById("mode-contraste-fort");
@@ -259,6 +264,20 @@ document.addEventListener("DOMContentLoaded", function () {
     selectModeAccompagnement: selectModeAccompagnement,
     modeFocus: modeFocus,
     modeAdaptatif: modeAdaptatif,
+    btnGenererExercice: btnGenererExercice,
+  });
+  initialiserCapApprentissage({
+    moodCoachFeedback: moodCoachFeedback,
+    microPlanList: microPlanList,
+    microPlanResult: microPlanResult,
+    btnStartMicroPlan: btnStartMicroPlan,
+    moodChips: moodChips,
+    selectThemeExercice: selectThemeExercice,
+    selectNiveauExercice: selectNiveauExercice,
+    selectFormatExercice: selectFormatExercice,
+    selectModeAccompagnement: selectModeAccompagnement,
+    modeFocus: modeFocus,
+    modeEtudeAccompagnee: modeEtudeAccompagnee,
     btnGenererExercice: btnGenererExercice,
   });
   initialiserStudioMissions({
@@ -622,6 +641,99 @@ function initialiserDemarrageRapide(btnRapide, btnRevision, zoneMessage, ui) {
   });
 }
 
+function initialiserCapApprentissage(ui) {
+  if (!ui || !ui.moodChips || !ui.moodChips.length || !ui.btnStartMicroPlan) return;
+
+  const plansParHumeur = {
+    focus: {
+      feedback: "Très bon état d'esprit. Tu peux viser une mission guidée puis une mission plus autonome.",
+      steps: [
+        "1 min : lis l'énoncé et repère l'unité finale.",
+        "4 min : réalise un exercice guidé sans te presser.",
+        "2 min : vérifie méthode + ordre de grandeur.",
+        "1 min : note 1 réflexe à réutiliser en chantier."
+      ],
+      preset: { theme: "metier", niveau: "moyen", format: "guide", accompagnement: "autonome", focus: true },
+    },
+    stress: {
+      feedback: "Respire 20 secondes : on avance en étapes courtes. Priorité à la compréhension, pas à la vitesse.",
+      steps: [
+        "2 min : relis calmement l'énoncé et reformule la question.",
+        "3 min : fais un exercice facile avec indices.",
+        "2 min : compare ta méthode avec la correction.",
+        "1 min : écris la formule clé sur un brouillon."
+      ],
+      preset: { theme: "aires", niveau: "facile", format: "guide", accompagnement: "guide", focus: true },
+    },
+    fatigue: {
+      feedback: "On simplifie : objectif mini mais réussi. Une petite victoire relance la motivation.",
+      steps: [
+        "1 min : choisis un thème unique.",
+        "3 min : fais un calcul direct court.",
+        "2 min : vérifie uniquement unité et ordre de grandeur.",
+        "2 min : fais une question d'atelier mental pour terminer."
+      ],
+      preset: { theme: "pourcentages", niveau: "facile", format: "direct", accompagnement: "guide", focus: false },
+    },
+    motivation: {
+      feedback: "Énergie haute : parfait pour un défi progressif. Garde une vérification rigoureuse à la fin.",
+      steps: [
+        "1 min : estimation rapide du résultat attendu.",
+        "4 min : mission chantier multi-étapes.",
+        "2 min : vérifie les unités à chaque ligne.",
+        "1 min : reformule la méthode comme si tu l'expliquais à un camarade."
+      ],
+      preset: { theme: "metier", niveau: "difficile", format: "chantier", accompagnement: "defi", focus: true },
+    },
+  };
+
+  let humeurActive = "focus";
+
+  function appliquerPlan(humeur) {
+    const plan = plansParHumeur[humeur] || plansParHumeur.focus;
+    humeurActive = humeur;
+
+    ui.moodChips.forEach(function (chip) {
+      chip.classList.toggle("mood-chip--active", chip.dataset.mood === humeur);
+      chip.setAttribute("aria-pressed", chip.dataset.mood === humeur ? "true" : "false");
+    });
+
+    if (ui.moodCoachFeedback) ui.moodCoachFeedback.textContent = plan.feedback;
+    if (ui.microPlanList) {
+      ui.microPlanList.innerHTML = plan.steps.map(function (etape) {
+        return "<li>" + etape + "</li>";
+      }).join("");
+    }
+  }
+
+  ui.moodChips.forEach(function (chip) {
+    chip.setAttribute("aria-pressed", chip.classList.contains("mood-chip--active") ? "true" : "false");
+    chip.addEventListener("click", function () {
+      appliquerPlan(chip.dataset.mood || "focus");
+    });
+  });
+
+  ui.btnStartMicroPlan.addEventListener("click", function () {
+    const plan = plansParHumeur[humeurActive] || plansParHumeur.focus;
+    if (ui.selectThemeExercice) ui.selectThemeExercice.value = plan.preset.theme;
+    if (ui.selectNiveauExercice) ui.selectNiveauExercice.value = plan.preset.niveau;
+    if (ui.selectFormatExercice) ui.selectFormatExercice.value = plan.preset.format;
+    if (ui.selectModeAccompagnement) ui.selectModeAccompagnement.value = plan.preset.accompagnement;
+    if (ui.modeFocus) {
+      ui.modeFocus.checked = !!plan.preset.focus;
+      document.body.classList.toggle("mode-focus", !!plan.preset.focus);
+    }
+    if (ui.modeEtudeAccompagnee) ui.modeEtudeAccompagnee.checked = true;
+    if (ui.microPlanResult) {
+      ui.microPlanResult.textContent = "Parcours appliqué : " + plan.preset.theme + " · niveau " + plan.preset.niveau + ". Exercice lancé ✅";
+    }
+    if (ui.btnGenererExercice) ui.btnGenererExercice.click();
+    notifierActionApprentissage({ type: "micro-plan", competence: plan.preset.theme });
+  });
+
+  appliquerPlan("focus");
+}
+
 function initialiserCockpitApprentissage(elements) {
   if (!elements) return;
   mettreAJourCockpitApprentissage(elements, { type: "init" });
@@ -674,6 +786,11 @@ function mettreAJourCockpitApprentissage(elements, action) {
   if (typeAction === "nouvel-exercice") {
     elements.lastAction.textContent = "Nouvel exercice lancé : concentre-toi sur les données utiles.";
     elements.nextStep.textContent = "Astuce : estime d'abord l'ordre de grandeur, puis calcule.";
+    return;
+  }
+  if (typeAction === "micro-plan") {
+    elements.lastAction.textContent = "Parcours personnalisé lancé selon ton énergie du moment.";
+    elements.nextStep.textContent = "Suis les 4 mini-étapes et valide au moins 1 exercice avant de changer de thème.";
     return;
   }
 
