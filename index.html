@@ -172,7 +172,7 @@
       </article>
     </section>
 
-    <section class="card quest-card" id="section-jardin-quetes" aria-labelledby="titre-jardin-quetes">
+    <section class="card quest-card" id="section-jardin-quetes" aria-labelledby="titre-jardin-quetes" data-learning-section="quetes">
       <h2 class="card__title" id="titre-jardin-quetes">Jardin des progrès (mode jeu)</h2>
       <p class="card__desc">
         Transforme tes efforts en progression visible : gagne de l'XP, monte de niveau et relève une mini-mission du jour.
@@ -215,7 +215,31 @@
       <a class="quick-nav__link" href="#section-memo">Formules</a>
     </nav>
 
-    <section class="card studio-card" id="section-studio-missions" aria-labelledby="titre-studio-missions">
+
+
+    <section class="card parcours-intuitif" id="section-parcours-intuitif" aria-labelledby="titre-parcours-intuitif">
+      <h2 class="card__title" id="titre-parcours-intuitif">Parcours intuitif guidé</h2>
+      <p class="card__desc">Choisis ton objectif : l'interface met en avant les bonnes sections pour éviter la surcharge et progresser plus vite.</p>
+      <div class="parcours-intuitif__chips" role="group" aria-label="Choix de parcours">
+        <button class="mood-chip mood-chip--active" type="button" data-parcours="bases">Réviser les bases</button>
+        <button class="mood-chip" type="button" data-parcours="metier">Missions terrain</button>
+        <button class="mood-chip" type="button" data-parcours="evaluation">Préparer une évaluation</button>
+        <button class="mood-chip" type="button" data-parcours="complet">Vue complète</button>
+      </div>
+      <div class="parcours-intuitif__layout">
+        <article class="exercise-panel exercise-panel--priority">
+          <h3 class="panel-title">Plan conseillé maintenant</h3>
+          <ol id="parcours-intuitif-steps" class="parcours-intuitif__steps"></ol>
+        </article>
+        <article class="exercise-panel exercise-panel--hint">
+          <h3 class="panel-title">Coach pédagogique</h3>
+          <p id="parcours-intuitif-feedback" aria-live="polite">Sélectionne un parcours pour obtenir des actions concrètes en moins de 15 minutes.</p>
+          <button class="btn btn--secondary btn--compact" id="btn-parcours-premiere-etape" type="button">Aller à la 1re étape</button>
+        </article>
+      </div>
+    </section>
+
+    <section class="card studio-card" id="section-studio-missions" aria-labelledby="titre-studio-missions" data-learning-section="studio">
       <h2 class="card__title" id="titre-studio-missions">Studio missions terrain</h2>
       <p class="card__desc">
         Un nouvel espace plus guidé pour progresser : alterne <strong>4 formats d'exercices</strong> (guidé, estimation, détection d'erreur, multi-étapes).
@@ -267,7 +291,7 @@
       </div>
     </section>
 
-    <section class="card" id="section-formes">
+    <section class="card" id="section-formes" data-learning-section="formes">
       <h2 class="card__title">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
         Aire et périmètre
@@ -296,7 +320,7 @@
       <div id="schema-forme" class="schema-container"></div>
     </section>
 
-    <section class="card" id="section-pourcent">
+    <section class="card" id="section-pourcent" data-learning-section="pourcent">
       <h2 class="card__title">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><line x1="4" y1="20" x2="20" y2="4"/></svg>
         Pourcentages
@@ -323,7 +347,7 @@
       <div id="resultat-pourcent" class="resultat" aria-live="polite"></div>
     </section>
 
-    <section class="card" id="section-atelier-mental">
+    <section class="card" id="section-atelier-mental" data-learning-section="atelier">
       <h2 class="card__title">Atelier mental (5 minutes)</h2>
       <p class="card__desc">Un mini-entraînement rapide pour automatiser les réflexes utiles en maths.</p>
 
@@ -368,7 +392,7 @@
       </div>
     </section>
 
-    <section class="card" id="section-coach-revision">
+    <section class="card" id="section-coach-revision" data-learning-section="coach">
       <h2 class="card__title">Coach de révision personnalisé</h2>
       <p class="card__desc">Prépare un plan concret selon ton temps disponible, ton niveau et tes résultats récents.</p>
 
@@ -438,7 +462,7 @@
       </div>
     </section>
 
-    <section class="card" id="section-exercices">
+    <section class="card" id="section-exercices" data-learning-section="exercices">
       <h2 class="card__title">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         Mode exercices (CAPa)
@@ -668,7 +692,7 @@
       </details>
     </section>
 
-    <section class="card card--memo" id="section-memo">
+    <section class="card card--memo" id="section-memo" data-learning-section="memo">
       <h2 class="card__title">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
         Aide-mémoire : formules essentielles
