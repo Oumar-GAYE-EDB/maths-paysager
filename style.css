@@ -736,6 +736,39 @@ body.mode-focus #section-exercices {
   box-shadow: var(--shadow-md);
 }
 
+
+.parcours-intuitif__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.parcours-intuitif__layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-3);
+}
+
+.parcours-intuitif__steps {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-5);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.main[data-learning-view="filtered"] [data-learning-section].section-muted {
+  opacity: 0.42;
+  transform: scale(0.995);
+  filter: saturate(0.72);
+  transition: opacity var(--transition), transform var(--transition), filter var(--transition);
+}
+
+.main[data-learning-view="filtered"] [data-learning-section]:not(.section-muted) {
+  border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
+  box-shadow: var(--shadow-md);
+}
+
 /* ---------- NAVIGATION RAPIDE ---------- */
 .quick-nav {
   position: sticky;

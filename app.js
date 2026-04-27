@@ -158,6 +158,11 @@ document.addEventListener("DOMContentLoaded", function () {
   const studioCodeErreur = document.getElementById("studio-code-erreur");
   const studioMetacognition = document.getElementById("studio-metacognition");
   const experienceBannerText = document.getElementById("experience-banner-text");
+  const parcoursIntuitifChips = document.querySelectorAll("[data-parcours]");
+  const parcoursIntuitifSteps = document.getElementById("parcours-intuitif-steps");
+  const parcoursIntuitifFeedback = document.getElementById("parcours-intuitif-feedback");
+  const btnParcoursPremiereEtape = document.getElementById("btn-parcours-premiere-etape");
+
 
   // --- Afficher les champs dès le chargement ---
   afficherChampsFormes(selectForme.value, champsForme);
@@ -292,6 +297,13 @@ document.addEventListener("DOMContentLoaded", function () {
     studioMetacognition: studioMetacognition,
   });
   initialiserBanniereExperienceFluide(experienceBannerText);
+  initialiserParcoursIntuitif({
+    chips: parcoursIntuitifChips,
+    steps: parcoursIntuitifSteps,
+    feedback: parcoursIntuitifFeedback,
+    btnFirstStep: btnParcoursPremiereEtape,
+    main: document.querySelector(".main"),
+  });
 
   // --- Mode exercices / progression ---
   initialiserModeExercices({
@@ -1066,6 +1078,103 @@ function initialiserExperienceFluide() {
   sectionsObservees.forEach(function (item) {
     observateurSections.observe(item.section);
   });
+}
+
+function initialiserParcoursIntuitif(ui) {
+  if (!ui || !ui.chips || !ui.chips.length || !ui.steps || !ui.feedback || !ui.main) return;
+
+  const definitionParcours = {
+    bases: {
+      feedback: "Parfait pour consolider les fondamentaux : on privilégie des calculs courts et répétitifs.",
+      sections: ["formes", "pourcent", "memo", "atelier"],
+      steps: [
+        "Commence par 2 calculs d'aire/périmètre pour revoir les formules.",
+        "Enchaîne avec 2 exercices de pourcentage pour automatiser ×/÷ 100.",
+        "Termine avec 3 questions d'atelier mental pour fixer les réflexes."
+      ],
+      firstTarget: "#section-formes",
+      action: { type: "parcours-bases", competence: "fondamentaux" },
+    },
+    metier: {
+      feedback: "Ce parcours connecte les maths à des situations de chantier : utile pour mieux mémoriser.",
+      sections: ["studio", "exercices", "coach"],
+      steps: [
+        "Lance une mission terrain dans le Studio (format guidé ou chantier).",
+        "Passe au mode exercices CAPa pour appliquer la même logique en autonomie.",
+        "Crée ton plan avec le coach de révision pour préparer la prochaine séance."
+      ],
+      firstTarget: "#section-studio-missions",
+      action: { type: "parcours-metier", competence: "transfert-metier" },
+    },
+    evaluation: {
+      feedback: "Objectif évaluation : te mettre dans les conditions du contrôle avec vérifications rapides.",
+      sections: ["exercices", "atelier", "memo"],
+      steps: [
+        "Active un exercice avec accompagnement autonome ou défi.",
+        "Chronomètre-toi sur une série courte de questions d'atelier mental.",
+        "Relis l'aide-mémoire et note 2 formules à réviser ce soir."
+      ],
+      firstTarget: "#section-exercices",
+      action: { type: "parcours-evaluation", competence: "evaluation" },
+    },
+    complet: {
+      feedback: "Vue complète activée : toutes les sections restent visibles pour explorer librement.",
+      sections: [],
+      steps: [
+        "Choisis un objectif simple de séance (ex : 3 exercices validés).",
+        "Utilise la navigation rapide pour alterner calculs, entraînement et correction.",
+        "Note une astuce clé à retenir avant de quitter l'application."
+      ],
+      firstTarget: "#section-demarrage",
+      action: { type: "parcours-complet", competence: "organisation" },
+    },
+  };
+
+  const sections = Array.from(document.querySelectorAll("[data-learning-section]"));
+  let parcoursActif = "bases";
+
+  function appliquerParcours(cleParcours) {
+    const parcours = definitionParcours[cleParcours] || definitionParcours.bases;
+    parcoursActif = cleParcours;
+
+    ui.chips.forEach(function (chip) {
+      const actif = chip.dataset.parcours === cleParcours;
+      chip.classList.toggle("mood-chip--active", actif);
+      chip.setAttribute("aria-pressed", actif ? "true" : "false");
+    });
+
+    ui.feedback.textContent = parcours.feedback;
+    ui.steps.innerHTML = parcours.steps.map(function (step) {
+      return "<li>" + step + "</li>";
+    }).join("");
+
+    const filtrer = parcours.sections.length > 0;
+    ui.main.setAttribute("data-learning-view", filtrer ? "filtered" : "all");
+    sections.forEach(function (section) {
+      const cle = section.dataset.learningSection;
+      const estVisible = !filtrer || parcours.sections.indexOf(cle) !== -1;
+      section.classList.toggle("section-muted", !estVisible);
+    });
+
+    notifierActionApprentissage(parcours.action);
+  }
+
+  ui.chips.forEach(function (chip) {
+    chip.setAttribute("aria-pressed", chip.classList.contains("mood-chip--active") ? "true" : "false");
+    chip.addEventListener("click", function () {
+      appliquerParcours(chip.dataset.parcours || "bases");
+    });
+  });
+
+  if (ui.btnFirstStep) {
+    ui.btnFirstStep.addEventListener("click", function () {
+      const parcours = definitionParcours[parcoursActif] || definitionParcours.bases;
+      const cible = parcours.firstTarget ? document.querySelector(parcours.firstTarget) : null;
+      if (cible) cible.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
+  appliquerParcours("bases");
 }
 
 function initialiserCalculRapideClavier() {
