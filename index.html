@@ -37,10 +37,34 @@
       </button>
     </div>
     <p class="header__subtitle">Ton application claire pour progresser en maths en CAPa Aménagement Paysager</p>
+    <div class="header__actions">
+      <button class="btn btn--secondary btn--compact" id="btn-interface-epuree" type="button" aria-pressed="true">
+        Afficher les outils avancés
+      </button>
+    </div>
   </header>
 
   <main class="main" id="contenu-principal">
-    <section class="orientation-strip" aria-label="Repères rapides pour les élèves">
+    <section class="card essentials-card" aria-labelledby="titre-parcours-essentiel">
+      <h2 class="card__title" id="titre-parcours-essentiel">Parcours essentiel (recommandé)</h2>
+      <p class="card__desc">Commence ici : 3 étapes simples pour apprendre sans surcharge.</p>
+      <div class="essentials-grid">
+        <a class="essential-link" href="#section-formes">
+          <strong>1) Calculer une surface</strong>
+          <span>Aires et périmètres utiles sur chantier.</span>
+        </a>
+        <a class="essential-link" href="#section-pourcent">
+          <strong>2) Travailler les pourcentages</strong>
+          <span>Dosages, remises, évolutions.</span>
+        </a>
+        <a class="essential-link" href="#section-exercices">
+          <strong>3) Valider avec un exercice guidé</strong>
+          <span>Feedback immédiat et progression visible.</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="orientation-strip" aria-label="Repères rapides pour les élèves" data-density="secondary">
       <article class="orientation-strip__item">
         <p class="orientation-strip__label">Objectif quotidien</p>
         <p class="orientation-strip__value">3 exercices utiles</p>
@@ -55,7 +79,7 @@
       </article>
     </section>
 
-    <section class="card quote-card" aria-label="Citation quotidienne de motivation">
+    <section class="card quote-card" aria-label="Citation quotidienne de motivation" data-density="secondary">
       <p class="quote-card__label">Citation du jour</p>
       <blockquote id="citation-jour" class="quote-card__text" aria-live="polite">
         Les maths sont les plans invisibles qui rendent le paysage harmonieux.
@@ -79,7 +103,7 @@
       </div>
     </section>
 
-    <section class="card comfort-coach" id="section-cap-apprentissage" aria-labelledby="titre-cap-apprentissage">
+    <section class="card comfort-coach" id="section-cap-apprentissage" aria-labelledby="titre-cap-apprentissage" data-density="secondary">
       <h2 class="card__title" id="titre-cap-apprentissage">Cap d'apprentissage du jour</h2>
       <p class="card__desc">Règle ton ambiance de travail et lance un mini-parcours adapté à ton énergie.</p>
       <div class="comfort-coach__layout">
@@ -113,7 +137,7 @@
       </div>
     </section>
 
-    <section class="study-routine" aria-label="Routine conseillée">
+    <section class="study-routine" aria-label="Routine conseillée" data-density="secondary">
       <article class="study-routine__card">
         <p class="study-routine__eyebrow">Routine conseillée</p>
         <h2>15 minutes pour progresser chaque jour</h2>
@@ -154,7 +178,7 @@
       </label>
     </section>
 
-    <section class="learning-cockpit" aria-label="Tableau de bord élève">
+    <section class="learning-cockpit" aria-label="Tableau de bord élève" data-density="secondary">
       <article class="learning-cockpit__card">
         <p class="learning-cockpit__label">Progression de la séance</p>
         <p id="cockpit-session-goal" class="learning-cockpit__value">0 / 5 exercices validés</p>
@@ -172,7 +196,7 @@
       </article>
     </section>
 
-    <section class="card quest-card" id="section-jardin-quetes" aria-labelledby="titre-jardin-quetes" data-learning-section="quetes">
+    <section class="card quest-card" id="section-jardin-quetes" aria-labelledby="titre-jardin-quetes" data-learning-section="quetes" data-density="secondary">
       <h2 class="card__title" id="titre-jardin-quetes">Jardin des progrès (mode jeu)</h2>
       <p class="card__desc">
         Transforme tes efforts en progression visible : gagne de l'XP, monte de niveau et relève une mini-mission du jour.
@@ -205,19 +229,15 @@
     </section>
 
     <nav class="quick-nav" aria-label="Navigation rapide">
-      <a class="quick-nav__link" href="#section-jardin-quetes">Défi du jour</a>
-      <a class="quick-nav__link" href="#section-studio-missions">Studio missions</a>
       <a class="quick-nav__link" href="#section-formes">Surfaces</a>
       <a class="quick-nav__link" href="#section-pourcent">Pourcentages</a>
-      <a class="quick-nav__link" href="#section-atelier-mental">Atelier mental</a>
-      <a class="quick-nav__link" href="#section-coach-revision">Coach révision</a>
       <a class="quick-nav__link" href="#section-exercices">Exercices</a>
       <a class="quick-nav__link" href="#section-memo">Formules</a>
     </nav>
 
 
 
-    <section class="card parcours-intuitif" id="section-parcours-intuitif" aria-labelledby="titre-parcours-intuitif">
+    <section class="card parcours-intuitif" id="section-parcours-intuitif" aria-labelledby="titre-parcours-intuitif" data-density="secondary">
       <h2 class="card__title" id="titre-parcours-intuitif">Parcours intuitif guidé</h2>
       <p class="card__desc">Choisis ton objectif : l'interface met en avant les bonnes sections pour éviter la surcharge et progresser plus vite.</p>
       <div class="parcours-intuitif__chips" role="group" aria-label="Choix de parcours">
@@ -239,7 +259,7 @@
       </div>
     </section>
 
-    <section class="card studio-card" id="section-studio-missions" aria-labelledby="titre-studio-missions" data-learning-section="studio">
+    <section class="card studio-card" id="section-studio-missions" aria-labelledby="titre-studio-missions" data-learning-section="studio" data-density="secondary">
       <h2 class="card__title" id="titre-studio-missions">Studio missions terrain</h2>
       <p class="card__desc">
         Un nouvel espace plus guidé pour progresser : alterne <strong>4 formats d'exercices</strong> (guidé, estimation, détection d'erreur, multi-étapes).
@@ -347,7 +367,7 @@
       <div id="resultat-pourcent" class="resultat" aria-live="polite"></div>
     </section>
 
-    <section class="card" id="section-atelier-mental" data-learning-section="atelier">
+    <section class="card" id="section-atelier-mental" data-learning-section="atelier" data-density="secondary">
       <h2 class="card__title">Atelier mental (5 minutes)</h2>
       <p class="card__desc">Un mini-entraînement rapide pour automatiser les réflexes utiles en maths.</p>
 
@@ -392,7 +412,7 @@
       </div>
     </section>
 
-    <section class="card" id="section-coach-revision" data-learning-section="coach">
+    <section class="card" id="section-coach-revision" data-learning-section="coach" data-density="secondary">
       <h2 class="card__title">Coach de révision personnalisé</h2>
       <p class="card__desc">Prépare un plan concret selon ton temps disponible, ton niveau et tes résultats récents.</p>
 

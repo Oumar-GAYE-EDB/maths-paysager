@@ -412,6 +412,10 @@ body.contrast-fort {
   opacity: 0.85;
 }
 
+.header__actions {
+  margin-top: var(--space-3);
+}
+
 /* Bouton mode sombre/clair */
 .theme-toggle {
   position: absolute;
@@ -443,6 +447,40 @@ body.contrast-fort {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+}
+
+.essentials-card {
+  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+  background: linear-gradient(160deg, color-mix(in srgb, var(--color-primary-light) 52%, var(--color-surface) 48%), var(--color-surface));
+}
+
+.essentials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-3);
+}
+
+.essential-link {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+}
+
+.essential-link span {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.essential-link:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
+  box-shadow: var(--shadow-sm);
 }
 
 .orientation-strip {
@@ -734,6 +772,10 @@ body.mode-focus .main {
 body.mode-focus #section-exercices {
   border-color: var(--color-primary);
   box-shadow: var(--shadow-md);
+}
+
+body.interface-epuree [data-density="secondary"] {
+  display: none;
 }
 
 
