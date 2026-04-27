@@ -15,6 +15,7 @@ const CLE_MOTIVATION = "maths-paysager-motivation";
 const CLE_ATELIER_MENTAL = "maths-paysager-atelier-mental";
 const CLE_JARDIN_QUETES = "maths-paysager-jardin-quetes";
 const CLE_CONFIANCE_EXERCICE = "maths-paysager-confiance-exercice";
+const CLE_INTERFACE_EPUREE = "maths-paysager-interface-epuree";
 const MAX_HISTORIQUE = 20;
 const sessionStats = { essais: 0, reussites: 0 };
 let chronoInterval = null;
@@ -162,6 +163,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const parcoursIntuitifSteps = document.getElementById("parcours-intuitif-steps");
   const parcoursIntuitifFeedback = document.getElementById("parcours-intuitif-feedback");
   const btnParcoursPremiereEtape = document.getElementById("btn-parcours-premiere-etape");
+  const btnInterfaceEpuree = document.getElementById("btn-interface-epuree");
 
 
   // --- Afficher les champs dès le chargement ---
@@ -209,6 +211,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // --- Mode sombre / clair ---
   initialiserTheme();
+  initialiserInterfaceEpuree(btnInterfaceEpuree);
   initialiserSaisieDecimale();
   initialiserModeFocus(modeFocus);
   initialiserConfortAccessibilite(btnFontMinus, btnFontPlus, modeContrasteFort);
@@ -404,6 +407,28 @@ function initialiserTheme() {
       localStorage.setItem(CLE_THEME, theme);
     });
   }
+}
+
+function initialiserInterfaceEpuree(boutonInterface) {
+  if (!boutonInterface) return;
+
+  const appliquerEtatInterface = function (estEpuree) {
+    document.body.classList.toggle("interface-epuree", estEpuree);
+    boutonInterface.setAttribute("aria-pressed", estEpuree ? "true" : "false");
+    boutonInterface.textContent = estEpuree
+      ? "Afficher les outils avancés"
+      : "Revenir à l'interface épurée";
+  };
+
+  const valeurStockee = localStorage.getItem(CLE_INTERFACE_EPUREE);
+  const modeEpureActif = valeurStockee === null ? true : valeurStockee === "1";
+  appliquerEtatInterface(modeEpureActif);
+
+  boutonInterface.addEventListener("click", function () {
+    const nouvelEtat = !document.body.classList.contains("interface-epuree");
+    appliquerEtatInterface(nouvelEtat);
+    localStorage.setItem(CLE_INTERFACE_EPUREE, nouvelEtat ? "1" : "0");
+  });
 }
 
 function initialiserCitationQuotidienne(zoneCitation) {

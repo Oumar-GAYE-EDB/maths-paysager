@@ -46,6 +46,7 @@ Types de calcul :
 - Messages d'erreur par champ
 - Zones de résultat avec `aria-live`
 - Thème clair/sombre mémorisé dans le navigateur
+- Interface épurée par défaut avec bouton pour afficher les outils avancés
 - Mode focus (interface simplifiée orientée exercice)
 - Interface responsive
 
