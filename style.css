@@ -778,6 +778,29 @@ body.interface-epuree [data-density="secondary"] {
   display: none;
 }
 
+body.interface-epuree #section-exercices .exercise-panel--hint,
+body.interface-epuree #section-exercices .exercise-dashboard,
+body.interface-epuree #section-exercices #roadmap-exercice-long,
+body.interface-epuree #section-exercices #analyse-apprentissage,
+body.interface-epuree #section-exercices #feedback-journal-resolution,
+body.interface-epuree #section-exercices .progress-grid--insights,
+body.interface-epuree #section-exercices .exercise-advanced-control,
+body.interface-epuree #section-exercices .input-helper {
+  display: none;
+}
+
+body.interface-epuree #section-exercices {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary-light) 30%, var(--color-surface) 70%), var(--color-surface));
+}
+
+body.interface-epuree #section-exercices .form-fields {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: var(--space-3);
+}
+
+body.interface-epuree #section-exercices .actions {
+  gap: var(--space-2);
+}
 
 .parcours-intuitif__chips {
   display: flex;
