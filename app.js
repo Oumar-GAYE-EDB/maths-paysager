@@ -370,6 +370,19 @@ document.addEventListener("DOMContentLoaded", function () {
     btnTestsFormules: btnTestsFormules,
     btnExportBilan: btnExportBilan,
   });
+
+  initialiserDemarrageExercices({
+    btnDemarrageRapide: btnDemarrageRapide,
+    btnReviserNotion: btnReviserNotion,
+    messageDemarrage: messageDemarrage,
+    selectThemeExercice: selectThemeExercice,
+    selectNiveauExercice: selectNiveauExercice,
+    selectFormatExercice: selectFormatExercice,
+    selectModeAccompagnement: selectModeAccompagnement,
+    sectionExercices: document.getElementById("section-exercices"),
+    btnGenererExercice: btnGenererExercice,
+    reponseExercice: reponseExercice,
+  });
 });
 
 
@@ -1662,6 +1675,43 @@ function initialiserModeExercices(ui) {
 
   // Démarre avec un exercice prêt à résoudre pour éviter un écran vide.
   ui.btnGenererExercice.click();
+}
+
+function initialiserDemarrageExercices(ui) {
+  if (!ui || !ui.btnDemarrageRapide || !ui.btnGenererExercice) return;
+
+  function lancerModeExercice(config) {
+    if (ui.selectThemeExercice) ui.selectThemeExercice.value = config.theme || "mixte";
+    if (ui.selectNiveauExercice) ui.selectNiveauExercice.value = config.niveau || "facile";
+    if (ui.selectFormatExercice) ui.selectFormatExercice.value = config.format || "guide";
+    if (ui.selectModeAccompagnement) ui.selectModeAccompagnement.value = config.accompagnement || "guide";
+    ui.btnGenererExercice.click();
+    if (ui.sectionExercices) ui.sectionExercices.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (ui.reponseExercice) ui.reponseExercice.focus();
+    if (ui.messageDemarrage) ui.messageDemarrage.textContent = config.message;
+  }
+
+  ui.btnDemarrageRapide.addEventListener("click", function () {
+    lancerModeExercice({
+      theme: "mixte",
+      niveau: "facile",
+      format: "guide",
+      accompagnement: "guide",
+      message: "Mode exercice activé ✅ Un exercice guidé vient d'être lancé pour commencer pas à pas.",
+    });
+  });
+
+  if (ui.btnReviserNotion) {
+    ui.btnReviserNotion.addEventListener("click", function () {
+      lancerModeExercice({
+        theme: "aires",
+        niveau: "facile",
+        format: "direct",
+        accompagnement: "autonome",
+        message: "Révision lancée ✅ Commence par un exercice simple sur les aires et périmètres.",
+      });
+    });
+  }
 }
 
 function corrigerExercice(ui, passerAuSuivant) {
