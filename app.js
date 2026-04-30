@@ -2719,9 +2719,9 @@ function creerExercicePourcentage(niveau) {
 
 function creerExerciceMetier(niveau) {
   const scenariosParNiveau = {
-    facile: [1, 2, 3, 4],
-    moyen: [1, 2, 3, 4, 5, 6, 9],
-    difficile: [2, 3, 4, 5, 6, 7, 8, 9],
+    facile: [1, 2, 3, 4, 10],
+    moyen: [1, 2, 3, 4, 5, 6, 9, 10, 11],
+    difficile: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
   };
   const scenariosDisponibles = scenariosParNiveau[niveau] || scenariosParNiveau.facile;
   const scenario = scenariosDisponibles[nombreAleatoire(0, scenariosDisponibles.length - 1)];
@@ -3080,6 +3080,88 @@ function creerExerciceMetier(niveau) {
       indices: [
         "Indice 1 : commence toujours par la surface utile (on retire l'allée).",
         "Indice 2 : applique la marge sur la masse avant de calculer le coût total.",
+      ],
+    };
+  }
+  if (scenario === 10) {
+    const longueur = niveau === "facile" ? nombreAleatoire(10, 26) : nombreAleatoire(18, 48);
+    const largeur = niveau === "facile" ? nombreAleatoire(6, 14) : nombreAleatoire(10, 24);
+    const surface = longueur * largeur;
+    const rendementHoraire = niveau === "facile" ? nombreAleatoire(12, 20) : nombreAleatoire(16, 28);
+    const heures = surface / rendementHoraire;
+    return {
+      theme: "metier",
+      competence: "situations-metier",
+      competenceLabel: "Situations métier CAPa",
+      objectif: "Passer d'une surface à un temps d'intervention à partir d'un rendement horaire.",
+      titre: "Situation métier CAPa — planification du temps d'intervention",
+      enonce: "Contexte : préparation d'une zone à désherber mécaniquement.\nDonnées : zone = " + longueur + " m × " + largeur + " m ; rendement moyen = " + rendementHoraire + " m²/h.\nQuestion : combien d'heures de travail faut-il prévoir ?",
+      reponse: heures,
+      tolerance: 0.1,
+      unite: "h",
+      explication: "Étape 1 : surface = " + longueur + " × " + largeur + " = " + arrondir(surface) + " m². Étape 2 : temps = surface ÷ rendement = " + arrondir(surface) + " ÷ " + rendementHoraire + " = " + arrondir(heures) + " h.",
+      erreurProbable: "Quand on connaît un rendement en m²/h, on divise la surface par ce rendement.",
+      erreurCode: "metier_surface_avant_conversion",
+      palier: "Argent",
+      etapes: [
+        "Je calcule la surface totale à traiter.",
+        "Je repère l'unité du rendement (m²/h).",
+        "Je divise la surface par le rendement pour obtenir le temps en heures.",
+      ],
+      utiliteMetier: "Permet de planifier la durée de chantier et la répartition des tâches dans l'équipe.",
+      verification: "Si le rendement augmente, le temps total doit diminuer.",
+      visuel: "⏱️ Planification chantier",
+      decisionChantier: "Décision : organiser le planning journalier de l'équipe.",
+      pontMathsMetier: {
+        mesure: "Le temps de travail estimé à partir de la surface.",
+        decision: "Ajuster le nombre d'heures et les ressources humaines.",
+        impact: "Limite les retards et améliore l'organisation du chantier.",
+      },
+      indices: [
+        "Indice 1 : calcule d'abord la surface en m².",
+        "Indice 2 : temps = surface ÷ rendement (m²/h).",
+      ],
+    };
+  }
+  if (scenario === 11) {
+    const longueur = niveau === "moyen" ? nombreAleatoire(12, 32) : nombreAleatoire(24, 58);
+    const largeur = niveau === "moyen" ? nombreAleatoire(8, 18) : nombreAleatoire(12, 26);
+    const surface = longueur * largeur;
+    const densitePlants = niveau === "moyen" ? nombreAleatoire(5, 9) : nombreAleatoire(8, 12);
+    const pertes = niveau === "moyen" ? nombreAleatoire(4, 10) : nombreAleatoire(8, 15);
+    const plantsTheoriques = surface * densitePlants;
+    const plantsAvecMarge = plantsTheoriques * (1 + pertes / 100);
+    return {
+      theme: "metier",
+      competence: "situations-metier",
+      competenceLabel: "Situations métier CAPa",
+      objectif: "Calculer un nombre de plants à partir d'une densité, puis intégrer une marge de reprise.",
+      titre: "Situation métier CAPa — densité de plantation et marge",
+      enonce: "Contexte : création d'un massif fleuri.\nDonnées : zone = " + longueur + " m × " + largeur + " m ; densité = " + densitePlants + " plants/m² ; marge de reprise = " + pertes + "%.\nQuestion : combien de plants faut-il commander au total ?",
+      reponse: plantsAvecMarge,
+      tolerance: 0.12,
+      unite: "plants",
+      explication: "Étape 1 : surface = " + longueur + " × " + largeur + " = " + arrondir(surface) + " m². Étape 2 : plants théoriques = " + arrondir(surface) + " × " + densitePlants + " = " + arrondir(plantsTheoriques) + ". Étape 3 : commande finale = " + arrondir(plantsTheoriques) + " × (1 + " + pertes + "/100) = " + arrondir(plantsAvecMarge) + " plants.",
+      erreurProbable: "N'oublie pas d'ajouter la marge de reprise après le calcul théorique.",
+      erreurCode: "metier_surface_avant_conversion",
+      palier: "Or",
+      etapes: [
+        "Je calcule la surface du massif.",
+        "Je calcule le nombre théorique de plants avec la densité plants/m².",
+        "J'applique la marge de reprise pour obtenir la commande finale.",
+      ],
+      utiliteMetier: "Aide à sécuriser les commandes de végétaux en tenant compte des pertes possibles.",
+      verification: "La commande finale doit être supérieure au nombre théorique de plants.",
+      visuel: "🌸 Densité de plantation",
+      decisionChantier: "Décision : valider la commande globale de plants.",
+      pontMathsMetier: {
+        mesure: "Le besoin réel de plants en fin de calcul.",
+        decision: "Commander une quantité fiable à la pépinière.",
+        impact: "Réduit les manques de plants pendant l'implantation.",
+      },
+      indices: [
+        "Indice 1 : plants théoriques = surface × densité.",
+        "Indice 2 : applique ensuite la marge avec (1 + x/100).",
       ],
     };
   }
