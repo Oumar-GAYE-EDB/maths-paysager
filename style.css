@@ -38,7 +38,7 @@ html {
   /* Couleurs — palette "jardin" */
   --color-bg:             #f4f1eb;       /* Fond crème chaud */
   --color-surface:        #ffffff;       /* Cartes blanches */
-  --color-surface-offset: #eae7e0;       /* Fond alternatif */
+  --color-surface-offset: #efece6;       /* Fond alternatif plus homogène */
   --color-border:         #d1ccc3;       /* Bordures douces */
   --color-divider:        #e0ddd7;       /* Séparateurs */
 
@@ -49,7 +49,7 @@ html {
   --color-primary:        #3a7d44;       /* Vert feuille — boutons, accents */
   --color-primary-hover:  #2e6336;       /* Vert plus foncé au survol */
   --color-primary-active: #245229;       /* Vert encore plus foncé au clic */
-  --color-primary-light:  #e8f5e9;       /* Vert très clair pour fond résultat */
+  --color-primary-light:  #f0f6f0;       /* Vert très clair adouci pour une luminosité homogène */
 
   --color-error:          #c0392b;       /* Rouge d'erreur */
   --color-error-light:    #fdecea;       /* Fond erreur léger */
@@ -129,8 +129,8 @@ body {
   font-size: var(--text-base);
   color: var(--color-text);
   background:
-    radial-gradient(circle at 5% -5%, color-mix(in srgb, var(--color-primary-light) 70%, transparent 30%), transparent 40%),
-    radial-gradient(circle at 95% 0%, color-mix(in srgb, var(--color-surface-offset) 70%, transparent 30%), transparent 36%),
+    radial-gradient(circle at 5% -5%, color-mix(in srgb, var(--color-primary-light) 45%, transparent 55%), transparent 48%),
+    radial-gradient(circle at 95% 0%, color-mix(in srgb, var(--color-surface-offset) 48%, transparent 52%), transparent 44%),
     var(--color-bg);
   display: flex;
   flex-direction: column;
