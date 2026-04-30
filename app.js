@@ -1509,7 +1509,7 @@ function transitionGenerationExercice(zone) {
 // ============================================================
 
 function initialiserModeExercices(ui) {
-  if (!ui || !ui.btnGenererExercice) return;
+  if (!ui || !ui.btnGenererExercice || !ui.reponseExercice || !ui.feedbackExercice || !ui.enonceExercice) return;
 
   initialiserParcoursSimplifie(ui);
   initialiserEtudeAccompagnee(ui);
@@ -1659,6 +1659,9 @@ function initialiserModeExercices(ui) {
   mettreAJourTableauMotivation(ui.motivationEleve, ui.defiJour);
   mettreAJourRadarCompetences(ui.radarCompetences);
   mettreAJourLaboratoireErreurs(ui.laboratoireErreurs);
+
+  // Démarre avec un exercice prêt à résoudre pour éviter un écran vide.
+  ui.btnGenererExercice.click();
 }
 
 function corrigerExercice(ui, passerAuSuivant) {
