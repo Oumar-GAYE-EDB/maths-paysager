@@ -312,6 +312,7 @@ document.addEventListener("DOMContentLoaded", function () {
   initialiserModeExercices({
     selectThemeExercice: selectThemeExercice,
     selectNiveauExercice: selectNiveauExercice,
+    selectFormatExercice: selectFormatExercice,
     selectObjectifSeance: selectObjectifSeance,
     selectModeAccompagnement: selectModeAccompagnement,
     btnGenererExercice: btnGenererExercice,
