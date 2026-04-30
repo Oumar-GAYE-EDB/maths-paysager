@@ -802,6 +802,27 @@ body.interface-epuree #section-exercices .actions {
   gap: var(--space-2);
 }
 
+/* Version allégée : environ 50% d'informations visibles en moins et blocs plus compacts */
+body.interface-epuree .card {
+  padding: var(--space-3);
+}
+
+body.interface-epuree .card__desc {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+body.interface-epuree .quick-nav,
+body.interface-epuree .study-routine,
+body.interface-epuree #section-parcours-intuitif,
+body.interface-epuree #section-studio-missions {
+  display: none;
+}
+
+body.interface-epuree #section-exercices .exercise-layout {
+  gap: var(--space-2);
+}
+
 .parcours-intuitif__chips {
   display: flex;
   flex-wrap: wrap;
