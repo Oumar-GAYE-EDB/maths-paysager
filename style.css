@@ -50,6 +50,8 @@ html {
   --color-primary-hover:  #2e6336;       /* Vert plus foncé au survol */
   --color-primary-active: #245229;       /* Vert encore plus foncé au clic */
   --color-primary-light:  #f0f6f0;       /* Vert très clair adouci pour une luminosité homogène */
+  --color-surface-soft:   #f8f5ef;       /* Surface secondaire uniformisée */
+  --color-surface-raised: #fcfbf8;       /* Surface élevée pour cartes accentuées */
 
   --color-error:          #c0392b;       /* Rouge d'erreur */
   --color-error-light:    #fdecea;       /* Fond erreur léger */
@@ -89,6 +91,8 @@ html {
   --color-primary-hover:  #72c07c;
   --color-primary-active: #4a9a54;
   --color-primary-light:  rgba(90, 173, 100, 0.12);
+    --color-surface-soft:   #20201c;
+    --color-surface-raised: #2a2a25;
 
   --color-error:          #e74c3c;
   --color-error-light:    rgba(231, 76, 60, 0.12);
@@ -113,6 +117,8 @@ html {
     --color-primary-hover:  #72c07c;
     --color-primary-active: #4a9a54;
     --color-primary-light:  rgba(90, 173, 100, 0.12);
+    --color-surface-soft:   #20201c;
+    --color-surface-raised: #2a2a25;
     --color-error:          #e74c3c;
     --color-error-light:    rgba(231, 76, 60, 0.12);
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
@@ -487,6 +493,10 @@ body.contrast-fort {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-3);
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-3);
 }
 
 .orientation-strip__item {
@@ -552,7 +562,7 @@ body.contrast-fort {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   padding: var(--space-5);
-  background: linear-gradient(160deg, var(--color-surface) 0%, color-mix(in srgb, var(--color-surface-offset) 65%, var(--color-surface) 35%) 100%);
+  background: linear-gradient(160deg, var(--color-surface-raised) 0%, color-mix(in srgb, var(--color-surface-soft) 68%, var(--color-surface-raised) 32%) 100%);
   box-shadow: var(--shadow-sm);
 }
 
@@ -618,7 +628,7 @@ body.contrast-fort {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
-  background: var(--color-surface);
+  background: var(--color-surface-raised);
   box-shadow: var(--shadow-sm);
   transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
 }
@@ -880,7 +890,7 @@ body.interface-epuree .panel-title {
   padding: var(--space-2);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+  background: color-mix(in srgb, var(--color-surface-soft) 92%, transparent);
   backdrop-filter: blur(4px);
 }
 
@@ -916,7 +926,7 @@ body.interface-epuree .panel-title {
 
 /* ---------- CARTES (SECTIONS) ---------- */
 .card {
-  background: var(--color-surface);
+  background: linear-gradient(180deg, var(--color-surface-raised) 0%, var(--color-surface) 100%);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   padding: var(--space-6);
@@ -1673,7 +1683,7 @@ button[aria-disabled="true"] {
 
 /* ---------- AIDE-MÉMOIRE ---------- */
 .card--memo {
-  background: var(--color-surface-offset);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-surface-soft) 72%, var(--color-surface) 28%), var(--color-surface));
 }
 
 .memo-grid {
