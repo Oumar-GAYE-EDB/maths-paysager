@@ -113,7 +113,11 @@ document.addEventListener("DOMContentLoaded", function () {
   const btnStartMicroPlan = document.getElementById("btn-start-micro-plan");
   const moodChips = document.querySelectorAll(".mood-chip");
   const btnFontMinus = document.getElementById("btn-font-minus");
+  const btnFontReset = document.getElementById("btn-font-reset");
   const btnFontPlus = document.getElementById("btn-font-plus");
+  const btnLumiSoft = document.getElementById("btn-lumi-soft");
+  const btnLumiBalanced = document.getElementById("btn-lumi-balanced");
+  const btnLumiBright = document.getElementById("btn-lumi-bright");
   const modeContrasteFort = document.getElementById("mode-contraste-fort");
   const cockpitSessionGoal = document.getElementById("cockpit-session-goal");
   const cockpitSessionMeter = document.getElementById("cockpit-session-meter");
@@ -214,7 +218,11 @@ document.addEventListener("DOMContentLoaded", function () {
   initialiserInterfaceEpuree(btnInterfaceEpuree);
   initialiserSaisieDecimale();
   initialiserModeFocus(modeFocus);
-  initialiserConfortAccessibilite(btnFontMinus, btnFontPlus, modeContrasteFort);
+  initialiserConfortAccessibilite(btnFontMinus, btnFontReset, btnFontPlus, modeContrasteFort, {
+    soft: btnLumiSoft,
+    balanced: btnLumiBalanced,
+    bright: btnLumiBright,
+  });
   initialiserNavigationConfort();
   initialiserExperienceFluide();
   initialiserCockpitApprentissage({
@@ -629,9 +637,10 @@ function initialiserModeFocus(caseFocus) {
   });
 }
 
-function initialiserConfortAccessibilite(btnMinus, btnPlus, toggleContraste) {
+function initialiserConfortAccessibilite(btnMinus, btnReset, btnPlus, toggleContraste, boutonsLuminosite) {
   const CLE_FONT = "maths-paysager-font-scale";
   const CLE_CONTRASTE = "maths-paysager-contrast";
+  const CLE_LUMINOSITE = "maths-paysager-luminosite";
   const body = document.body;
   if (!body) return;
 
@@ -639,13 +648,34 @@ function initialiserConfortAccessibilite(btnMinus, btnPlus, toggleContraste) {
   body.setAttribute("data-font-scale", fontScale);
 
   const contrasteActif = localStorage.getItem(CLE_CONTRASTE) === "1";
+  const luminosite = localStorage.getItem(CLE_LUMINOSITE) || "balanced";
+  body.setAttribute("data-luminosite", luminosite);
   body.classList.toggle("contrast-fort", contrasteActif);
   if (toggleContraste) toggleContraste.checked = contrasteActif;
+
+
+  function activerBoutonLuminosite(mode) {
+    if (!boutonsLuminosite) return;
+    ["soft", "balanced", "bright"].forEach(function (cle) {
+      const bouton = boutonsLuminosite[cle];
+      if (!bouton) return;
+      const actif = cle === mode;
+      bouton.classList.toggle("is-active", actif);
+      bouton.setAttribute("aria-pressed", actif ? "true" : "false");
+    });
+  }
+  activerBoutonLuminosite(luminosite);
 
   if (btnMinus) {
     btnMinus.addEventListener("click", function () {
       body.setAttribute("data-font-scale", "small");
       localStorage.setItem(CLE_FONT, "small");
+    });
+  }
+  if (btnReset) {
+    btnReset.addEventListener("click", function () {
+      body.setAttribute("data-font-scale", "normal");
+      localStorage.setItem(CLE_FONT, "normal");
     });
   }
   if (btnPlus) {
@@ -654,6 +684,19 @@ function initialiserConfortAccessibilite(btnMinus, btnPlus, toggleContraste) {
       localStorage.setItem(CLE_FONT, "large");
     });
   }
+
+  if (boutonsLuminosite) {
+    ["soft", "balanced", "bright"].forEach(function (cle) {
+      const bouton = boutonsLuminosite[cle];
+      if (!bouton) return;
+      bouton.addEventListener("click", function () {
+        body.setAttribute("data-luminosite", cle);
+        localStorage.setItem(CLE_LUMINOSITE, cle);
+        activerBoutonLuminosite(cle);
+      });
+    });
+  }
+
   if (toggleContraste) {
     toggleContraste.addEventListener("change", function () {
       const actif = !!toggleContraste.checked;
@@ -2430,8 +2473,8 @@ function creerExerciceForme(niveau) {
 function creerExercicePourcentage(niveau) {
   const scenariosParNiveau = {
     facile: [1, 2, 4],
-    moyen: [1, 2, 3, 4, 5, 6, 8],
-    difficile: [2, 3, 4, 5, 6, 7, 8],
+    moyen: [1, 2, 3, 4, 5, 6, 8, 9],
+    difficile: [2, 3, 4, 5, 6, 7, 8, 9],
   };
   const scenariosDisponibles = scenariosParNiveau[niveau] || scenariosParNiveau.facile;
   const scenario = scenariosDisponibles[nombreAleatoire(0, scenariosDisponibles.length - 1)];
@@ -2734,6 +2777,51 @@ function creerExercicePourcentage(niveau) {
       ],
     };
   }
+  if (scenario === 9) {
+    const largeurZone = nombreAleatoire(6, 18);
+    const longueurZone = nombreAleatoire(12, 34);
+    const doseReference = nombreAleatoire(25, 55);
+    const concentration = nombreAleatoire(8, 20);
+    const margeSecurite = nombreAleatoire(5, 12);
+    const surface = largeurZone * longueurZone;
+    const produitPur = (surface * doseReference) / 100;
+    const solutionTotale = produitPur / (concentration / 100);
+    const solutionAvecMarge = solutionTotale * (1 + margeSecurite / 100);
+    return {
+      theme: "pourcentages",
+      competence: "pourcentages",
+      competenceLabel: "Pourcentages",
+      objectif: "Combiner dosage, pourcentage de concentration et marge de sécurité.",
+      titre: "Préparation d'une solution de traitement",
+      enonce: "Contexte : traitement préventif d'une zone de " + longueurZone + " m × " + largeurZone + " m.
+Données : dose de produit pur = " + doseReference + " mL pour 100 m² ; solution disponible à " + concentration + "% ; marge de sécurité = " + margeSecurite + "%.
+Question : quel volume total de solution (en mL) préparer ?",
+      reponse: solutionAvecMarge,
+      tolerance: 0.2,
+      unite: "mL",
+      explication: "Étape 1 : surface = " + longueurZone + " × " + largeurZone + " = " + arrondir(surface) + " m². Étape 2 : produit pur nécessaire = (" + arrondir(surface) + " × " + doseReference + ") ÷ 100 = " + arrondir(produitPur) + " mL. Étape 3 : à " + concentration + "%, solution totale = " + arrondir(produitPur) + " ÷ (" + concentration + "/100) = " + arrondir(solutionTotale) + " mL. Étape 4 : avec marge = " + arrondir(solutionTotale) + " × (1 + " + margeSecurite + "/100) = " + arrondir(solutionAvecMarge) + " mL.",
+      erreurProbable: "Pense à diviser par le pourcentage de concentration (ex: 12% = 0,12).",
+      erreurCode: "pourcent_div100",
+      palier: "Or",
+      etapes: [
+        "Je calcule d'abord la surface à traiter.",
+        "Je calcule la quantité de produit pur avec la dose de référence.",
+        "Je convertis avec la concentration puis j'ajoute la marge de sécurité.",
+      ],
+      utiliteMetier: "Calcul essentiel pour préparer correctement une solution sans sous-dosage ni gaspillage.",
+      verification: "Le volume final doit être supérieur au volume de produit pur, car la solution est diluée.",
+      pontMathsMetier: {
+        mesure: "Le volume réel de bouillie à préparer.",
+        decision: "Choisir le bidon et l'équipement de pulvérisation adaptés.",
+        impact: "Sécurise l'efficacité du traitement et évite la surconsommation.",
+      },
+      indices: [
+        "Indice 1 : commence par la surface, puis la dose en mL/100 m².",
+        "Indice 2 : une solution à 10% signifie volume total = produit pur ÷ 0,10.",
+      ],
+    };
+  }
+
 
   const totalPlants = niveau === "difficile" ? nombreAleatoire(300, 900) : nombreAleatoire(120, 320);
   const partVivaces = niveau === "facile" ? nombreAleatoire(20, 45) : nombreAleatoire(30, 70);
