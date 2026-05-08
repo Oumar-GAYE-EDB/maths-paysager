@@ -432,25 +432,13 @@ function initialiserTheme() {
 }
 
 function initialiserInterfaceEpuree(boutonInterface) {
-  if (!boutonInterface) return;
+  document.body.classList.add("interface-epuree");
+  localStorage.setItem(CLE_INTERFACE_EPUREE, "1");
 
-  const appliquerEtatInterface = function (estEpuree) {
-    document.body.classList.toggle("interface-epuree", estEpuree);
-    boutonInterface.setAttribute("aria-pressed", estEpuree ? "true" : "false");
-    boutonInterface.textContent = estEpuree
-      ? "Afficher les outils avancés"
-      : "Revenir à l'interface épurée";
-  };
-
-  const valeurStockee = localStorage.getItem(CLE_INTERFACE_EPUREE);
-  const modeEpureActif = valeurStockee === null ? true : valeurStockee === "1";
-  appliquerEtatInterface(modeEpureActif);
-
-  boutonInterface.addEventListener("click", function () {
-    const nouvelEtat = !document.body.classList.contains("interface-epuree");
-    appliquerEtatInterface(nouvelEtat);
-    localStorage.setItem(CLE_INTERFACE_EPUREE, nouvelEtat ? "1" : "0");
-  });
+  if (boutonInterface) {
+    boutonInterface.hidden = true;
+    boutonInterface.setAttribute("aria-hidden", "true");
+  }
 }
 
 function initialiserCitationQuotidienne(zoneCitation) {
