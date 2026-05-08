@@ -36,9 +36,9 @@ html {
   --space-16: 2rem;
 
   /* Couleurs — palette "jardin" */
-  --color-bg:             #f4f1eb;       /* Fond crème chaud */
+  --color-bg:             #ffffff;       /* Fond principal blanc */
   --color-surface:        #ffffff;       /* Cartes blanches */
-  --color-surface-offset: #efece6;       /* Fond alternatif plus homogène */
+  --color-surface-offset: #ffffff;       /* Fond alternatif blanc */
   --color-border:         #d1ccc3;       /* Bordures douces */
   --color-divider:        #e0ddd7;       /* Séparateurs */
 
@@ -49,9 +49,9 @@ html {
   --color-primary:        #3a7d44;       /* Vert feuille — boutons, accents */
   --color-primary-hover:  #2e6336;       /* Vert plus foncé au survol */
   --color-primary-active: #245229;       /* Vert encore plus foncé au clic */
-  --color-primary-light:  #f0f6f0;       /* Vert très clair adouci pour une luminosité homogène */
-  --color-surface-soft:   #f8f5ef;       /* Surface secondaire uniformisée */
-  --color-surface-raised: #fcfbf8;       /* Surface élevée pour cartes accentuées */
+  --color-primary-light:  #f6fbf6;       /* Vert très clair, discret sur fond blanc */
+  --color-surface-soft:   #ffffff;       /* Surface secondaire blanche */
+  --color-surface-raised: #ffffff;       /* Surface élevée blanche */
 
   --color-error:          #c0392b;       /* Rouge d'erreur */
   --color-error-light:    #fdecea;       /* Fond erreur léger */
