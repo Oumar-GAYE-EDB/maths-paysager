@@ -1799,3 +1799,42 @@ body.js-enhanced .is-visible {
 #studio-reponse {
   text-transform: none;
 }
+
+
+/* Variantes de luminosité manuelle */
+body[data-luminosite="soft"] {
+  --color-bg: #efe8dc;
+  --color-surface: #faf7f0;
+  --color-surface-offset: #e9e2d6;
+}
+body[data-luminosite="bright"] {
+  --color-bg: #f9f8f5;
+  --color-surface: #ffffff;
+  --color-surface-offset: #f2f1ec;
+  --color-border: #d9d5ca;
+}
+
+.comfort-bar {
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.comfort-bar__group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.btn.is-active {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+
+@media (max-width: 640px) {
+  .btn--compact {
+    min-height: 2.3rem;
+    min-width: 2.3rem;
+  }
+}
