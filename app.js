@@ -1136,13 +1136,30 @@ function initialiserParcoursIntuitif(ui) {
         "Utilise la navigation rapide pour alterner calculs, entraînement et correction.",
         "Note une astuce clé à retenir avant de quitter l'application."
       ],
-      firstTarget: "#section-demarrage",
+      firstTarget: "#section-formes",
       action: { type: "parcours-complet", competence: "organisation" },
     },
   };
 
   const sections = Array.from(document.querySelectorAll("[data-learning-section]"));
   let parcoursActif = "bases";
+
+  function resoudrePremiereCible(parcours) {
+    if (!parcours) return null;
+    if (parcours.firstTarget) {
+      const cibleDirecte = document.querySelector(parcours.firstTarget);
+      if (cibleDirecte) return cibleDirecte;
+    }
+
+    if (parcours.sections && parcours.sections.length) {
+      for (let i = 0; i < parcours.sections.length; i += 1) {
+        const section = document.querySelector('[data-learning-section="' + parcours.sections[i] + '"]');
+        if (section) return section;
+      }
+    }
+
+    return document.querySelector('#section-formes');
+  }
 
   function appliquerParcours(cleParcours) {
     const parcours = definitionParcours[cleParcours] || definitionParcours.bases;
@@ -1167,6 +1184,13 @@ function initialiserParcoursIntuitif(ui) {
       section.classList.toggle("section-muted", !estVisible);
     });
 
+    if (ui.btnFirstStep) {
+      const premiereCible = resoudrePremiereCible(parcours);
+      const libelle = premiereCible ? 'Aller à la 1re étape : ' + (premiereCible.querySelector('h2') ? premiereCible.querySelector('h2').textContent.trim() : 'section recommandée') : 'Aller à la 1re étape';
+      ui.btnFirstStep.setAttribute('aria-label', libelle);
+      ui.btnFirstStep.title = libelle;
+    }
+
     notifierActionApprentissage(parcours.action);
   }
 
@@ -1180,8 +1204,11 @@ function initialiserParcoursIntuitif(ui) {
   if (ui.btnFirstStep) {
     ui.btnFirstStep.addEventListener("click", function () {
       const parcours = definitionParcours[parcoursActif] || definitionParcours.bases;
-      const cible = parcours.firstTarget ? document.querySelector(parcours.firstTarget) : null;
-      if (cible) cible.scrollIntoView({ behavior: "smooth", block: "start" });
+      const cible = resoudrePremiereCible(parcours);
+      if (!cible) return;
+      cible.scrollIntoView({ behavior: "smooth", block: "start" });
+      cible.classList.add("section-focus-pulse");
+      window.setTimeout(function () { cible.classList.remove("section-focus-pulse"); }, 900);
     });
   }
 

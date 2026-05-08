@@ -1856,3 +1856,13 @@ body[data-luminosite="bright"] {
     min-width: 2.3rem;
   }
 }
+
+.section-focus-pulse {
+  animation: section-focus-pulse 0.9s ease;
+}
+
+@keyframes section-focus-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 35%, transparent); }
+  70% { box-shadow: 0 0 0 14px transparent; }
+  100% { box-shadow: inherit; }
+}
