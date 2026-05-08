@@ -20,6 +20,10 @@ avec un affichage des formules et des étapes de calcul.
 
 ## Fonctionnalités
 
+### 0) Version allégée (par défaut)
+- Les blocs secondaires (gamification, routine, cockpit, citations, parcours émotionnel) sont masqués pour réduire la densité visuelle.
+- L’écran met l’accent sur le cœur pédagogique : calculs de formes, pourcentages et exercices.
+
 ### 1) Aire & périmètre
 Formes disponibles :
 - Rectangle

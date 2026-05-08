@@ -127,6 +127,21 @@ html {
   }
 }
 
+
+/* ---------- MODE ALLÉGÉ (réduction de la charge cognitive) ---------- */
+.essentials-card,
+.orientation-strip,
+.quote-card,
+.welcome-card,
+.comfort-coach,
+.study-routine,
+.card--steps,
+.comfort-bar,
+.learning-cockpit,
+.quest-card {
+  display: none;
+}
+
 /* ---------- CORPS DE LA PAGE ---------- */
 body {
   min-height: 100dvh;
