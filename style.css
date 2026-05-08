@@ -134,10 +134,7 @@ body {
   font-family: var(--font-body);
   font-size: var(--text-base);
   color: var(--color-text);
-  background:
-    radial-gradient(circle at 5% -5%, color-mix(in srgb, var(--color-primary-light) 45%, transparent 55%), transparent 48%),
-    radial-gradient(circle at 95% 0%, color-mix(in srgb, var(--color-surface-offset) 48%, transparent 52%), transparent 44%),
-    var(--color-bg);
+  background: var(--color-bg);
   display: flex;
   flex-direction: column;
 }
@@ -824,6 +821,12 @@ body.interface-epuree .card__desc {
 
 body.interface-epuree .quick-nav,
 body.interface-epuree .study-routine,
+body.interface-epuree .orientation-strip,
+body.interface-epuree .quote-card,
+body.interface-epuree #section-demarrage,
+body.interface-epuree .comfort-bar,
+body.interface-epuree .learning-cockpit,
+body.interface-epuree .card--steps,
 body.interface-epuree #section-parcours-intuitif,
 body.interface-epuree #section-studio-missions,
 body.interface-epuree #section-cap-apprentissage,
