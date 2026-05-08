@@ -104,33 +104,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const historiqueExercice = document.getElementById("historique-exercice");
   const btnRejouerErreur = document.getElementById("btn-rejouer-erreur");
   const btnTestsFormules = document.getElementById("btn-tests-formules");
-  const btnDemarrageRapide = document.getElementById("btn-demarrage-rapide");
-  const btnReviserNotion = document.getElementById("btn-reviser-notion");
-  const messageDemarrage = document.getElementById("message-demarrage");
-  const moodCoachFeedback = document.getElementById("mood-coach-feedback");
-  const microPlanList = document.getElementById("micro-plan-list");
-  const microPlanResult = document.getElementById("micro-plan-result");
-  const btnStartMicroPlan = document.getElementById("btn-start-micro-plan");
-  const moodChips = document.querySelectorAll(".mood-chip");
-  const btnFontMinus = document.getElementById("btn-font-minus");
-  const btnFontReset = document.getElementById("btn-font-reset");
-  const btnFontPlus = document.getElementById("btn-font-plus");
-  const btnLumiSoft = document.getElementById("btn-lumi-soft");
-  const btnLumiBalanced = document.getElementById("btn-lumi-balanced");
-  const btnLumiBright = document.getElementById("btn-lumi-bright");
-  const modeContrasteFort = document.getElementById("mode-contraste-fort");
-  const cockpitSessionGoal = document.getElementById("cockpit-session-goal");
-  const cockpitSessionMeter = document.getElementById("cockpit-session-meter");
-  const cockpitLastAction = document.getElementById("cockpit-last-action");
-  const cockpitNextStep = document.getElementById("cockpit-next-step");
-  const questLevel = document.getElementById("quest-level");
-  const questXpMeter = document.getElementById("quest-xp-meter");
-  const questXpHint = document.getElementById("quest-xp-hint");
-  const questStreak = document.getElementById("quest-streak");
-  const questDailyDescription = document.getElementById("quest-daily-description");
-  const questDailyProgress = document.getElementById("quest-daily-progress");
-  const questFeedback = document.getElementById("quest-feedback");
-  const btnQuestReroll = document.getElementById("btn-quest-reroll");
   const atelierType = document.getElementById("atelier-type");
   const btnAtelierNouvelle = document.getElementById("btn-atelier-nouvelle");
   const btnAtelierVerifier = document.getElementById("btn-atelier-verifier");
@@ -140,7 +113,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const atelierScore = document.getElementById("atelier-score");
   const atelierSerie = document.getElementById("atelier-serie");
   const atelierConseil = document.getElementById("atelier-conseil");
-  const citationJour = document.getElementById("citation-jour");
   const coachTemps = document.getElementById("coach-temps");
   const coachPriorite = document.getElementById("coach-priorite");
   const btnCoachPlan = document.getElementById("btn-coach-plan");
@@ -218,29 +190,8 @@ document.addEventListener("DOMContentLoaded", function () {
   initialiserInterfaceEpuree(btnInterfaceEpuree);
   initialiserSaisieDecimale();
   initialiserModeFocus(modeFocus);
-  initialiserConfortAccessibilite(btnFontMinus, btnFontReset, btnFontPlus, modeContrasteFort, {
-    soft: btnLumiSoft,
-    balanced: btnLumiBalanced,
-    bright: btnLumiBright,
-  });
   initialiserNavigationConfort();
   initialiserExperienceFluide();
-  initialiserCockpitApprentissage({
-    sessionGoal: cockpitSessionGoal,
-    sessionMeter: cockpitSessionMeter,
-    lastAction: cockpitLastAction,
-    nextStep: cockpitNextStep,
-  });
-  initialiserJardinQuetes({
-    level: questLevel,
-    xpMeter: questXpMeter,
-    xpHint: questXpHint,
-    streak: questStreak,
-    dailyDescription: questDailyDescription,
-    dailyProgress: questDailyProgress,
-    feedback: questFeedback,
-    btnReroll: btnQuestReroll,
-  });
   initialiserCalculRapideClavier();
   initialiserAtelierMental({
     atelierType: atelierType,
@@ -253,7 +204,6 @@ document.addEventListener("DOMContentLoaded", function () {
     atelierSerie: atelierSerie,
     atelierConseil: atelierConseil,
   });
-  initialiserCitationQuotidienne(citationJour);
   initialiserCoachRevision({
     coachTemps: coachTemps,
     coachPriorite: coachPriorite,
@@ -271,30 +221,6 @@ document.addEventListener("DOMContentLoaded", function () {
     flashcardContenu: flashcardContenu,
     flashcardIndice: flashcardIndice,
     btnFlashcardNext: btnFlashcardNext,
-  });
-  initialiserDemarrageRapide(btnDemarrageRapide, btnReviserNotion, messageDemarrage, {
-    selectThemeExercice: selectThemeExercice,
-    selectNiveauExercice: selectNiveauExercice,
-    selectFormatExercice: selectFormatExercice,
-    selectObjectifSeance: selectObjectifSeance,
-    selectModeAccompagnement: selectModeAccompagnement,
-    modeFocus: modeFocus,
-    modeAdaptatif: modeAdaptatif,
-    btnGenererExercice: btnGenererExercice,
-  });
-  initialiserCapApprentissage({
-    moodCoachFeedback: moodCoachFeedback,
-    microPlanList: microPlanList,
-    microPlanResult: microPlanResult,
-    btnStartMicroPlan: btnStartMicroPlan,
-    moodChips: moodChips,
-    selectThemeExercice: selectThemeExercice,
-    selectNiveauExercice: selectNiveauExercice,
-    selectFormatExercice: selectFormatExercice,
-    selectModeAccompagnement: selectModeAccompagnement,
-    modeFocus: modeFocus,
-    modeEtudeAccompagnee: modeEtudeAccompagnee,
-    btnGenererExercice: btnGenererExercice,
   });
   initialiserStudioMissions({
     studioFormat: studioFormat,
