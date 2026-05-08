@@ -142,6 +142,21 @@ document.addEventListener("DOMContentLoaded", function () {
   const btnInterfaceEpuree = document.getElementById("btn-interface-epuree");
 
 
+  // --- Vérification des éléments essentiels ---
+  const elementsCritiques = [
+    { nom: "Sélecteur de forme", element: selectForme },
+    { nom: "Zone des champs de forme", element: champsForme },
+    { nom: "Bouton calculer forme", element: btnCalculerForme },
+    { nom: "Sélecteur de pourcentage", element: selectPourcent },
+    { nom: "Zone des champs pourcentage", element: champsPourcent },
+    { nom: "Bouton calculer pourcentage", element: btnCalculerPourcent },
+  ];
+  const manquants = elementsCritiques.filter(function (item) { return !item.element; });
+  if (manquants.length > 0) {
+    console.error("Initialisation interrompue : éléments UI manquants", manquants.map(function (m) { return m.nom; }));
+    return;
+  }
+
   // --- Afficher les champs dès le chargement ---
   afficherChampsFormes(selectForme.value, champsForme);
   afficherChampsPourcent(selectPourcent.value, champsPourcent);
@@ -5533,6 +5548,15 @@ function initialiserStudioMissions(options) {
     afficherMission(etatStudio.mission);
     notifierActionApprentissage({ type: "studio-mission", competence: etatStudio.mission.competence || "situations-metier" });
   });
+
+  if (options.studioReponse) {
+    options.studioReponse.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        options.btnStudioValider.click();
+      }
+    });
+  }
 
   options.btnStudioValider.addEventListener("click", function () {
     if (!etatStudio.mission) {
